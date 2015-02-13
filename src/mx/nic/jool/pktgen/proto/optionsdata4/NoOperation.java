@@ -50,4 +50,9 @@ public class NoOperation implements Ipv4OptionHeader {
 		// No code
 	}
 
+	@Override
+	public void modifyHdrFromStdIn(FieldScanner scanner) {
+		//No code, option Type = 1;
+	}
+
 }

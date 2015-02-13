@@ -47,7 +47,7 @@ public class RecordRoute implements Ipv4OptionHeader {
 			System.err.println("The pointer wasn't in multiples of 4, ");
 			boolean defaultValue = false;
 			defaultValue = scanner.readBoolean("Default value of pointer",
-					false);
+					true);
 			if (defaultValue)
 				pointer = 4;
 		}
@@ -117,6 +117,11 @@ public class RecordRoute implements Ipv4OptionHeader {
 			optionLength += routeData.size() * 4;
 		}
 
+	}
+
+	@Override
+	public void modifyHdrFromStdIn(FieldScanner scanner) {
+		readFromStdIn(scanner);
 	}
 
 }

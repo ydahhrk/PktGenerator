@@ -8,6 +8,7 @@ import java.util.List;
 
 import mx.nic.jool.pktgen.FieldScanner;
 import mx.nic.jool.pktgen.PacketUtils;
+import mx.nic.jool.pktgen.auto.Util;
 import mx.nic.jool.pktgen.pojo.Fragment;
 import mx.nic.jool.pktgen.pojo.Packet;
 import mx.nic.jool.pktgen.pojo.PacketContent;
@@ -92,6 +93,11 @@ public class RoutingExt6Header implements Extension6Header {
 	@Override
 	public String getShortName() {
 		return "rext";
+	}
+
+	@Override
+	public void modifyHdrFromStdIn(FieldScanner scanner) {
+		Util.modifyFieldValues(this, scanner);
 	}
 
 }

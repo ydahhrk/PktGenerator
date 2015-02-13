@@ -5,6 +5,9 @@ import java.io.IOException;
 
 import mx.nic.jool.pktgen.FieldScanner;
 import mx.nic.jool.pktgen.PacketUtils;
+import mx.nic.jool.pktgen.annotations.Readable;
+import mx.nic.jool.pktgen.auto.Util;
+import mx.nic.jool.pktgen.enums.Type;
 import mx.nic.jool.pktgen.pojo.Fragment;
 import mx.nic.jool.pktgen.pojo.Packet;
 import mx.nic.jool.pktgen.pojo.PacketContent;
@@ -15,9 +18,13 @@ public class InetTimestamp implements Ipv4OptionHeader {
 	private static final int DEFAULT_LENGTH = 4;
 	
 	private int optionType;
+	@Readable(defaultValue = "auto", type = Type.INTEGER)
 	private Integer length;
+	@Readable(defaultValue = "5", type = Type.INT)
 	private int pointer;
+	@Readable(defaultValue = "0", type = Type.INT)
 	private int overflow;
+	@Readable(defaultValue = "0", type = Type.INT)
 	private int flag;
 	
 	private int lengthBlankSpace;
@@ -121,5 +128,14 @@ public class InetTimestamp implements Ipv4OptionHeader {
 			length = DEFAULT_LENGTH + (lengthBlankSpace * 4);
 		}
 	}
+
+	@Override
+	public void modifyHdrFromStdIn(FieldScanner scanner) {
+		Util.modifyFieldValues(this, scanner);
+		while (!isValidFlag()) {
+			flag = scanner.readInt("Flag", 0);
+		} 
+		lengthBlankSpace = calculateBlankSpace(scanner);	
+	}	
 
 }

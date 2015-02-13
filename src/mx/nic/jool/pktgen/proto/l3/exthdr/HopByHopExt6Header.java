@@ -211,4 +211,10 @@ public class HopByHopExt6Header implements Extension6Header {
 		return "hhext";
 	}
 
+	@Override
+	public void modifyHdrFromStdIn(FieldScanner scanner) {
+		readFromStdIn(scanner);
+	}
+
+	
 }

@@ -12,6 +12,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Scanner;
 
+import mx.nic.jool.pktgen.enums.Type;
 import mx.nic.jool.pktgen.proto.Protocol;
 import mx.nic.jool.pktgen.proto.optionsdata4.Ipv4Options;
 import mx.nic.jool.pktgen.proto.optionsdata6.OptionDataTypes;
@@ -24,12 +25,24 @@ public class FieldScanner {
 		this.scanner = scanner;
 	}
 	
+	private String readLine(){
+		int indexOfTag;
+		String input = scanner.nextLine().trim();
+		indexOfTag = input.indexOf("#");
+		if (indexOfTag > 0)
+			input = input.substring(0, indexOfTag);
+		else if (indexOfTag == 0)
+			input = "";
+		
+		return input.trim();
+	}
+	
 	public int readInt(String prefix) {
 		System.out.print(prefix + ": ");
 		
 		do {
 			try {
-				String input = scanner.nextLine().trim();
+				String input = readLine();
 				if (input.isEmpty())
 					continue;
 				return Integer.parseInt(input);
@@ -45,7 +58,7 @@ public class FieldScanner {
 		
 		do {
 			try {
-				String input = scanner.nextLine().trim();
+				String input = readLine();
 				if (input.isEmpty())
 					return defaultValue;
 				return Integer.parseInt(input);
@@ -61,7 +74,7 @@ public class FieldScanner {
 		
 		do {
 			try {
-				String input = scanner.nextLine().trim();
+				String input = readLine();
 				if (input.isEmpty())
 					return null;
 				return Integer.parseInt(input);
@@ -77,7 +90,7 @@ public class FieldScanner {
 		
 		do {
 			try {
-				String input = scanner.nextLine().trim();
+				String input = readLine();
 				if (input.isEmpty())
 					return defaultValue;
 				return Long.parseLong(input);
@@ -94,7 +107,7 @@ public class FieldScanner {
 		
 		do {
 			try {
-				String input = scanner.nextLine().trim();
+				String input = readLine();
 				if (input.isEmpty())
 					return defaultValue;
 				return Boolean.parseBoolean(input);
@@ -144,7 +157,7 @@ public class FieldScanner {
 			try {
 				String input;
 				do {
-					input = scanner.nextLine().trim();
+					input = readLine();
 				} while (input.isEmpty());
 				return InetAddress.getByName(input);
 			} catch (UnknownHostException e) {
@@ -178,7 +191,7 @@ public class FieldScanner {
 
 	public String readLine(String prefix, String defaultValue) {
 		System.out.print(prefix + " (" + defaultValue + "): ");
-		String result = scanner.nextLine().trim();
+		String result = readLine();
 		return result.isEmpty() ? defaultValue : result;
 	}
 	
@@ -224,5 +237,39 @@ public class FieldScanner {
 		
 		return file;
 	}
-
+	
+	public Object read(String prefix, String defaultValue, Type type) {
+		
+		switch (type) {
+			case INT:
+				return readInt(prefix, Integer.parseInt(defaultValue));
+			case INTEGER:
+				return readInteger(prefix, defaultValue);
+			case LONG:
+				return readLong(prefix, Long.parseLong(defaultValue));
+			case BOOLEAN:
+				if (defaultValue == null || defaultValue.equalsIgnoreCase("null"))
+					return readBoolean(prefix, null);
+				else
+					return readBoolean(prefix, Boolean.parseBoolean(defaultValue));
+			case PROTOCOL:
+				return readProtocol(prefix, defaultValue);
+			case OPTION_DATA_TYPE:
+				return readOptionDataType(prefix, defaultValue);
+			case IPV4_OPTION_TYPE:
+				return readIpv4OptionTypes(prefix, defaultValue);
+			case INET4ADDRESS:
+				return readAddress4(prefix);
+			case INET6ADDRESS:
+				return readAddress6(prefix);
+			case STRING:
+				return readLine(prefix, defaultValue);
+			case FILE:
+				return readFile();
+		default:
+			return null;
+		}
+	}
 }
+
+	

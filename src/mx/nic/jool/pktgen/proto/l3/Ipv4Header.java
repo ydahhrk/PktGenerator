@@ -2,6 +2,7 @@ package mx.nic.jool.pktgen.proto.l3;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -11,6 +12,9 @@ import mx.nic.jool.pktgen.ChecksumStatus;
 import mx.nic.jool.pktgen.CsumBuilder;
 import mx.nic.jool.pktgen.FieldScanner;
 import mx.nic.jool.pktgen.PacketUtils;
+import mx.nic.jool.pktgen.annotations.Readable;
+import mx.nic.jool.pktgen.auto.Util;
+import mx.nic.jool.pktgen.enums.Type;
 import mx.nic.jool.pktgen.pojo.Fragment;
 import mx.nic.jool.pktgen.pojo.Packet;
 import mx.nic.jool.pktgen.pojo.PacketContent;
@@ -52,19 +56,33 @@ public class Ipv4Header implements Layer3Header {
 	
 	public static final int LENGTH = 20;
 
+	@Readable(defaultValue="4", type=Type.INT)
 	private int version = 4;
+	@Readable(defaultValue="auto", type=Type.INTEGER)
 	private Integer ihl = null;
+	@Readable(defaultValue="0", type=Type.INT)
 	private int tos = 0;
+	@Readable(defaultValue="auto", type=Type.INTEGER)
 	private Integer totalLength = null;
+	@Readable(defaultValue="0", type=Type.INT)
 	private int identification = 0;
+	@Readable(defaultValue="false", type=Type.BOOLEAN)
 	private boolean reserved = false;
+	@Readable(defaultValue="true", type=Type.BOOLEAN)
 	private boolean df = true;
+	@Readable(defaultValue="null", type=Type.BOOLEAN)
 	private Boolean mf = null;
+	@Readable(defaultValue="auto", type=Type.INTEGER)
 	private Integer fragmentOffset = null;
+	@Readable(defaultValue="64", type=Type.INT)
 	private int ttl = 64;
+	@Readable(defaultValue="auto", type=Type.INTEGER)
 	private Integer protocol = null;
+	@Readable(defaultValue="auto", type=Type.INTEGER)
 	private Integer headerChecksum = null;
+	@Readable(defaultValue="auto", type=Type.INET4ADDRESS)
 	private Inet4Address source;
+	@Readable(defaultValue="auto", type=Type.INET4ADDRESS)
 	private Inet4Address destination;
 
 	private ArrayList<Ipv4OptionHeader> options = new ArrayList<>();
@@ -301,6 +319,14 @@ public class Ipv4Header implements Layer3Header {
 		Inet4Address tmp = source;
 		source = destination;
 		destination = tmp;
+	}
+
+	@Override
+	public void modifyHdrFromStdIn(FieldScanner scanner) {
+		stateful();
+		options = new ArrayList<>();
+		Util.modifyFieldValues(this, scanner);
+
 	}
 	
 }

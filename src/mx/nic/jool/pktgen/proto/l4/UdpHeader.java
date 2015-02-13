@@ -2,9 +2,13 @@ package mx.nic.jool.pktgen.proto.l4;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 
 import mx.nic.jool.pktgen.FieldScanner;
 import mx.nic.jool.pktgen.PacketUtils;
+import mx.nic.jool.pktgen.annotations.Readable;
+import mx.nic.jool.pktgen.auto.Util;
+import mx.nic.jool.pktgen.enums.Type;
 import mx.nic.jool.pktgen.pojo.Fragment;
 import mx.nic.jool.pktgen.pojo.Packet;
 import mx.nic.jool.pktgen.pojo.PacketContent;
@@ -14,9 +18,13 @@ public class UdpHeader extends Layer4Header {
 
 	public static final int LENGTH = 8;
 
+	@Readable(defaultValue="2000", type=Type.INT)
 	private int sourcePort = 2000;
+	@Readable(defaultValue="2000", type=Type.INT)
 	private int destinationPort = 4000;
+	@Readable(defaultValue="auto", type=Type.INTEGER)
 	private Integer length = null;
+	@Readable(defaultValue="auto", type=Type.INTEGER)
 	private Integer checksum = null;
 
 	@Override
@@ -96,6 +104,12 @@ public class UdpHeader extends Layer4Header {
 	
 	public void setChecksum(Integer checksum) {
 		this.checksum = checksum;
+	}
+
+	@Override
+	public void modifyHdrFromStdIn(FieldScanner scanner) {
+		Util.modifyFieldValues(this, scanner);
+//		modifyFieldValues(null, scanner);
 	}
 	
 }

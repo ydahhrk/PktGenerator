@@ -6,6 +6,7 @@ import mx.nic.jool.pktgen.CsumBuilder;
 import mx.nic.jool.pktgen.pojo.Fragment;
 import mx.nic.jool.pktgen.pojo.Packet;
 import mx.nic.jool.pktgen.pojo.PacketContent;
+import mx.nic.jool.pktgen.pojo.Reflect;
 import mx.nic.jool.pktgen.proto.l3.Layer3Header;
 
 

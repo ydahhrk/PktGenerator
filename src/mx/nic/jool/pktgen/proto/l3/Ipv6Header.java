@@ -8,6 +8,9 @@ import java.net.UnknownHostException;
 
 import mx.nic.jool.pktgen.FieldScanner;
 import mx.nic.jool.pktgen.PacketUtils;
+import mx.nic.jool.pktgen.annotations.Readable;
+import mx.nic.jool.pktgen.auto.Util;
+import mx.nic.jool.pktgen.enums.Type;
 import mx.nic.jool.pktgen.pojo.Fragment;
 import mx.nic.jool.pktgen.pojo.Packet;
 import mx.nic.jool.pktgen.pojo.PacketContent;
@@ -42,15 +45,23 @@ public class Ipv6Header implements Layer3Header {
 	
 	public static final int LENGTH = 40;
 
+	@Readable(defaultValue = "6", type = Type.INT)
 	private int version = 6;
+	@Readable(defaultValue = "0", type = Type.INT)
 	private int trafficClass = 0;
+	@Readable(defaultValue = "0", type = Type.INT)
 	private int flowLabel = 0;
 
+	@Readable(defaultValue = "auto", type = Type.INTEGER)
 	private Integer payloadLength = null;
+	@Readable(defaultValue = "auto", type = Type.INTEGER)
 	private Integer nextHeader = null;
+	@Readable(defaultValue = "64", type = Type.INT)
 	private int hopLimit = 64;
 
+	@Readable(defaultValue = "", type = Type.INET6ADDRESS)
 	private Inet6Address source;
+	@Readable(defaultValue = "", type = Type.INET6ADDRESS)
 	private Inet6Address destination;
 
 	public Ipv6Header() {
@@ -155,6 +166,11 @@ public class Ipv6Header implements Layer3Header {
 		Inet6Address tmp = source;
 		source = destination;
 		destination = tmp;
+	}
+
+	@Override
+	public void modifyHdrFromStdIn(FieldScanner scanner) {
+		Util.modifyFieldValues(this, scanner);
 	}
 	
 }

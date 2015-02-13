@@ -5,6 +5,9 @@ import java.io.IOException;
 
 import mx.nic.jool.pktgen.FieldScanner;
 import mx.nic.jool.pktgen.PacketUtils;
+import mx.nic.jool.pktgen.annotations.Readable;
+import mx.nic.jool.pktgen.auto.Util;
+import mx.nic.jool.pktgen.enums.Type;
 import mx.nic.jool.pktgen.pojo.Fragment;
 import mx.nic.jool.pktgen.pojo.Packet;
 import mx.nic.jool.pktgen.pojo.PacketContent;
@@ -14,23 +17,50 @@ public class TcpHeader extends Layer4Header {
 
 	public static final int LENGTH = 20;
 
+	@Readable(defaultValue = "2000", type = Type.INT)
 	private int sourcePort = 2000;
+	
+	@Readable(defaultValue = "4000", type = Type.INT)
 	private int destinationPort = 4000;
+	
+	@Readable(defaultValue = "0", type = Type.LONG)
 	private long sequenceNumber = 0;
+	
+	@Readable(defaultValue = "0", type = Type.LONG)
 	private long acknowledgmentNumber = 0;
+	
+	@Readable(defaultValue = "5", type = Type.INT)
 	private int dataOffset = LENGTH >> 2;
+	
+	@Readable(defaultValue = "0", type = Type.INT)
 	private int reserved = 0;
+	
+	@Readable(defaultValue = "false", type = Type.BOOLEAN)
 	private boolean ns = false;
+	@Readable(defaultValue = "false", type = Type.BOOLEAN)
 	private boolean cwr = false;
+	@Readable(defaultValue = "false", type = Type.BOOLEAN)
 	private boolean ece = false;
+	@Readable(defaultValue = "false", type = Type.BOOLEAN)
 	private boolean urg = false;
+	@Readable(defaultValue = "false", type = Type.BOOLEAN)
 	private boolean ack = false;
+	@Readable(defaultValue = "false", type = Type.BOOLEAN)
 	private boolean psh = false;
+	@Readable(defaultValue = "false", type = Type.BOOLEAN)
 	private boolean rst = false;
+	@Readable(defaultValue = "true", type = Type.BOOLEAN)
 	private boolean syn = true;
+	@Readable(defaultValue = "false", type = Type.BOOLEAN)
 	private boolean fin = false;
+	
+	@Readable(defaultValue = "100", type = Type.INT)
 	private int windowSize = 100;
+	
+	@Readable(defaultValue = "auto", type = Type.INTEGER)
 	private Integer checksum = null;
+	
+	@Readable(defaultValue = "0", type = Type.INT)
 	private int urgentPointer = 0;
 
 	@Override
@@ -117,6 +147,11 @@ public class TcpHeader extends Layer4Header {
 	@Override
 	public String getShortName() {
 		return "tcp";
+	}
+
+	@Override
+	public void modifyHdrFromStdIn(FieldScanner scanner) {
+		Util.modifyFieldValues(this, scanner);
 	}
 
 }

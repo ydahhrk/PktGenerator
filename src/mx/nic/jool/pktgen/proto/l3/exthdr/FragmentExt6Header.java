@@ -5,6 +5,9 @@ import java.io.IOException;
 
 import mx.nic.jool.pktgen.FieldScanner;
 import mx.nic.jool.pktgen.PacketUtils;
+import mx.nic.jool.pktgen.annotations.Readable;
+import mx.nic.jool.pktgen.auto.Util;
+import mx.nic.jool.pktgen.enums.Type;
 import mx.nic.jool.pktgen.pojo.Fragment;
 import mx.nic.jool.pktgen.pojo.Packet;
 import mx.nic.jool.pktgen.pojo.PacketContent;
@@ -12,11 +15,22 @@ import mx.nic.jool.pktgen.proto.Protocol;
 
 public class FragmentExt6Header implements Extension6Header {
 
+	@Readable(defaultValue = "null", type = Type.INTEGER)
 	private Integer nextHeader = null;
+	
+	@Readable(defaultValue = "0", type = Type.INT)
 	private int reserved = 0;
+	
+	@Readable(defaultValue = "null", type = Type.INTEGER)
 	private Integer fragmentOffset = null;
+	
+	@Readable(defaultValue = "0", type = Type.INT)
 	private int res = 0;
+	
+	@Readable(defaultValue = "null", type = Type.BOOLEAN)
 	private Boolean mFlag = null;
+	
+	@Readable(defaultValue = "0", type = Type.LONG)
 	private long identification = 0;
 
 	@Override
@@ -91,6 +105,11 @@ public class FragmentExt6Header implements Extension6Header {
 
 	public void setIdentification(long identification) {
 		this.identification = identification;
+	}
+
+	@Override
+	public void modifyHdrFromStdIn(FieldScanner scanner) {
+		Util.modifyFieldValues(this, scanner);
 	}
 	
 }

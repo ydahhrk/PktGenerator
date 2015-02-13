@@ -19,5 +19,7 @@ public interface PacketContent {
 			throws IOException;
 	
 	PacketContent createClone();
+	
+	public void modifyHdrFromStdIn(FieldScanner scanner);
 
 }

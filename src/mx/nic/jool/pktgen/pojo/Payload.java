@@ -133,4 +133,9 @@ public class Payload implements PacketContent {
 		this.bytes = bytes;
 	}
 
+	@Override
+	public void modifyHdrFromStdIn(FieldScanner scanner) {
+		readFromStdIn(scanner);
+	}
+
 }

@@ -199,4 +199,9 @@ public class DestinationOptionExt6Header implements Extension6Header {
 		return "dext";
 	}
 
+	@Override
+	public void modifyHdrFromStdIn(FieldScanner scanner) {
+		readFromStdIn(scanner);
+	}
+
 }

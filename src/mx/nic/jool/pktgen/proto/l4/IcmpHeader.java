@@ -5,16 +5,23 @@ import java.io.IOException;
 
 import mx.nic.jool.pktgen.FieldScanner;
 import mx.nic.jool.pktgen.PacketUtils;
+import mx.nic.jool.pktgen.annotations.Readable;
+import mx.nic.jool.pktgen.enums.Type;
 
 
 public abstract class IcmpHeader extends Layer4Header {
 
 	public static final int LENGTH = 8;
 
+	@Readable(defaultValue = "8", type = Type.INT)
 	protected int type;
+	@Readable(defaultValue = "0", type = Type.INT)
 	protected int code;
+	@Readable(defaultValue = "auto", type = Type.INTEGER)
 	protected Integer checksum = null;
+	@Readable(defaultValue = "0", type = Type.INT)
 	protected int restOfHeader1 = 0;
+	@Readable(defaultValue = "0", type = Type.INT)
 	protected int restOfHeader2 = 0;
 	
 	@Override
@@ -46,6 +53,52 @@ public abstract class IcmpHeader extends Layer4Header {
 		result.restOfHeader1 = restOfHeader1;
 		result.restOfHeader2 = restOfHeader2;
 		return result;
+	}
+	
+	private void printValues() {
+		System.out.println("type: " + type);
+		System.out.println("code: " + code);
+		System.out.println("checksum: " + (checksum != null ? checksum : "(auto)"));
+		System.out.println("restOfHeader1: " + 0);
+		System.out.println("restOfHeader2: " + 0);
+	}
+	
+	@Override
+	public void modifyHdrFromStdIn(FieldScanner scanner) {
+		String fieldToModify;
+		do {
+			printValues();
+			
+			fieldToModify = scanner.readLine("Campo a modificar (Respetar mayusculas y minusculas)", "exit");
+			if (fieldToModify.equalsIgnoreCase("exit"))
+				break;
+			
+			if (fieldToModify == null || fieldToModify.isEmpty())
+				continue;
+			
+			
+			switch (fieldToModify) {
+			case "type":
+				type = scanner.readInt("Type", 8);
+				break;
+			case "code":
+				code = scanner.readInt("Code", 0);
+				break;
+			case "checksum":
+				checksum = scanner.readInteger("Checksum", "auto");
+				break;
+			case "restOfHeader1":
+				restOfHeader1 = scanner.readInt("Unused [higher 16 bits]", 0);
+				break;
+			case "restOfHeader2":
+				restOfHeader2 = scanner.readInt("Unused [lower 16 bits]", 0);
+				break;
+			default:
+				System.out.println(fieldToModify + " no es un campo valido.");
+				break;
+			}
+			
+		} while(true);
 	}
 	
 }
