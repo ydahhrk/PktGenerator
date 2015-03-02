@@ -2,7 +2,6 @@ package mx.nic.jool.pktgen.proto.l3;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.lang.reflect.Field;
 import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -42,10 +41,21 @@ public class Ipv4Header implements Layer3Header {
 		}
 	}
 	
+	/**
+	 * From RFC 6145 appendix A.
+	 * 
+	 * 198.51.100.2                  2001:db8:1c0:2:21::                                                  
+	 * (c633:6402)                  (2001:db8:1.192.0.2.33::)                                            
+	 *    H4 ------------ XLAT ------------ H6
+	 */
 	public static void stateless() {
 		setDefaults("198.51.100.2", "192.0.2.33");
 	}
 	
+	/**
+	 * 192.0.2.5           192.0.2.2 2001:db8::1        2001:db8::5
+	 *    H4 -------------------- NAT64 -------------------- H6   
+	 */
 	public static void stateful() {
 		setDefaults("192.0.2.5", "192.0.2.2");
 	}

@@ -31,10 +31,21 @@ public class Ipv6Header implements Layer3Header {
 		}
 	}
 	
+	/**
+	 * From RFC 6145 appendix A.
+	 * 
+	 * 2001:db8:1c0:2:21::                              198.51.100.2                    
+	 * (2001:db8:1.192.0.2.33::)                        (c633:6402)                    
+	 *    H6 ------------------------------ XLAT ------------ H4
+	 */
 	public static void stateless() {
 		setDefaults("2001:db8:1c0:2:21::", "2001:db8:1c6:3364:2::");
 	}
 	
+	/**
+	 * 2001:db8::5       2001:db8::1 192.0.2.2           192.0.2.5        
+	 *    H6 -------------------- NAT64 -------------------- H4   
+	 */
 	public static void stateful() {
 		setDefaults("2001:db8::5", "64:ff9b::192.0.2.5");
 	}

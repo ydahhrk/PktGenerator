@@ -59,8 +59,8 @@ public abstract class IcmpHeader extends Layer4Header {
 		System.out.println("type: " + type);
 		System.out.println("code: " + code);
 		System.out.println("checksum: " + (checksum != null ? checksum : "(auto)"));
-		System.out.println("restOfHeader1: " + 0);
-		System.out.println("restOfHeader2: " + 0);
+		System.out.println("restOfHeader1: " + restOfHeader1);
+		System.out.println("restOfHeader2: " + restOfHeader2);
 	}
 	
 	@Override

@@ -424,8 +424,9 @@ public class BasicTests {
 	
 	private void writeFragmentedPacket4(Ipv4Header hdr4, Layer4Header l4Hdr) throws IOException {
 		Packet packet = new Packet();
+		int payload1Length = (l4Hdr instanceof TcpHeader) ? 1196 : 1200;
 		
-		packet.add(hdr4, l4Hdr, new Payload(1200));
+		packet.add(hdr4, l4Hdr, new Payload(payload1Length));
 		packet.add(hdr4.createClone(), new Payload(1200));
 		packet.add(hdr4.createClone(), new Payload(1200));
 		
