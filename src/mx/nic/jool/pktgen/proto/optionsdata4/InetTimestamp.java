@@ -11,9 +11,8 @@ import mx.nic.jool.pktgen.enums.Type;
 import mx.nic.jool.pktgen.pojo.Fragment;
 import mx.nic.jool.pktgen.pojo.Packet;
 import mx.nic.jool.pktgen.pojo.PacketContent;
-import mx.nic.jool.pktgen.proto.Protocol;
 
-public class InetTimestamp implements Ipv4OptionHeader {
+public class InetTimestamp extends Ipv4OptionHeader {
 
 	private static final int DEFAULT_LENGTH = 4;
 	
@@ -111,11 +110,6 @@ public class InetTimestamp implements Ipv4OptionHeader {
 		return result;
 	}
 
-	@Override
-	public Protocol getProtocol() {
-		return null;
-	}
-	
 	@Override
 	public String getShortName() {
 		return "tsopt";

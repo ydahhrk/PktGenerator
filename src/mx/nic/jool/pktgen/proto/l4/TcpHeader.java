@@ -1,6 +1,7 @@
 package mx.nic.jool.pktgen.proto.l4;
 
 import java.io.ByteArrayOutputStream;
+import java.io.FileInputStream;
 import java.io.IOException;
 
 import mx.nic.jool.pktgen.FieldScanner;
@@ -11,7 +12,7 @@ import mx.nic.jool.pktgen.enums.Type;
 import mx.nic.jool.pktgen.pojo.Fragment;
 import mx.nic.jool.pktgen.pojo.Packet;
 import mx.nic.jool.pktgen.pojo.PacketContent;
-import mx.nic.jool.pktgen.proto.Protocol;
+import mx.nic.jool.pktgen.pojo.Payload;
 
 public class TcpHeader extends Layer4Header {
 
@@ -140,11 +141,6 @@ public class TcpHeader extends Layer4Header {
 	}
 
 	@Override
-	public Protocol getProtocol() {
-		return Protocol.TCP;
-	}
-
-	@Override
 	public String getShortName() {
 		return "tcp";
 	}
@@ -152,6 +148,37 @@ public class TcpHeader extends Layer4Header {
 	@Override
 	public void modifyHdrFromStdIn(FieldScanner scanner) {
 		Util.modifyFieldValues(this, scanner);
+	}
+
+	@Override
+	public int getHdrIndex() {
+		return 6;
+	}
+
+	@Override
+	public PacketContent loadFromStream(FileInputStream in) throws IOException {
+		int[] header = Util.streamToArray(in, LENGTH);
+
+		sourcePort = Util.joinBytes(header, 0, 1);
+		destinationPort = Util.joinBytes(header, 2, 3);
+		sequenceNumber = Util.joinBytes(header[4], header[5], header[6], header[7]);
+		acknowledgmentNumber = Util.joinBytes(header[8], header[9], header[10], header[11]);
+		dataOffset = header[12] >> 4;
+		reserved = (header[12] >> 1) & 0x7;
+		ns = (header[12] & 0x1) == 1;
+		cwr = ((header[13] >> 7) & 0x1) == 1;
+		ece = ((header[13] >> 6) & 0x1) == 1;
+		urg = ((header[13] >> 5) & 0x1) == 1;
+		ack = ((header[13] >> 4) & 0x1) == 1;
+		psh = ((header[13] >> 3) & 0x1) == 1;
+		rst = ((header[13] >> 2) & 0x1) == 1;
+		syn = ((header[13] >> 1) & 0x1) == 1;
+		fin = ((header[13] >> 0) & 0x1) == 1;
+		windowSize = Util.joinBytes(header, 14, 15);
+		checksum = Util.joinBytes(header, 16, 17);
+		urgentPointer = Util.joinBytes(header, 18, 19);
+
+		return new Payload();
 	}
 
 }

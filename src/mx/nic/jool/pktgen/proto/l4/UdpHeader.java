@@ -1,8 +1,8 @@
 package mx.nic.jool.pktgen.proto.l4;
 
 import java.io.ByteArrayOutputStream;
+import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.ArrayList;
 
 import mx.nic.jool.pktgen.FieldScanner;
 import mx.nic.jool.pktgen.PacketUtils;
@@ -12,7 +12,7 @@ import mx.nic.jool.pktgen.enums.Type;
 import mx.nic.jool.pktgen.pojo.Fragment;
 import mx.nic.jool.pktgen.pojo.Packet;
 import mx.nic.jool.pktgen.pojo.PacketContent;
-import mx.nic.jool.pktgen.proto.Protocol;
+import mx.nic.jool.pktgen.pojo.Payload;
 
 public class UdpHeader extends Layer4Header {
 
@@ -75,11 +75,6 @@ public class UdpHeader extends Layer4Header {
 	}
 
 	@Override
-	public Protocol getProtocol() {
-		return Protocol.UDP;
-	}
-
-	@Override
 	public String getShortName() {
 		return "udp";
 	}
@@ -110,6 +105,23 @@ public class UdpHeader extends Layer4Header {
 	public void modifyHdrFromStdIn(FieldScanner scanner) {
 		Util.modifyFieldValues(this, scanner);
 //		modifyFieldValues(null, scanner);
+	}
+
+	@Override
+	public int getHdrIndex() {
+		return 17;
+	}
+	
+	@Override
+	public PacketContent loadFromStream(FileInputStream in) throws IOException {
+		int[] header = Util.streamToArray(in, LENGTH);
+
+		sourcePort = Util.joinBytes(header, 0, 1);
+		destinationPort = Util.joinBytes(header, 2, 3);
+		length = Util.joinBytes(header, 4, 5);
+		checksum = Util.joinBytes(header, 6, 7);
+
+		return new Payload();
 	}
 	
 }

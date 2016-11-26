@@ -3,12 +3,15 @@ package mx.nic.jool.pktgen.proto.l3;
 import java.io.IOException;
 
 import mx.nic.jool.pktgen.pojo.PacketContent;
-import mx.nic.jool.pktgen.pojo.Reflect;
-import mx.nic.jool.pktgen.proto.Protocol;
 
-public interface Layer3Header extends PacketContent {
+public abstract class Layer3Header implements PacketContent {
 
-	public byte[] getPseudoHeader(int payloadLength, Protocol nextProtocol)
+	@Override
+	public int getLayer() {
+		return 3;
+	}
+
+	public abstract byte[] getPseudoHeader(int payloadLength, int nexthdr)
 			throws IOException;
 
 }

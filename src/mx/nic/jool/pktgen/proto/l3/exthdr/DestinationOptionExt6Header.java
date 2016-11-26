@@ -1,6 +1,7 @@
 package mx.nic.jool.pktgen.proto.l3.exthdr;
 
 import java.io.ByteArrayOutputStream;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -10,13 +11,12 @@ import mx.nic.jool.pktgen.PacketUtils;
 import mx.nic.jool.pktgen.pojo.Fragment;
 import mx.nic.jool.pktgen.pojo.Packet;
 import mx.nic.jool.pktgen.pojo.PacketContent;
-import mx.nic.jool.pktgen.proto.Protocol;
 import mx.nic.jool.pktgen.proto.optionsdata6.OptionDataTypes;
 import mx.nic.jool.pktgen.proto.optionsdata6.Pad1;
 import mx.nic.jool.pktgen.proto.optionsdata6.PadN;
 import mx.nic.jool.pktgen.proto.optionsdata6.TypeLengthValue;
 
-public class DestinationOptionExt6Header implements Extension6Header {
+public class DestinationOptionExt6Header extends Extension6Header {
 
 	private Integer nextHeader;
 	private Integer hdrExtLength;
@@ -185,13 +185,13 @@ public class DestinationOptionExt6Header implements Extension6Header {
 
 	@Override
 	public PacketContent createClone() {
-		// TODO
-		throw new UnsupportedOperationException("Not implemented yet.");
-	}
-
-	@Override
-	public Protocol getProtocol() {
-		return Protocol.DESTINATION_OPTION_EXT6HDR;
+		DestinationOptionExt6Header result = new DestinationOptionExt6Header();
+		
+		result.nextHeader = nextHeader;
+		result.hdrExtLength = hdrExtLength;
+		result.tlvList = tlvList;
+		
+		return result;
 	}
 
 	@Override
@@ -202,6 +202,16 @@ public class DestinationOptionExt6Header implements Extension6Header {
 	@Override
 	public void modifyHdrFromStdIn(FieldScanner scanner) {
 		readFromStdIn(scanner);
+	}
+
+	@Override
+	public int getHdrIndex() {
+		return 60;
+	}
+
+	@Override
+	public PacketContent loadFromStream(FileInputStream in) throws IOException {
+		throw new IllegalArgumentException("Sorry; DestOptExt headers are not supported in load-from-file mode yet.");
 	}
 
 }

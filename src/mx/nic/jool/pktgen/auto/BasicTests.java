@@ -9,6 +9,7 @@ import mx.nic.jool.pktgen.pojo.PacketContent;
 import mx.nic.jool.pktgen.pojo.Payload;
 import mx.nic.jool.pktgen.proto.l3.Ipv4Header;
 import mx.nic.jool.pktgen.proto.l3.Ipv6Header;
+import mx.nic.jool.pktgen.proto.l3.Layer3Header;
 import mx.nic.jool.pktgen.proto.l3.exthdr.FragmentExt6Header;
 import mx.nic.jool.pktgen.proto.l4.Icmpv4ErrorHeader;
 import mx.nic.jool.pktgen.proto.l4.Icmpv4InfoHeader;
@@ -408,9 +409,9 @@ public class BasicTests {
 		String l4HdrName = null;
 		
 		for (PacketContent content : packet.get(0)) {
-			if (l3HdrName == null && content.getProtocol().getLayer() == 3)
+			if (l3HdrName == null && content instanceof Layer3Header)
 				l3HdrName = content.getShortName();
-			if (l4HdrName == null && content.getProtocol().getLayer() == 4)
+			if (l4HdrName == null && content instanceof Layer4Header)
 				l4HdrName = content.getShortName();
 		}
 

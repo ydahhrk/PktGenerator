@@ -3,6 +3,9 @@ package mx.nic.jool.pktgen.auto;
 import java.io.File;
 import java.io.IOException;
 
+import mx.nic.jool.pktgen.proto.l3.Ipv4Header;
+import mx.nic.jool.pktgen.proto.l3.Ipv6Header;
+
 public class PacketGenAuto {
 
 	public static void main(String[] args) throws IOException {
@@ -17,19 +20,20 @@ public class PacketGenAuto {
 		
 		basic = new BasicTests();
 		basic.generateTests();
-//		frag = new FragTests();
-//		frag.generateTests("result/stateless/");
 
 		// -----------------------------------
-		
-//		Ipv4Header.stateful();
-//		Ipv6Header.stateful();
-//		
-//		basic = new BasicTests(true);
-//		basic.generateTests("result/stateful/");
-//		frag = new FragTests();
-//		frag.generateTests("result/stateful/");
-		
+		Ipv4Header.stateless();
+		Ipv6Header.stateless();
+
+		FragTests frag = new FragTests();
+		frag.generateTests("result/stateless/");
+
+		Ipv4Header.stateful();
+		Ipv6Header.stateful();
+
+		frag = new FragTests();
+		frag.generateTests("result/stateful/");
+
 		// -----------------------------------
 
 		System.out.println("Done.");

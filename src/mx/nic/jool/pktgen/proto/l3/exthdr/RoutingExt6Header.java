@@ -1,6 +1,7 @@
 package mx.nic.jool.pktgen.proto.l3.exthdr;
 
 import java.io.ByteArrayOutputStream;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.Inet6Address;
 import java.util.ArrayList;
@@ -12,9 +13,8 @@ import mx.nic.jool.pktgen.auto.Util;
 import mx.nic.jool.pktgen.pojo.Fragment;
 import mx.nic.jool.pktgen.pojo.Packet;
 import mx.nic.jool.pktgen.pojo.PacketContent;
-import mx.nic.jool.pktgen.proto.Protocol;
 
-public class RoutingExt6Header implements Extension6Header {
+public class RoutingExt6Header extends Extension6Header {
 
 	private Integer nextHeader;
 	private Integer hdrExtLength;
@@ -63,8 +63,20 @@ public class RoutingExt6Header implements Extension6Header {
 
 	@Override
 	public PacketContent createClone() {
-		 // TODO
-		throw new UnsupportedOperationException("Not implemented yet.");
+		RoutingExt6Header result = new RoutingExt6Header();
+		
+		result.nextHeader = nextHeader;
+		result.hdrExtLength = hdrExtLength;
+		result.routingType = routingType;
+		result.segmentsLeft = segmentsLeft;
+		result.reserved = reserved;
+		/*
+		 * TODO deep copy?
+		 * others do this as well.
+		 */
+		result.ipv6List = ipv6List;
+		
+		return result;
 	}
 	
 	@Override
@@ -86,11 +98,6 @@ public class RoutingExt6Header implements Extension6Header {
 	}
 
 	@Override
-	public Protocol getProtocol() {
-		return Protocol.ROUTING_EXT6HDR;
-	}
-
-	@Override
 	public String getShortName() {
 		return "rext";
 	}
@@ -98,6 +105,16 @@ public class RoutingExt6Header implements Extension6Header {
 	@Override
 	public void modifyHdrFromStdIn(FieldScanner scanner) {
 		Util.modifyFieldValues(this, scanner);
+	}
+
+	@Override
+	public int getHdrIndex() {
+		return 43;
+	}
+
+	@Override
+	public PacketContent loadFromStream(FileInputStream in) throws IOException {
+		throw new IllegalArgumentException("Sorry; Routing headers are not supported in load-from-file mode yet.");
 	}
 
 }

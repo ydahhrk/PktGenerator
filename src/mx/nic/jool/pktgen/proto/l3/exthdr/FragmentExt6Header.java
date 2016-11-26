@@ -1,6 +1,7 @@
 package mx.nic.jool.pktgen.proto.l3.exthdr;
 
 import java.io.ByteArrayOutputStream;
+import java.io.FileInputStream;
 import java.io.IOException;
 
 import mx.nic.jool.pktgen.FieldScanner;
@@ -11,10 +12,12 @@ import mx.nic.jool.pktgen.enums.Type;
 import mx.nic.jool.pktgen.pojo.Fragment;
 import mx.nic.jool.pktgen.pojo.Packet;
 import mx.nic.jool.pktgen.pojo.PacketContent;
-import mx.nic.jool.pktgen.proto.Protocol;
+import mx.nic.jool.pktgen.proto.PacketContentFactory;
 
-public class FragmentExt6Header implements Extension6Header {
+public class FragmentExt6Header extends Extension6Header {
 
+	public static final int LENGTH = 8;
+	
 	@Readable(defaultValue = "null", type = Type.INTEGER)
 	private Integer nextHeader = null;
 	
@@ -94,11 +97,6 @@ public class FragmentExt6Header implements Extension6Header {
 	}
 
 	@Override
-	public Protocol getProtocol() {
-		return Protocol.FRAGMENT_EXT6HDR;
-	}
-
-	@Override
 	public String getShortName() {
 		return "fext";
 	}
@@ -110,6 +108,25 @@ public class FragmentExt6Header implements Extension6Header {
 	@Override
 	public void modifyHdrFromStdIn(FieldScanner scanner) {
 		Util.modifyFieldValues(this, scanner);
+	}
+
+	@Override
+	public int getHdrIndex() {
+		return 44;
+	}
+
+	@Override
+	public PacketContent loadFromStream(FileInputStream in) throws IOException {
+		int[] header = Util.streamToArray(in, LENGTH);
+		
+		nextHeader = header[0];
+		reserved = header[1];
+		fragmentOffset = Util.joinBytes(header[2], header[3] & 0xF8);
+		res = ((header[3] >> 1) & 0x3);
+		mFlag = (header[3] & 0x1) == 1;
+		identification = Util.joinBytes(header[4], header[5], header[6], header[7]);
+		
+		return PacketContentFactory.forNexthdr(nextHeader);
 	}
 	
 }

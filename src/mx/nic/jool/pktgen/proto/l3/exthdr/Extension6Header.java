@@ -1,8 +1,14 @@
 package mx.nic.jool.pktgen.proto.l3.exthdr;
 
-import mx.nic.jool.pktgen.pojo.PacketContent;
-import mx.nic.jool.pktgen.pojo.Reflect;
+import java.io.IOException;
 
-public interface Extension6Header extends PacketContent {
+import mx.nic.jool.pktgen.proto.l3.Layer3Header;
+
+public abstract class Extension6Header extends Layer3Header {
+
+	@Override
+	public byte[] getPseudoHeader(int payloadLength, int nexthdr) throws IOException {
+		return null;
+	}
 
 }

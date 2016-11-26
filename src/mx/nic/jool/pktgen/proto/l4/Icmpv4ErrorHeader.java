@@ -1,6 +1,7 @@
 package mx.nic.jool.pktgen.proto.l4;
 
 import mx.nic.jool.pktgen.pojo.PacketContent;
+import mx.nic.jool.pktgen.proto.l3.Ipv4Header;
 
 public class Icmpv4ErrorHeader extends Icmpv4Header {
 
@@ -16,7 +17,12 @@ public class Icmpv4ErrorHeader extends Icmpv4Header {
 
 	@Override
 	public String getShortName() {
-		return "icmp4err";
+		return "i4err";
+	}
+
+	@Override
+	protected PacketContent getNextContent() {
+		return new Ipv4Header();
 	}
 
 }

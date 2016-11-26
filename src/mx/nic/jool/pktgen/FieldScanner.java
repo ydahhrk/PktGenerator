@@ -1,6 +1,9 @@
 package mx.nic.jool.pktgen;
 
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.net.Inet4Address;
 import java.net.Inet6Address;
 import java.net.InetAddress;
@@ -13,21 +16,29 @@ import java.nio.file.Paths;
 import java.util.Scanner;
 
 import mx.nic.jool.pktgen.enums.Type;
-import mx.nic.jool.pktgen.proto.Protocol;
-import mx.nic.jool.pktgen.proto.optionsdata4.Ipv4Options;
+import mx.nic.jool.pktgen.proto.PacketContentFactory;
 import mx.nic.jool.pktgen.proto.optionsdata6.OptionDataTypes;
 
-public class FieldScanner {
+public class FieldScanner implements AutoCloseable {
 
 	private Scanner scanner;
+	/**
+	 * Transparently prints stdin to a file, so the user can pipe it to another
+	 * execution of this program.
+	 */
+	private PrintStream inputRecord;
 	
-	public FieldScanner(Scanner scanner) {
+	public FieldScanner(Scanner scanner) throws FileNotFoundException {
 		this.scanner = scanner;
+		this.inputRecord = new PrintStream(new FileOutputStream("src.txt"));
 	}
 	
-	private String readLine(){
+	private String readLine() {
 		int indexOfTag;
 		String input = scanner.nextLine().trim();
+		
+		inputRecord.println(input);
+		
 		indexOfTag = input.indexOf("#");
 		if (indexOfTag > 0)
 			input = input.substring(0, indexOfTag);
@@ -75,6 +86,7 @@ public class FieldScanner {
 		do {
 			try {
 				String input = readLine();
+				System.out.println();
 				if (input.isEmpty())
 					return null;
 				return Integer.parseInt(input);
@@ -118,14 +130,8 @@ public class FieldScanner {
 		} while (true);
 	}
 	
-	private void printProtocols() {
-		for (Protocol proto : Protocol.values())
-			System.out.printf("\t %s = %d\n", proto, proto.toWire());
-//			System.out.println("\t" + proto + " = " + proto.toWire());
-	}
-	
 	public Integer readProtocol(String prefix, String defaultCaption) {
-		printProtocols();
+		PacketContentFactory.printIntProtocols();
 		return readInteger(prefix, defaultCaption);
 	}
 	
@@ -136,17 +142,6 @@ public class FieldScanner {
 	
 	public Integer readOptionDataType(String prefix, String defaultCaption) {
 		printOptionDataTypes();
-		return readInteger(prefix, defaultCaption);
-	}
-	
-	private void printIpv4Options() {
-		for (Ipv4Options ipv4Option : Ipv4Options.values()) {
-			System.out.println("\t"+ ipv4Option + " = " + ipv4Option.toWire());
-		}
-	}
-	
-	public Integer readIpv4OptionTypes(String prefix, String defaultCaption) {
-		printIpv4Options();
 		return readInteger(prefix, defaultCaption);
 	}
 	
@@ -244,6 +239,7 @@ public class FieldScanner {
 			case INT:
 				return readInt(prefix, Integer.parseInt(defaultValue));
 			case INTEGER:
+			case IPV4_OPTION_TYPE:
 				return readInteger(prefix, defaultValue);
 			case LONG:
 				return readLong(prefix, Long.parseLong(defaultValue));
@@ -256,8 +252,6 @@ public class FieldScanner {
 				return readProtocol(prefix, defaultValue);
 			case OPTION_DATA_TYPE:
 				return readOptionDataType(prefix, defaultValue);
-			case IPV4_OPTION_TYPE:
-				return readIpv4OptionTypes(prefix, defaultValue);
 			case INET4ADDRESS:
 				return readAddress4(prefix);
 			case INET6ADDRESS:
@@ -266,10 +260,13 @@ public class FieldScanner {
 				return readLine(prefix, defaultValue);
 			case FILE:
 				return readFile();
-		default:
-			return null;
+			default:
+				return null;
 		}
 	}
-}
-
 	
+	@Override
+	public void close() {
+		inputRecord.close();
+	}
+}

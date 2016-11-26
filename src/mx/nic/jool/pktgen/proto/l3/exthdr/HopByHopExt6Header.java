@@ -1,6 +1,7 @@
 package mx.nic.jool.pktgen.proto.l3.exthdr;
 
 import java.io.ByteArrayOutputStream;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -10,14 +11,13 @@ import mx.nic.jool.pktgen.PacketUtils;
 import mx.nic.jool.pktgen.pojo.Fragment;
 import mx.nic.jool.pktgen.pojo.Packet;
 import mx.nic.jool.pktgen.pojo.PacketContent;
-import mx.nic.jool.pktgen.proto.Protocol;
 import mx.nic.jool.pktgen.proto.l3.Ipv6Header;
 import mx.nic.jool.pktgen.proto.optionsdata6.OptionDataTypes;
 import mx.nic.jool.pktgen.proto.optionsdata6.Pad1;
 import mx.nic.jool.pktgen.proto.optionsdata6.PadN;
 import mx.nic.jool.pktgen.proto.optionsdata6.TypeLengthValue;
 
-public class HopByHopExt6Header implements Extension6Header {
+public class HopByHopExt6Header extends Extension6Header {
 
 	private Integer nextHeader;
 	private Integer hdrExtLength;
@@ -34,6 +34,7 @@ public class HopByHopExt6Header implements Extension6Header {
 
 		OptionDataTypes optionType;
 		do {
+			// TODO english
 			System.out.println("Tamaño actual de la cabecera: " + octectsLength
 					+ " bytes."
 					+ "\nSe recomienda un tamaño de 8, 16 o 32 bytes.");
@@ -184,8 +185,13 @@ public class HopByHopExt6Header implements Extension6Header {
 
 	@Override
 	public PacketContent createClone() {
-		// TODO
-		throw new UnsupportedOperationException("Not implemented yet.");
+		HopByHopExt6Header result = new HopByHopExt6Header();
+
+		result.nextHeader = nextHeader;
+		result.hdrExtLength = hdrExtLength;
+		result.tlvList = tlvList;
+
+		return result;
 	}
 
 	@Override
@@ -202,11 +208,6 @@ public class HopByHopExt6Header implements Extension6Header {
 	}
 
 	@Override
-	public Protocol getProtocol() {
-		return Protocol.HOP_BY_HOP_EXT6HDR;
-	}
-
-	@Override
 	public String getShortName() {
 		return "hhext";
 	}
@@ -216,5 +217,22 @@ public class HopByHopExt6Header implements Extension6Header {
 		readFromStdIn(scanner);
 	}
 
+	@Override
+	public int getHdrIndex() {
+		return 0;
+	}
+
+	@Override
+	public PacketContent loadFromStream(FileInputStream in) throws IOException {
+		// int[] header = Util.streamToArray(in, LENGTH);
+		//
+		// nextHeader = header[0];
+		// hdrExtLength = header[1];
+		// op
+		//
+		//
+		// return PacketContentFactory.forNexthdr(nextHeader);
+		throw new IllegalArgumentException("Sorry; HopByHop headers are not supported in load-from-file mode yet.");
+	}
 	
 }

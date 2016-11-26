@@ -11,9 +11,8 @@ import mx.nic.jool.pktgen.PacketUtils;
 import mx.nic.jool.pktgen.pojo.Fragment;
 import mx.nic.jool.pktgen.pojo.Packet;
 import mx.nic.jool.pktgen.pojo.PacketContent;
-import mx.nic.jool.pktgen.proto.Protocol;
 
-public class RecordRoute implements Ipv4OptionHeader {
+public class RecordRoute extends Ipv4OptionHeader {
 
 	public static final int DEFAULT_LENGTH = 3;
 
@@ -96,12 +95,6 @@ public class RecordRoute implements Ipv4OptionHeader {
 		}
 
 		return result;
-	}
-
-	@Override
-	public Protocol getProtocol() {
-		// no code
-		return null;
 	}
 
 	@Override

@@ -1,6 +1,7 @@
 package mx.nic.jool.pktgen.proto.l3;
 
 import java.io.ByteArrayOutputStream;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.Inet6Address;
 import java.net.InetAddress;
@@ -14,9 +15,9 @@ import mx.nic.jool.pktgen.enums.Type;
 import mx.nic.jool.pktgen.pojo.Fragment;
 import mx.nic.jool.pktgen.pojo.Packet;
 import mx.nic.jool.pktgen.pojo.PacketContent;
-import mx.nic.jool.pktgen.proto.Protocol;
+import mx.nic.jool.pktgen.proto.PacketContentFactory;
 
-public class Ipv6Header implements Layer3Header {
+public class Ipv6Header extends Layer3Header {
 
 	public static Inet6Address DEFAULT_REMOTE;
 	public static Inet6Address DEFAULT_LOCAL;
@@ -141,7 +142,7 @@ public class Ipv6Header implements Layer3Header {
 	}
 
 	@Override
-	public byte[] getPseudoHeader(int payloadLength, Protocol nextProtocol)
+	public byte[] getPseudoHeader(int payloadLength, int nextHdr)
 			throws IOException {
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
 
@@ -150,19 +151,14 @@ public class Ipv6Header implements Layer3Header {
 		PacketUtils.write32BitInt(out, new Long(payloadLength));
 		PacketUtils.write16BitInt(out, 0);
 		PacketUtils.write8BitInt(out, 0);
-		PacketUtils.write8BitInt(out, nextProtocol.toWire());
+		PacketUtils.write8BitInt(out, nextHdr);
 
 		return out.toByteArray();
 	}
 
 	@Override
-	public Protocol getProtocol() {
-		return Protocol.IPV6;
-	}
-
-	@Override
 	public String getShortName() {
-		return "6";
+		return "v6";
 	}
 
 	public void setPayloadLength(Integer payloadLength) {
@@ -182,6 +178,48 @@ public class Ipv6Header implements Layer3Header {
 	@Override
 	public void modifyHdrFromStdIn(FieldScanner scanner) {
 		Util.modifyFieldValues(this, scanner);
+	}
+
+	@Override
+	public int getHdrIndex() {
+		return -6;
+	}
+
+	@Override
+	public PacketContent loadFromStream(FileInputStream in) throws IOException {
+		int[] header = Util.streamToArray(in, LENGTH);
+
+		version = header[0] >> 4;
+		trafficClass = ((header[0] & 0xF) << 4) | (header[1] >> 4);
+		flowLabel = Util.joinBytes(header[1] & 0xF, header[2], header[3]);
+		payloadLength = Util.joinBytes(header, 4, 5);
+		nextHeader = header[6];
+		hopLimit = header[7];
+		source = loadAddress(header, 8);
+		destination = loadAddress(header, 24);
+
+		return PacketContentFactory.forNexthdr(nextHeader);
+	}
+
+	private Inet6Address loadAddress(int[] bytes, int offset) throws UnknownHostException {
+		return (Inet6Address) Inet6Address.getByAddress(new byte[] { //
+				(byte) bytes[offset], //
+				(byte) bytes[offset + 1], //
+				(byte) bytes[offset + 2], //
+				(byte) bytes[offset + 3], //
+				(byte) bytes[offset + 4], //
+				(byte) bytes[offset + 5], //
+				(byte) bytes[offset + 6], //
+				(byte) bytes[offset + 7], //
+				(byte) bytes[offset + 8], //
+				(byte) bytes[offset + 9], //
+				(byte) bytes[offset + 10], //
+				(byte) bytes[offset + 11], //
+				(byte) bytes[offset + 12], //
+				(byte) bytes[offset + 13], //
+				(byte) bytes[offset + 14], //
+				(byte) bytes[offset + 15], //
+		});
 	}
 	
 }

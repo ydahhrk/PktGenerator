@@ -11,9 +11,8 @@ import mx.nic.jool.pktgen.enums.Type;
 import mx.nic.jool.pktgen.pojo.Fragment;
 import mx.nic.jool.pktgen.pojo.Packet;
 import mx.nic.jool.pktgen.pojo.PacketContent;
-import mx.nic.jool.pktgen.proto.Protocol;
 
-public class StreamIdentifier implements Ipv4OptionHeader {
+public class StreamIdentifier extends Ipv4OptionHeader {
 
 	private static final int DEFAULT_LENGTH = 4;
 
@@ -52,12 +51,6 @@ public class StreamIdentifier implements Ipv4OptionHeader {
 		result.streamID = streamID;
 		
 		return result;
-	}
-	
-	@Override
-	public Protocol getProtocol() {
-		// no code
-		return null;
 	}
 
 	@Override

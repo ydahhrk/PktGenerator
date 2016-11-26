@@ -1,12 +1,12 @@
 package mx.nic.jool.pktgen.proto.l4;
 
 import java.io.IOException;
+import java.util.Stack;
 
 import mx.nic.jool.pktgen.CsumBuilder;
 import mx.nic.jool.pktgen.pojo.Fragment;
 import mx.nic.jool.pktgen.pojo.Packet;
 import mx.nic.jool.pktgen.pojo.PacketContent;
-import mx.nic.jool.pktgen.pojo.Reflect;
 import mx.nic.jool.pktgen.proto.l3.Layer3Header;
 
 
@@ -24,8 +24,8 @@ public abstract class Layer4Header implements PacketContent {
 		}
 
 		if (lastL3Header == null) {
-			System.out.println("Warning: I'm a " + getProtocol()
-					+ " header and I don't have a network header. "
+			System.out.println("Warning: I'm a transport "
+					+ "header and I don't have a network header. "
 					+ "My checksum won't include a pseudoheader.");
 			return;
 		}
@@ -34,7 +34,18 @@ public abstract class Layer4Header implements PacketContent {
 		for (PacketContent content : packet.getL4ContentAfter(this)) {
 			payloadLength += content.toWire().length;
 		}
-		csum.write(lastL3Header.getPseudoHeader(payloadLength, getProtocol()));
+		
+		Stack<PacketContent> contentBefore = fragment.getContentBefore(this);
+		while (!contentBefore.empty()) {
+			PacketContent content = contentBefore.pop();
+			if (content instanceof Layer3Header) {
+				byte[] pseudoHeader = ((Layer3Header) content).getPseudoHeader(payloadLength, getHdrIndex());
+				if (pseudoHeader != null) {
+					csum.write(pseudoHeader);
+					break;
+				}
+			}
+		}
 	}
 
 	protected int buildChecksum(Packet packet, Fragment fragment,
@@ -59,6 +70,11 @@ public abstract class Layer4Header implements PacketContent {
 		} finally {
 			csum.close();
 		}
+	}
+	
+	@Override
+	public int getLayer() {
+		return 4;
 	}
 
 }

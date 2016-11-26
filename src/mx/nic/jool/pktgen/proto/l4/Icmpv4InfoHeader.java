@@ -1,14 +1,13 @@
 package mx.nic.jool.pktgen.proto.l4;
 
 import mx.nic.jool.pktgen.pojo.PacketContent;
+import mx.nic.jool.pktgen.pojo.Payload;
 
 public class Icmpv4InfoHeader extends Icmpv4Header {
 
 	public Icmpv4InfoHeader() {
 		type = 8;
 		code = 0;
-		restOfHeader1 = 1;
-		restOfHeader2 = 2;
 	}
 
 	@Override
@@ -18,7 +17,12 @@ public class Icmpv4InfoHeader extends Icmpv4Header {
 
 	@Override
 	public String getShortName() {
-		return "icmp4info";
+		return "i4info";
+	}
+
+	@Override
+	protected PacketContent getNextContent() {
+		return new Payload();
 	}
 
 }

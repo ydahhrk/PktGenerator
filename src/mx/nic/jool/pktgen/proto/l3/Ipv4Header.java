@@ -1,11 +1,11 @@
 package mx.nic.jool.pktgen.proto.l3;
 
 import java.io.ByteArrayOutputStream;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
 
 import mx.nic.jool.pktgen.ChecksumStatus;
 import mx.nic.jool.pktgen.CsumBuilder;
@@ -17,16 +17,10 @@ import mx.nic.jool.pktgen.enums.Type;
 import mx.nic.jool.pktgen.pojo.Fragment;
 import mx.nic.jool.pktgen.pojo.Packet;
 import mx.nic.jool.pktgen.pojo.PacketContent;
-import mx.nic.jool.pktgen.proto.Protocol;
-import mx.nic.jool.pktgen.proto.optionsdata4.EndOptionList;
-import mx.nic.jool.pktgen.proto.optionsdata4.InetTimestamp;
+import mx.nic.jool.pktgen.proto.PacketContentFactory;
 import mx.nic.jool.pktgen.proto.optionsdata4.Ipv4OptionHeader;
-import mx.nic.jool.pktgen.proto.optionsdata4.Ipv4Options;
-import mx.nic.jool.pktgen.proto.optionsdata4.NoOperation;
-import mx.nic.jool.pktgen.proto.optionsdata4.RecordRoute;
-import mx.nic.jool.pktgen.proto.optionsdata4.StreamIdentifier;
 
-public class Ipv4Header implements Layer3Header {
+public class Ipv4Header extends Layer3Header {
 
 	public static Inet4Address DEFAULT_REMOTE;
 	public static Inet4Address DEFAULT_LOCAL;
@@ -95,9 +89,6 @@ public class Ipv4Header implements Layer3Header {
 	@Readable(defaultValue="auto", type=Type.INET4ADDRESS)
 	private Inet4Address destination;
 
-	private ArrayList<Ipv4OptionHeader> options = new ArrayList<>();
-	private int paddingOctects; // TODO: implementar
-
 	public Ipv4Header() {
 		source = DEFAULT_REMOTE;
 		destination = DEFAULT_LOCAL;
@@ -119,47 +110,6 @@ public class Ipv4Header implements Layer3Header {
 		headerChecksum = scanner.readInteger("Checksum", "auto");
 		source = scanner.readAddress4("Source Address");
 		destination = scanner.readAddress4("Destination Address");
-
-		options = new ArrayList<>();
-		setIpv4Options(scanner);
-	}
-
-	private void setIpv4Options(FieldScanner scanner) {
-		Ipv4Options nextOption;
-		do {
-			Integer nextOptionInt = scanner.readIpv4OptionTypes(
-					"Next Ipv4 Option", "exit");
-			if (nextOptionInt == null)
-				break;
-
-			nextOption = Ipv4Options.fromInt(nextOptionInt);
-			if (nextOption == null) {
-				System.out.println("Invalid; try again.");
-				continue;
-			}
-
-			Ipv4OptionHeader nextContent = null;
-			switch (nextOption) {
-			case END_OPTION_LIST:
-				nextContent = new EndOptionList();
-				break;
-			case INTERNET_TIMESTAMP:
-				nextContent = new InetTimestamp();
-				break;
-			case NO_OPERATION:
-				nextContent = new NoOperation();
-				break;
-			case RECORDS_ROUTE:
-				nextContent = new RecordRoute();
-				break;
-			case STREAM_IDENTIFIER:
-				nextContent = new StreamIdentifier();
-				break;
-			}
-
-			nextContent.readFromStdIn(scanner);
-			options.add(nextContent);
-		} while (true);
 	}
 
 	private int buildChecksum() throws IOException {
@@ -175,24 +125,19 @@ public class Ipv4Header implements Layer3Header {
 	@Override
 	public void postProcess(Packet packet, Fragment fragment)
 			throws IOException {
-		for (Ipv4OptionHeader ip4Option : options) {
-			ip4Option.postProcess(null, null);
-		}
-
 		if (ihl == null) {
 			int mod;
 			int headerLength = LENGTH;
-			for (Ipv4OptionHeader ipv4Option : options) {
-				headerLength += ipv4Option.toWire().length;
+
+			for (PacketContent content : fragment.sliceExclusive(this)) {
+				if (!(content instanceof Ipv4OptionHeader))
+					break;
+				headerLength += content.toWire().length;
 			}
+			
 			mod = headerLength % 4;
-			if (mod == 0) {
-				ihl = headerLength >> 2;
-				paddingOctects = 0;
-			} else {
-				ihl = (headerLength >> 2) + 1;
-				paddingOctects = 4 - mod;
-			}
+			// TODO add padding?
+			ihl = (mod == 0) ? (headerLength >> 2) : ((headerLength >> 2) + 1);
 		}
 
 		if (totalLength == null) {
@@ -247,13 +192,6 @@ public class Ipv4Header implements Layer3Header {
 		out.write(source.getAddress());
 		out.write(destination.getAddress());
 
-		for (Ipv4OptionHeader ipv4Option : options) {
-			out.write(ipv4Option.toWire());
-		}
-		for (int i = 0; i < paddingOctects; i++) {
-			PacketUtils.write8BitInt(out, 0);
-		}
-
 		return out.toByteArray();
 	}
 	
@@ -276,37 +214,25 @@ public class Ipv4Header implements Layer3Header {
 		result.source = source;
 		result.destination = destination;
 		
-		result.options = new ArrayList<>();
-		for (Ipv4OptionHeader option : options) {
-			result.options.add((Ipv4OptionHeader) option.createClone());
-		}
-		result.paddingOctects = paddingOctects;
-		
 		return result;
 	}
 
 	@Override
-	public byte[] getPseudoHeader(int payloadLength, Protocol nextProtocol)
-			throws IOException {
+	public byte[] getPseudoHeader(int payloadLength, int nextHdr) throws IOException {
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
 
 		out.write(source.getAddress());
 		out.write(destination.getAddress());
 		PacketUtils.write8BitInt(out, 0);
-		PacketUtils.write8BitInt(out, nextProtocol.toWire());
+		PacketUtils.write8BitInt(out, nextHdr);
 		PacketUtils.write16BitInt(out, payloadLength);
 		
 		return out.toByteArray();
 	}
 
 	@Override
-	public Protocol getProtocol() {
-		return Protocol.IPV4;
-	}
-
-	@Override
 	public String getShortName() {
-		return "4";
+		return "v4";
 	}
 
 	public void setTotalLength(Integer totalLength) {
@@ -334,9 +260,45 @@ public class Ipv4Header implements Layer3Header {
 	@Override
 	public void modifyHdrFromStdIn(FieldScanner scanner) {
 		stateful();
-		options = new ArrayList<>();
 		Util.modifyFieldValues(this, scanner);
-
 	}
-	
+
+	@Override
+	public int getHdrIndex() {
+		return -4;
+	}
+
+	@Override
+	public PacketContent loadFromStream(FileInputStream in) throws IOException {
+		int[] header = Util.streamToArray(in, LENGTH);
+		
+		version = header[0] >> 4;
+		ihl = header[0] & 0xF;
+		if (ihl != 5)
+			throw new IOException("The packet contains IPv4 options. This is not supported by load-from-file mode.");
+		tos = header[1];
+		totalLength = Util.joinBytes(header, 2, 3);
+		identification = Util.joinBytes(header, 4, 5);
+		reserved = (header[6] >> 7) == 1;
+		df = (header[6] >> 6) == 1;
+		mf = (header[6] >> 5) == 1;
+		fragmentOffset = Util.joinBytes(header[6] & 0x1F, header[7]);
+		ttl = header[8];
+		protocol = header[9];
+		headerChecksum = Util.joinBytes(header, 10, 11);
+		source = loadAddress(header, 12);
+		destination = loadAddress(header, 16);
+
+		return PacketContentFactory.forNexthdr(protocol);
+	}
+
+	private Inet4Address loadAddress(int[] bytes, int offset) throws UnknownHostException {
+		return (Inet4Address) Inet4Address.getByAddress(new byte[] { //
+				(byte) bytes[offset], //
+				(byte) bytes[offset + 1], //
+				(byte) bytes[offset + 2], //
+				(byte) bytes[offset + 3], //
+		});
+	}
+
 }

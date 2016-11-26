@@ -1,9 +1,9 @@
 package mx.nic.jool.pktgen.pojo;
 
+import java.io.FileInputStream;
 import java.io.IOException;
 
 import mx.nic.jool.pktgen.FieldScanner;
-import mx.nic.jool.pktgen.proto.Protocol;
 
 public interface PacketContent {
 
@@ -11,15 +11,19 @@ public interface PacketContent {
 	
 	public byte[] toWire() throws IOException;
 
-	public Protocol getProtocol();
-
 	public String getShortName();
 
 	public void postProcess(Packet packet, Fragment fragment)
 			throws IOException;
 	
-	PacketContent createClone();
+	public PacketContent createClone();
 	
 	public void modifyHdrFromStdIn(FieldScanner scanner);
+
+	public int getHdrIndex();
+	
+	public int getLayer();
+
+	public PacketContent loadFromStream(FileInputStream in) throws IOException;
 
 }

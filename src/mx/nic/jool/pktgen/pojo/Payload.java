@@ -1,10 +1,11 @@
 package mx.nic.jool.pktgen.pojo;
 
+import java.io.ByteArrayOutputStream;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Arrays;
 
 import mx.nic.jool.pktgen.FieldScanner;
-import mx.nic.jool.pktgen.proto.Protocol;
 
 public class Payload implements PacketContent {
 
@@ -110,11 +111,6 @@ public class Payload implements PacketContent {
 	}
 
 	@Override
-	public Protocol getProtocol() {
-		return Protocol.PAYLOAD;
-	}
-
-	@Override
 	public String getShortName() {
 		return "payload";
 	}
@@ -136,6 +132,31 @@ public class Payload implements PacketContent {
 	@Override
 	public void modifyHdrFromStdIn(FieldScanner scanner) {
 		readFromStdIn(scanner);
+	}
+
+	@Override
+	public int getHdrIndex() {
+		return -1;
+	}
+
+	@Override
+	public int getLayer() {
+		return 5;
+	}
+
+	@Override
+	public PacketContent loadFromStream(FileInputStream in) throws IOException {
+		ByteArrayOutputStream builder = new ByteArrayOutputStream();
+		byte[] buffer = new byte[256];
+
+		do {
+			int bytesRead = in.read(buffer);
+			if (bytesRead == -1) {
+				bytes = builder.toByteArray();
+				return null;
+			}
+			builder.write(buffer, 0, bytesRead);
+		} while (true);
 	}
 
 }

@@ -1,12 +1,15 @@
 package mx.nic.jool.pktgen.proto.l4;
 
 import java.io.ByteArrayOutputStream;
+import java.io.FileInputStream;
 import java.io.IOException;
 
 import mx.nic.jool.pktgen.FieldScanner;
 import mx.nic.jool.pktgen.PacketUtils;
 import mx.nic.jool.pktgen.annotations.Readable;
+import mx.nic.jool.pktgen.auto.Util;
 import mx.nic.jool.pktgen.enums.Type;
+import mx.nic.jool.pktgen.pojo.PacketContent;
 
 
 public abstract class IcmpHeader extends Layer4Header {
@@ -69,7 +72,7 @@ public abstract class IcmpHeader extends Layer4Header {
 		do {
 			printValues();
 			
-			fieldToModify = scanner.readLine("Campo a modificar (Respetar mayusculas y minusculas)", "exit");
+			fieldToModify = scanner.readLine("Field to edit (case sensitive)", "exit");
 			if (fieldToModify.equalsIgnoreCase("exit"))
 				break;
 			
@@ -94,11 +97,26 @@ public abstract class IcmpHeader extends Layer4Header {
 				restOfHeader2 = scanner.readInt("Unused [lower 16 bits]", 0);
 				break;
 			default:
-				System.out.println(fieldToModify + " no es un campo valido.");
+				System.out.println(fieldToModify + " is not the name of a header field.");
 				break;
 			}
 			
-		} while(true);
+		} while (true);
 	}
+
+	@Override
+	public PacketContent loadFromStream(FileInputStream in) throws IOException {
+		int[] header = Util.streamToArray(in, LENGTH);
+
+		type = header[0];
+		code = header[1];
+		checksum = Util.joinBytes(header[2], header[3]);
+		restOfHeader1 = Util.joinBytes(header[4], header[5]);
+		restOfHeader2 = Util.joinBytes(header[6], header[7]);
+
+		return getNextContent();
+	}
+
+	protected abstract PacketContent getNextContent();
 	
 }

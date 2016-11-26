@@ -30,7 +30,7 @@ public class Packet extends SliceableList<Fragment> {
 			boolean foundLayer4 = false;
 
 			for (PacketContent currentContent : fragment) {
-				if (currentContent.getProtocol().getLayer() > 3)
+				if (currentContent.getLayer() > 3)
 					foundLayer4 = true;
 				
 				if (foundContent && foundLayer4)

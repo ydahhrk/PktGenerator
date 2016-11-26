@@ -8,9 +8,8 @@ import mx.nic.jool.pktgen.PacketUtils;
 import mx.nic.jool.pktgen.pojo.Fragment;
 import mx.nic.jool.pktgen.pojo.Packet;
 import mx.nic.jool.pktgen.pojo.PacketContent;
-import mx.nic.jool.pktgen.proto.Protocol;
 
-public class NoOperation implements Ipv4OptionHeader {
+public class NoOperation extends Ipv4OptionHeader {
 
 	private final int optionType = 1;
 
@@ -31,12 +30,6 @@ public class NoOperation implements Ipv4OptionHeader {
 	@Override
 	public PacketContent createClone() {
 		return new NoOperation();
-	}
-
-	@Override
-	public Protocol getProtocol() {
-		// No code
-		return null;
 	}
 
 	@Override

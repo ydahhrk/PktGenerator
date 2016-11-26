@@ -1,6 +1,7 @@
 package mx.nic.jool.pktgen.auto;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.Field;
 
 import mx.nic.jool.pktgen.FieldScanner;
@@ -100,10 +101,10 @@ public class Util {
 //				fieldValue = field.get(obj);
 //				System.out.println(": " + (fieldValue != null ? fieldValue : "(auto)"));
 //			} catch (IllegalArgumentException e) {
-//				// TODO Auto-generated catch block
+//				// TO-DO Auto-generated catch block
 //				e.printStackTrace();
 //			} catch (IllegalAccessException e) {
-//				// TODO Auto-generated catch block
+//				// TO-DO Auto-generated catch block
 //				e.printStackTrace();
 //			}
 //		}
@@ -114,8 +115,10 @@ public class Util {
 	
 	private static int showFieldValues(Field[] fields, PacketContent obj) {
 		int annotationsLength = 0;
-		
-		System.out.println("***** Campos de " + obj.getClass().getSimpleName() + " *****");
+
+		System.out.println();
+		System.out.print(obj.getClass().getSimpleName());
+		System.out.println(" Fields:");
 		for (Field field : fields) {
 			field.setAccessible(true);
 			Readable annotation = field.getAnnotation(Readable.class);
@@ -123,18 +126,20 @@ public class Util {
 				continue; /* No nos interesa este campo. */
 			
 			annotationsLength++;
-			
-			System.out.print(field.getName());
+
+			System.out.print("\t(");
+			System.out.printf("%15s", field.getName());
+			System.out.print(") ");
+
+			Object fieldValue;
 			try {
-				Object fieldValue = field.get(obj);
-				System.out.println(": " + (fieldValue != null ? fieldValue : "(auto)"));
-			} catch (IllegalArgumentException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				fieldValue = field.get(obj);
 			} catch (IllegalAccessException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				throw new IllegalArgumentException("Strange & unlikely error condition; see below.", e);
 			}
+
+			System.out.print(": ");
+			System.out.println((fieldValue != null ? fieldValue : "(auto)"));
 		}
 		
 		return annotationsLength;
@@ -148,19 +153,19 @@ public class Util {
 		
 		
 		if (fields.length == 0) {
-			System.err.println("Nada que modificar.");
+			System.err.println("Nothing to change.");
 			return;
 		}
-			
+		
 		do {
 			annotationsLength = showFieldValues(fields, obj);
 			
 			if (annotationsLength == 0) {
-				System.err.println("Nada que modificar.");
+				System.err.println("Nothing to change.");
 				return;
 			}
 			
-			fieldToModify = scanner.readLine("Campo a modificar", "exit");
+			fieldToModify = scanner.readLine("Field", "exit");
 			if (fieldToModify.equalsIgnoreCase("exit"))
 				break;
 			
@@ -177,22 +182,39 @@ public class Util {
 					continue; /* No nos interesa este campo. */
 				
 				read = scanner.read(field.getName(), annotation.defaultValue(), annotation.type());
-				if (read ==  null) {
-					System.err.println("No se ha asignado valor porque es nulo.");
-//					break;
-				}
 				try {
 					field.set(obj, read);
-				} catch (IllegalArgumentException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
 				} catch (IllegalAccessException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+					throw new IllegalArgumentException("Strange & unlikely error condition; see below.", e);
 				}
-				
 			}
 			
-		} while(true);
+		} while (true);
 	}
+
+	public static int[] streamToArray(InputStream in, int arrayLength) throws IOException {
+		byte[] bytes = new byte[arrayLength];
+		int bytesRead = 0;
+		do {
+			bytesRead = in.read(bytes, bytesRead, arrayLength - bytesRead);
+		} while (bytesRead < arrayLength);
+
+		int[] ints = new int[bytes.length];
+		for (int i = 0; i < bytes.length; i++)
+			ints[i] = bytes[i] & 0xFF; // "& 0xFF" is a cumbersome means to
+										// ensure the result is positive.
+		return ints;
+	}
+
+	public static int joinBytes(int[] array, int int1, int int2) {
+		return joinBytes(array[int1], array[int2]);
+	}
+
+	public static int joinBytes(int... ints) {
+		int result = 0;
+		for (int current : ints)
+			result = (result << 8) | current;
+		return result;
+	}
+
 }

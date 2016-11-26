@@ -1,6 +1,7 @@
 package mx.nic.jool.pktgen.proto.l4;
 
 import mx.nic.jool.pktgen.pojo.PacketContent;
+import mx.nic.jool.pktgen.proto.l3.Ipv6Header;
 
 public class Icmpv6ErrorHeader extends Icmpv6Header {
 
@@ -16,7 +17,12 @@ public class Icmpv6ErrorHeader extends Icmpv6Header {
 
 	@Override
 	public String getShortName() {
-		return "icmp6err";
+		return "i6err";
+	}
+
+	@Override
+	protected PacketContent getNextContent() {
+		return new Ipv6Header();
 	}
 
 }
