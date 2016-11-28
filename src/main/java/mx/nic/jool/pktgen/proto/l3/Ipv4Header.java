@@ -6,6 +6,8 @@ import java.io.IOException;
 import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.Properties;
+import java.util.concurrent.ThreadLocalRandom;
 
 import mx.nic.jool.pktgen.ChecksumStatus;
 import mx.nic.jool.pktgen.CsumBuilder;
@@ -22,40 +24,23 @@ import mx.nic.jool.pktgen.proto.optionsdata4.Ipv4OptionHeader;
 
 public class Ipv4Header extends Layer3Header {
 
-	public static Inet4Address DEFAULT_REMOTE;
-	public static Inet4Address DEFAULT_LOCAL;
+	private static final Inet4Address DEFAULT_SRC;
+	private static final Inet4Address DEFAULT_DST;
 
-	private static void setDefaults(String remote, String local) {
-		try {
-			DEFAULT_REMOTE = (Inet4Address) InetAddress.getByName(remote);
-			DEFAULT_LOCAL = (Inet4Address) InetAddress.getByName(local);
-		} catch (UnknownHostException e) {
-			// It's hardcoded so this is unexpected.
-			throw new IllegalArgumentException(e);
-		}
-	}
-	
-	/**
-	 * From RFC 6145 appendix A.
-	 * 
-	 * 198.51.100.2                  2001:db8:1c0:2:21::                                                  
-	 * (c633:6402)                  (2001:db8:1.192.0.2.33::)                                            
-	 *    H4 ------------ XLAT ------------ H6
-	 */
-	public static void stateless() {
-		setDefaults("198.51.100.2", "192.0.2.33");
-	}
-	
-	/**
-	 * 192.0.2.5           192.0.2.2 2001:db8::1        2001:db8::5
-	 *    H4 -------------------- NAT64 -------------------- H6   
-	 */
-	public static void stateful() {
-		setDefaults("192.0.2.5", "192.0.2.2");
-	}
-	
 	static {
-		stateful();
+		try {
+			Properties properties = new Properties();
+			FileInputStream fis = new FileInputStream("address.properties");
+			try {
+				properties.load(fis);
+			} finally {
+				fis.close();
+			}
+			DEFAULT_SRC = (Inet4Address) InetAddress.getByName(properties.getProperty("ipv4.source"));
+			DEFAULT_DST = (Inet4Address) InetAddress.getByName(properties.getProperty("ipv4.destination"));
+		} catch (IOException e) {
+			throw new IllegalArgumentException("There's something wrong with address.properties.");
+		}
 	}
 	
 	public static final int LENGTH = 20;
@@ -90,8 +75,8 @@ public class Ipv4Header extends Layer3Header {
 	private Inet4Address destination;
 
 	public Ipv4Header() {
-		source = DEFAULT_REMOTE;
-		destination = DEFAULT_LOCAL;
+		this.source = DEFAULT_SRC;
+		this.destination = DEFAULT_DST;
 	}
 
 	@Override
@@ -259,7 +244,6 @@ public class Ipv4Header extends Layer3Header {
 
 	@Override
 	public void modifyHdrFromStdIn(FieldScanner scanner) {
-		stateful();
 		Util.modifyFieldValues(this, scanner);
 	}
 
@@ -301,4 +285,23 @@ public class Ipv4Header extends Layer3Header {
 		});
 	}
 
+	@Override
+	public void randomize() {
+		ThreadLocalRandom random = ThreadLocalRandom.current();
+
+		// version = 4;
+		// ihl = null;
+		tos = random.nextInt(0x100);
+		// totalLength = null;
+		identification = random.nextInt(0x10000);
+		// reserved = false;
+		df = random.nextBoolean();
+		mf = random.nextBoolean();
+		// fragmentOffset = null;
+		ttl = random.nextInt(0x100);
+		// protocol = null;
+		// headerChecksum = null;
+		// source;
+		// destination;
+	}
 }

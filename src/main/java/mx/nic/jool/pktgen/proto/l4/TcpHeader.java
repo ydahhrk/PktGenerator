@@ -3,6 +3,7 @@ package mx.nic.jool.pktgen.proto.l4;
 import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.concurrent.ThreadLocalRandom;
 
 import mx.nic.jool.pktgen.FieldScanner;
 import mx.nic.jool.pktgen.PacketUtils;
@@ -181,4 +182,27 @@ public class TcpHeader extends Layer4Header {
 		return new Payload();
 	}
 
+	@Override
+	public void randomize() {
+		ThreadLocalRandom random = ThreadLocalRandom.current();
+		
+		sourcePort = random.nextInt(0x10000);
+		destinationPort = random.nextInt(0x10000);
+		sequenceNumber = random.nextLong(0x100000000L);
+		acknowledgmentNumber = random.nextLong(0x100000000L);
+//		dataOffset = LENGTH >> 2; // TODO
+		reserved = (random.nextInt(10) > 0) ? random.nextInt(8) : 0;
+		ns = random.nextBoolean();
+		cwr = random.nextBoolean();
+		ece = random.nextBoolean();
+		urg = random.nextBoolean();
+		ack = random.nextBoolean();
+		psh = random.nextBoolean();
+		rst = random.nextBoolean();
+		syn = random.nextBoolean();
+		fin = random.nextBoolean();
+		windowSize = random.nextInt(0x10000);
+		checksum = null;
+		urgentPointer = random.nextInt(0x10000);
+	}
 }

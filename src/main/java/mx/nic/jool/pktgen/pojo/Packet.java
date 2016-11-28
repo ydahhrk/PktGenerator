@@ -70,4 +70,8 @@ public class Packet extends SliceableList<Fragment> {
 		}
 	}
 
+	public void randomize() {
+		for (Fragment frag : this)
+			frag.randomize();
+	}
 }

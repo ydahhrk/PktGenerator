@@ -48,4 +48,8 @@ public class EndOptionList extends Ipv4OptionHeader {
 		// No code, option Type = 0;
 	}
 
+	@Override
+	public void randomize() {
+		// No code
+	}
 }

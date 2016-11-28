@@ -70,4 +70,8 @@ public class StreamIdentifier extends Ipv4OptionHeader {
 		Util.modifyFieldValues(this, scanner);
 	}
 
+	@Override
+	public void randomize() {
+		throw new IllegalArgumentException("Sorry; StreamIdentifiers are not supported in random mode yet.");
+	}
 }

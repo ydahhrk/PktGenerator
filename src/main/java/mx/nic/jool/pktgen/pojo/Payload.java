@@ -4,6 +4,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.concurrent.ThreadLocalRandom;
 
 import mx.nic.jool.pktgen.FieldScanner;
 
@@ -159,4 +160,9 @@ public class Payload implements PacketContent {
 		} while (true);
 	}
 
+	@Override
+	public void randomize() {
+		ThreadLocalRandom random = ThreadLocalRandom.current();
+		random.nextBytes(bytes);
+	}
 }

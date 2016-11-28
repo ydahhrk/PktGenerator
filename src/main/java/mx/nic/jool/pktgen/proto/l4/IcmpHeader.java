@@ -3,6 +3,7 @@ package mx.nic.jool.pktgen.proto.l4;
 import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.concurrent.ThreadLocalRandom;
 
 import mx.nic.jool.pktgen.FieldScanner;
 import mx.nic.jool.pktgen.PacketUtils;
@@ -119,4 +120,14 @@ public abstract class IcmpHeader extends Layer4Header {
 
 	protected abstract PacketContent getNextContent();
 	
+	@Override
+	public void randomize() {
+		ThreadLocalRandom random = ThreadLocalRandom.current();
+		
+		type = random.nextInt(0x100);
+		code = random.nextInt(0x100);
+//		checksum = null;
+		restOfHeader1 = random.nextInt(0x10000);
+		restOfHeader2 = random.nextInt(0x10000);
+	}
 }

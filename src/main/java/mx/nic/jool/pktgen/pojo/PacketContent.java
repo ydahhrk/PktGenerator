@@ -26,4 +26,5 @@ public interface PacketContent {
 
 	public PacketContent loadFromStream(FileInputStream in) throws IOException;
 
+	public void randomize();
 }

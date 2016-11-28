@@ -117,4 +117,7 @@ public class RecordRoute extends Ipv4OptionHeader {
 		readFromStdIn(scanner);
 	}
 
+	public void randomize() {
+		throw new IllegalArgumentException("Sorry; RecordRoutes are not supported in random mode yet.");
+	}
 }

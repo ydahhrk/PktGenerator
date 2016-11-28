@@ -3,6 +3,7 @@ package mx.nic.jool.pktgen.proto.l3.exthdr;
 import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.concurrent.ThreadLocalRandom;
 
 import mx.nic.jool.pktgen.FieldScanner;
 import mx.nic.jool.pktgen.PacketUtils;
@@ -129,4 +130,15 @@ public class FragmentExt6Header extends Extension6Header {
 		return PacketContentFactory.forNexthdr(nextHeader);
 	}
 	
+	@Override
+	public void randomize() {
+		ThreadLocalRandom random = ThreadLocalRandom.current();
+		
+//		nextHeader = null;
+		reserved = 0;
+//		fragmentOffset = null;
+		res = (random.nextInt(10) > 0) ? random.nextInt(0x100) : 0;
+		mFlag = random.nextBoolean();
+		identification = random.nextLong(0x100000000L);
+	}
 }

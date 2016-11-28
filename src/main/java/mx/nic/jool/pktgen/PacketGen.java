@@ -3,6 +3,7 @@ package mx.nic.jool.pktgen;
 import java.io.File;
 import java.io.IOException;
 import java.util.Scanner;
+import java.util.concurrent.ThreadLocalRandom;
 
 import mx.nic.jool.pktgen.parser.AutoParser;
 import mx.nic.jool.pktgen.parser.ManualParser;
@@ -10,7 +11,14 @@ import mx.nic.jool.pktgen.parser.Parser;
 import mx.nic.jool.pktgen.pojo.Fragment;
 import mx.nic.jool.pktgen.pojo.Packet;
 import mx.nic.jool.pktgen.pojo.PacketContent;
+import mx.nic.jool.pktgen.pojo.Payload;
 import mx.nic.jool.pktgen.proto.PacketContentFactory;
+import mx.nic.jool.pktgen.proto.l3.Ipv4Header;
+import mx.nic.jool.pktgen.proto.l4.Icmpv6ErrorHeader;
+import mx.nic.jool.pktgen.proto.l4.TcpHeader;
+import mx.nic.jool.pktgen.proto.optionsdata4.EndOptionList;
+import mx.nic.jool.pktgen.proto.optionsdata4.Ipv4OptionHeader;
+import mx.nic.jool.pktgen.proto.optionsdata4.NoOperation;
 
 public class PacketGen {
 
@@ -112,9 +120,57 @@ public class PacketGen {
 		handleNewPacketMode(new AutoParser(), Fragment.load(new File(string)));
 	}
 
-	private static void handleRandomMode() {
-		// TODO Auto-generated method stub
+	private static void handleRandomMode() throws IOException {
+		Packet packet = new Packet();
+		Fragment fragment = new Fragment();
 
+		packet.add(fragment);
+		int payloadMaxLength = 1500;
+
+		fragment.add(new Ipv4Header());
+		payloadMaxLength -= Ipv4Header.LENGTH;
+		payloadMaxLength -= maybeAddIpv4Options(fragment);
+
+		fragment.add(new Icmpv6ErrorHeader());
+		payloadMaxLength -= Icmpv6ErrorHeader.LENGTH;
+
+		Ipv4Header internal = new Ipv4Header();
+		internal.swapAddresses();
+		fragment.add(internal);
+		payloadMaxLength -= Ipv4Header.LENGTH;
+		payloadMaxLength -= maybeAddIpv4Options(fragment);
+
+		fragment.add(new TcpHeader());
+		payloadMaxLength -= TcpHeader.LENGTH;
+
+		Payload payload = new Payload();
+		ThreadLocalRandom random = ThreadLocalRandom.current();
+		payload.setBytes(new byte[random.nextInt(payloadMaxLength)]);
+		fragment.add(payload);
+
+		packet.randomize();
+		packet.postProcess();
+		packet.export("random");
 	}
 
+	private static int maybeAddIpv4Options(Fragment fragment) {
+		ThreadLocalRandom random = ThreadLocalRandom.current();
+
+		if (random.nextInt(10) > 4)
+			return 0;
+
+		int length = random.nextInt(10);
+		for (int ihl = 0; ihl < length; ihl++) {
+			fragment.add(createRandomIpv4Option(fragment, random));
+			fragment.add(createRandomIpv4Option(fragment, random));
+			fragment.add(createRandomIpv4Option(fragment, random));
+			fragment.add(createRandomIpv4Option(fragment, random));
+		}
+
+		return 4 * length;
+	}
+
+	private static Ipv4OptionHeader createRandomIpv4Option(Fragment fragment, ThreadLocalRandom random) {
+		return (random.nextInt(2) == 0) ? new NoOperation() : new EndOptionList();
+	}
 }

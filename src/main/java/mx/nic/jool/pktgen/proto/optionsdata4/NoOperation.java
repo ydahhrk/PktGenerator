@@ -48,4 +48,8 @@ public class NoOperation extends Ipv4OptionHeader {
 		//No code, option Type = 1;
 	}
 
+	@Override
+	public void randomize() {
+		// No code
+	}
 }

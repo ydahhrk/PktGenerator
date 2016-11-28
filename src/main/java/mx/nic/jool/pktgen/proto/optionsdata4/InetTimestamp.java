@@ -132,4 +132,8 @@ public class InetTimestamp extends Ipv4OptionHeader {
 		lengthBlankSpace = calculateBlankSpace(scanner);	
 	}	
 
+	@Override
+	public void randomize() {
+		throw new IllegalArgumentException("Sorry; InetTimestamps are not supported in random mode yet.");
+	}
 }

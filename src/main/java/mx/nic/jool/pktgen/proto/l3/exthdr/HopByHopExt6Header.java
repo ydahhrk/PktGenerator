@@ -235,4 +235,8 @@ public class HopByHopExt6Header extends Extension6Header {
 		throw new IllegalArgumentException("Sorry; HopByHop headers are not supported in load-from-file mode yet.");
 	}
 	
+	@Override
+	public void randomize() {
+		throw new IllegalArgumentException("Sorry; HopByHop headers are not supported in random mode yet.");
+	}
 }

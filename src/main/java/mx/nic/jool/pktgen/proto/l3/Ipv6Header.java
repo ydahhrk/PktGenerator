@@ -6,6 +6,8 @@ import java.io.IOException;
 import java.net.Inet6Address;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.Properties;
+import java.util.concurrent.ThreadLocalRandom;
 
 import mx.nic.jool.pktgen.FieldScanner;
 import mx.nic.jool.pktgen.PacketUtils;
@@ -19,40 +21,23 @@ import mx.nic.jool.pktgen.proto.PacketContentFactory;
 
 public class Ipv6Header extends Layer3Header {
 
-	public static Inet6Address DEFAULT_REMOTE;
-	public static Inet6Address DEFAULT_LOCAL;
+	private static final Inet6Address DEFAULT_SRC;
+	private static final Inet6Address DEFAULT_DST;
 
-	private static void setDefaults(String remote, String local) {
-		try {
-			DEFAULT_REMOTE = (Inet6Address) InetAddress.getByName(remote);
-			DEFAULT_LOCAL = (Inet6Address) InetAddress.getByName(local);
-		} catch (UnknownHostException e) {
-			// It's hardcoded so this is unexpected.
-			throw new IllegalArgumentException(e);
-		}
-	}
-	
-	/**
-	 * From RFC 6145 appendix A.
-	 * 
-	 * 2001:db8:1c0:2:21::                              198.51.100.2                    
-	 * (2001:db8:1.192.0.2.33::)                        (c633:6402)                    
-	 *    H6 ------------------------------ XLAT ------------ H4
-	 */
-	public static void stateless() {
-		setDefaults("2001:db8:1c0:2:21::", "2001:db8:1c6:3364:2::");
-	}
-	
-	/**
-	 * 2001:db8::5       2001:db8::1 192.0.2.2           192.0.2.5        
-	 *    H6 -------------------- NAT64 -------------------- H4   
-	 */
-	public static void stateful() {
-		setDefaults("2001:db8::5", "64:ff9b::192.0.2.5");
-	}
-	
 	static {
-		stateful();
+		try {
+			Properties properties = new Properties();
+			FileInputStream fis = new FileInputStream("address.properties");
+			try {
+				properties.load(fis);
+			} finally {
+				fis.close();
+			}
+			DEFAULT_SRC = (Inet6Address) InetAddress.getByName(properties.getProperty("ipv4.source"));
+			DEFAULT_DST = (Inet6Address) InetAddress.getByName(properties.getProperty("ipv4.destination"));
+		} catch (IOException e) {
+			throw new IllegalArgumentException("There's something wrong with address.properties.");
+		}
 	}
 	
 	public static final int LENGTH = 40;
@@ -77,8 +62,8 @@ public class Ipv6Header extends Layer3Header {
 	private Inet6Address destination;
 
 	public Ipv6Header() {
-		source = DEFAULT_REMOTE;
-		destination = DEFAULT_LOCAL;
+		source = DEFAULT_SRC;
+		destination = DEFAULT_DST;
 	}
 
 	@Override
@@ -222,4 +207,17 @@ public class Ipv6Header extends Layer3Header {
 		});
 	}
 	
+	@Override
+	public void randomize() {
+		ThreadLocalRandom random = ThreadLocalRandom.current();
+		
+//		version = 6;
+		trafficClass = random.nextInt(0x100);
+		flowLabel = random.nextInt(0x100000);
+//		payloadLength = null;
+//		nextHeader = null;
+		hopLimit = random.nextInt(0x100);
+//		source; TODO
+//		destination;
+	}
 }

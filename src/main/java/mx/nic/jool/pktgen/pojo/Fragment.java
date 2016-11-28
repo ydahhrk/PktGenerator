@@ -56,6 +56,8 @@ public class Fragment extends SliceableList<PacketContent> {
 				}
 				throw new IllegalArgumentException("The first fragment lacks L4 headers. I don't know what to do.");
 			}
+
+			content = next;
 		}
 	}
 
@@ -157,4 +159,8 @@ public class Fragment extends SliceableList<PacketContent> {
 		return frag;
 	}
 
+	public void randomize() {
+		for (PacketContent content : this)
+			content.randomize();
+	}
 }
