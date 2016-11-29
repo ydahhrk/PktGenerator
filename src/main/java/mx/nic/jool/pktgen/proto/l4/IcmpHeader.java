@@ -13,6 +13,9 @@ import mx.nic.jool.pktgen.enums.Type;
 import mx.nic.jool.pktgen.pojo.PacketContent;
 
 
+/**
+ * Yes, layer 4. It is layer 4 for most intents and purposes. Shut up.
+ */
 public abstract class IcmpHeader extends Layer4Header {
 
 	public static final int LENGTH = 8;

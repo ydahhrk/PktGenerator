@@ -33,8 +33,8 @@ public class Ipv6Header extends Layer3Header {
 			} finally {
 				fis.close();
 			}
-			DEFAULT_SRC = (Inet6Address) InetAddress.getByName(properties.getProperty("ipv4.source"));
-			DEFAULT_DST = (Inet6Address) InetAddress.getByName(properties.getProperty("ipv4.destination"));
+			DEFAULT_SRC = (Inet6Address) InetAddress.getByName(properties.getProperty("ipv6.source"));
+			DEFAULT_DST = (Inet6Address) InetAddress.getByName(properties.getProperty("ipv6.destination"));
 		} catch (IOException e) {
 			throw new IllegalArgumentException("There's something wrong with address.properties.");
 		}
