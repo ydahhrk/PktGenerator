@@ -31,7 +31,7 @@ public class RecordRoute extends Ipv4OptionHeader {
 			optionType = scanner.readInt("Option Type", 7);
 		} while (!isValidOptionType());
 
-		optionLength = scanner.readInteger("Option Length", "Auto");
+		optionLength = scanner.readInteger("Option Length");
 		pointer = scanner.readInt("Pointer (multiples of 4)", 4);
 
 		routeData = new ArrayList<>();
@@ -111,7 +111,7 @@ public class RecordRoute extends Ipv4OptionHeader {
 	}
 
 	@Override
-	public void modifyHdrFromStdIn(FieldScanner scanner) {
+	public void modifyFromStdIn(FieldScanner scanner) {
 		readFromStdIn(scanner);
 	}
 

@@ -1,14 +1,15 @@
 package mx.nic.jool.pktgen.pojo;
 
 import java.io.ByteArrayOutputStream;
-import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Arrays;
 import java.util.concurrent.ThreadLocalRandom;
 
 import mx.nic.jool.pktgen.FieldScanner;
+import mx.nic.jool.pktgen.enums.Layer;
 
-public class Payload implements PacketContent {
+public class Payload extends PacketContent {
 
 	private byte[] bytes;
 
@@ -126,7 +127,7 @@ public class Payload implements PacketContent {
 	}
 
 	@Override
-	public void modifyHdrFromStdIn(FieldScanner scanner) {
+	public void modifyFromStdIn(FieldScanner scanner) {
 		readFromStdIn(scanner);
 	}
 
@@ -136,12 +137,12 @@ public class Payload implements PacketContent {
 	}
 
 	@Override
-	public int getLayer() {
-		return 5;
+	public Layer getLayer() {
+		return Layer.APPLICATION;
 	}
 
 	@Override
-	public PacketContent loadFromStream(FileInputStream in) throws IOException {
+	public PacketContent loadFromStream(InputStream in) throws IOException {
 		ByteArrayOutputStream builder = new ByteArrayOutputStream();
 		byte[] buffer = new byte[256];
 

@@ -43,7 +43,7 @@ public class EndOptionList extends Ipv4OptionHeader {
 	}
 
 	@Override
-	public void modifyHdrFromStdIn(FieldScanner scanner) {
+	public void modifyFromStdIn(FieldScanner scanner) {
 		// No code, option Type = 0;
 	}
 

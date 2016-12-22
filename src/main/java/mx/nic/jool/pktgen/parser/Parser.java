@@ -3,8 +3,11 @@ package mx.nic.jool.pktgen.parser;
 import mx.nic.jool.pktgen.FieldScanner;
 import mx.nic.jool.pktgen.pojo.PacketContent;
 
+/**
+ * Builds {@link PacketContent}s out of user input.
+ */
 public interface Parser {
 
-	void handleContent(PacketContent nextContent, FieldScanner scanner);
+	void buildPacketContentOutOfInput(PacketContent nextContent, FieldScanner scanner);
 
 }

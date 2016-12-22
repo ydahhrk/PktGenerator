@@ -20,7 +20,7 @@ import mx.nic.jool.pktgen.proto.optionsdata4.EndOptionList;
 import mx.nic.jool.pktgen.proto.optionsdata4.Ipv4OptionHeader;
 import mx.nic.jool.pktgen.proto.optionsdata4.NoOperation;
 
-public class PacketGen {
+public class PacketGenerator {
 
 	public static void main(String[] args) throws IOException {
 		String mode = (args.length > 0) ? args[0] : "auto";
@@ -59,7 +59,7 @@ public class PacketGen {
 		return frag.get(index);
 	}
 
-	private static void handleNewPacketMode(Parser parser, Fragment frag) throws IOException {
+	private static void handleMenuMode(Parser parser, Fragment frag) throws IOException {
 		try (FieldScanner scanner = new FieldScanner(new Scanner(System.in))) {
 			Packet packet = new Packet();
 
@@ -75,14 +75,14 @@ public class PacketGen {
 
 				PacketContent newContent = PacketContentFactory.forName(nextProto);
 				if (newContent != null) {
-					parser.handleContent(newContent, scanner);
+					parser.buildPacketContentOutOfInput(newContent, scanner);
 					frag.add(newContent);
 					continue;
 				}
 
 				PacketContent oldContent = findPreviousContent(frag, nextProto);
 				if (oldContent != null) {
-					parser.handleContent(oldContent, scanner);
+					parser.buildPacketContentOutOfInput(oldContent, scanner);
 					continue;
 				}
 
@@ -109,15 +109,15 @@ public class PacketGen {
 	}
 
 	private static void handleAutoMode() throws IOException {
-		handleNewPacketMode(new AutoParser(), new Fragment());
+		handleMenuMode(new AutoParser(), new Fragment());
 	}
 
 	private static void handleManualMode() throws IOException {
-		handleNewPacketMode(new ManualParser(), new Fragment());
+		handleMenuMode(new ManualParser(), new Fragment());
 	}
 
 	private static void handleEditMode(String string) throws IOException {
-		handleNewPacketMode(new AutoParser(), Fragment.load(new File(string)));
+		handleMenuMode(new AutoParser(), Fragment.load(new File(string)));
 	}
 
 	private static void handleRandomMode() throws IOException {

@@ -1,15 +1,14 @@
 package mx.nic.jool.pktgen.proto.l3.exthdr;
 
 import java.io.ByteArrayOutputStream;
-import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.concurrent.ThreadLocalRandom;
 
 import mx.nic.jool.pktgen.FieldScanner;
 import mx.nic.jool.pktgen.PacketUtils;
-import mx.nic.jool.pktgen.annotations.Readable;
+import mx.nic.jool.pktgen.annotation.HeaderField;
 import mx.nic.jool.pktgen.auto.Util;
-import mx.nic.jool.pktgen.enums.Type;
 import mx.nic.jool.pktgen.pojo.Fragment;
 import mx.nic.jool.pktgen.pojo.Packet;
 import mx.nic.jool.pktgen.pojo.PacketContent;
@@ -19,24 +18,24 @@ public class FragmentExt6Header extends Extension6Header {
 
 	public static final int LENGTH = 8;
 
-	@Readable(defaultValue = "null", type = Type.INTEGER)
+	@HeaderField
 	private Integer nextHeader = null;
-	@Readable(defaultValue = "0", type = Type.INT)
+	@HeaderField
 	private int reserved = 0;
-	@Readable(defaultValue = "null", type = Type.INTEGER)
+	@HeaderField
 	private Integer fragmentOffset = null;
-	@Readable(defaultValue = "0", type = Type.INT)
+	@HeaderField
 	private int res = 0;
-	@Readable(defaultValue = "null", type = Type.BOOLEAN)
+	@HeaderField
 	private Boolean mFlag = null;
-	@Readable(defaultValue = "0", type = Type.LONG)
+	@HeaderField
 	private long identification = 0;
 
 	@Override
 	public void readFromStdIn(FieldScanner scanner) {
-		nextHeader = scanner.readInteger("Next Header", "auto");
+		nextHeader = scanner.readInteger("Next Header");
 		reserved = scanner.readInt("Reserved", 0);
-		fragmentOffset = scanner.readInteger("Fragment Offset (bytes)", "auto");
+		fragmentOffset = scanner.readInteger("Fragment Offset (bytes)");
 		res = scanner.readInt("Res", 0);
 		mFlag = scanner.readBoolean("M flag", null);
 		identification = scanner.readLong("identification", 0);
@@ -100,17 +99,12 @@ public class FragmentExt6Header extends Extension6Header {
 	}
 
 	@Override
-	public void modifyHdrFromStdIn(FieldScanner scanner) {
-		Util.modifyFieldValues(this, scanner);
-	}
-
-	@Override
 	public int getHdrIndex() {
 		return 44;
 	}
 
 	@Override
-	public PacketContent loadFromStream(FileInputStream in) throws IOException {
+	public PacketContent loadFromStream(InputStream in) throws IOException {
 		int[] header = Util.streamToArray(in, LENGTH);
 
 		nextHeader = header[0];

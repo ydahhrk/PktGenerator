@@ -1,9 +1,11 @@
 package mx.nic.jool.pktgen;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.lang.reflect.Field;
 import java.net.Inet4Address;
 import java.net.Inet6Address;
 import java.net.InetAddress;
@@ -15,7 +17,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Scanner;
 
-import mx.nic.jool.pktgen.enums.Type;
 import mx.nic.jool.pktgen.proto.PacketContentFactory;
 import mx.nic.jool.pktgen.proto.optionsdata6.OptionDataTypes;
 
@@ -80,8 +81,8 @@ public class FieldScanner implements AutoCloseable {
 		} while (true);
 	}
 
-	public Integer readInteger(String prefix, String defaultCaption) {
-		System.out.print(prefix + " (" + defaultCaption + "): ");
+	public Integer readInteger(String prefix) {
+		System.out.print(prefix + " (auto): ");
 
 		do {
 			try {
@@ -113,6 +114,15 @@ public class FieldScanner implements AutoCloseable {
 		} while (true);
 	}
 
+	public boolean readBool(String prefix, boolean defaultValue) {
+		System.out.print(prefix + " (" + defaultValue + "): ");
+
+		String input = readLine();
+		if (input.isEmpty())
+			return defaultValue;
+		return Boolean.parseBoolean(input);
+	}
+
 	public Boolean readBoolean(String prefix, Boolean defaultValue) {
 		String printableDefault = (defaultValue != null) ? defaultValue.toString() : "auto";
 		System.out.print(prefix + " (" + printableDefault + "): ");
@@ -130,19 +140,15 @@ public class FieldScanner implements AutoCloseable {
 		} while (true);
 	}
 
-	public Integer readProtocol(String prefix, String defaultCaption) {
+	public Integer readProtocol(String prefix) {
 		PacketContentFactory.printIntProtocols();
-		return readInteger(prefix, defaultCaption);
-	}
-
-	private void printOptionDataTypes() {
-		for (OptionDataTypes optionType : OptionDataTypes.values())
-			System.out.println("\t" + optionType + " = " + optionType.toWire());
+		return readInteger(prefix);
 	}
 
 	public Integer readOptionDataType(String prefix, String defaultCaption) {
-		printOptionDataTypes();
-		return readInteger(prefix, defaultCaption);
+		for (OptionDataTypes optionType : OptionDataTypes.values())
+			System.out.println("\t" + optionType + " = " + optionType.toWire());
+		return readInteger(prefix);
 	}
 
 	private InetAddress readAddress(String prefix) {
@@ -216,7 +222,7 @@ public class FieldScanner implements AutoCloseable {
 			}
 			attempts--;
 			System.err.println("Archivo no existe. Intente nuevamente.");
-			System.out.println(attempts + " intentos restantes.");
+			System.err.println(attempts + " intentos restantes.");
 		} while (attempts > 0);
 
 		if (stringPath == null) {
@@ -233,36 +239,35 @@ public class FieldScanner implements AutoCloseable {
 		return file;
 	}
 
-	public Object read(String prefix, String defaultValue, Type type) {
+	public Object read(Object object, Field field)
+			throws IllegalArgumentException, IllegalAccessException, InstantiationException {
+		Class<?> clazz = field.getType();
+		String prefix = field.getName();
 
-		switch (type) {
-		case INT:
-			return readInt(prefix, Integer.parseInt(defaultValue));
-		case INTEGER:
-		case IPV4_OPTION_TYPE:
-			return readInteger(prefix, defaultValue);
-		case LONG:
-			return readLong(prefix, Long.parseLong(defaultValue));
-		case BOOLEAN:
-			if (defaultValue == null || defaultValue.equalsIgnoreCase("null"))
-				return readBoolean(prefix, null);
-			else
-				return readBoolean(prefix, Boolean.parseBoolean(defaultValue));
-		case PROTOCOL:
-			return readProtocol(prefix, defaultValue);
-		case OPTION_DATA_TYPE:
-			return readOptionDataType(prefix, defaultValue);
-		case INET4ADDRESS:
+		if (clazz == int.class)
+			return readInt(prefix, field.getInt(object.getClass().newInstance()));
+		if (clazz == Integer.class)
+			return readInteger(prefix);
+		
+		if (clazz == long.class)
+			return readLong(prefix, field.getLong(object.getClass().newInstance()));
+		
+		if (clazz == boolean.class)
+			return readBoolean(prefix, field.getBoolean(object.getClass().newInstance()));
+		if (clazz == Boolean.class)
+			return readBoolean(prefix, (Boolean) field.get(object.getClass().newInstance()));
+		
+		if (clazz == String.class)
+			return readLine(prefix, (String) field.get(object.getClass().newInstance()));
+		if (clazz == Inet4Address.class)
 			return readAddress4(prefix);
-		case INET6ADDRESS:
+		if (clazz == Inet6Address.class)
 			return readAddress6(prefix);
-		case STRING:
-			return readLine(prefix, defaultValue);
-		case FILE:
+		if (clazz == File.class)
 			return readFile();
-		default:
-			return null;
-		}
+
+		System.err.println("Warning: I don't know what '" + clazz + "' is.");
+		return null;
 	}
 
 	@Override

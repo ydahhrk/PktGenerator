@@ -1,3 +1,7 @@
+# git
+*.orig
+
+# Compiled
 *.class
 
 # Mobile Tools for Java (J2ME)

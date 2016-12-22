@@ -3,6 +3,7 @@ package mx.nic.jool.pktgen.proto.l3;
 import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.Inet6Address;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -11,9 +12,8 @@ import java.util.concurrent.ThreadLocalRandom;
 
 import mx.nic.jool.pktgen.FieldScanner;
 import mx.nic.jool.pktgen.PacketUtils;
-import mx.nic.jool.pktgen.annotations.Readable;
+import mx.nic.jool.pktgen.annotation.HeaderField;
 import mx.nic.jool.pktgen.auto.Util;
-import mx.nic.jool.pktgen.enums.Type;
 import mx.nic.jool.pktgen.pojo.Fragment;
 import mx.nic.jool.pktgen.pojo.Packet;
 import mx.nic.jool.pktgen.pojo.PacketContent;
@@ -42,21 +42,21 @@ public class Ipv6Header extends Layer3Header {
 
 	public static final int LENGTH = 40;
 
-	@Readable(defaultValue = "6", type = Type.INT)
+	@HeaderField
 	private int version = 6;
-	@Readable(defaultValue = "0", type = Type.INT)
+	@HeaderField
 	private int trafficClass = 0;
-	@Readable(defaultValue = "0", type = Type.INT)
+	@HeaderField
 	private int flowLabel = 0;
-	@Readable(defaultValue = "auto", type = Type.INTEGER)
+	@HeaderField
 	private Integer payloadLength = null;
-	@Readable(defaultValue = "auto", type = Type.INTEGER)
+	@HeaderField
 	private Integer nextHeader = null;
-	@Readable(defaultValue = "64", type = Type.INT)
+	@HeaderField
 	private int hopLimit = 64;
-	@Readable(defaultValue = "", type = Type.INET6ADDRESS)
+	@HeaderField
 	private Inet6Address source;
-	@Readable(defaultValue = "", type = Type.INET6ADDRESS)
+	@HeaderField
 	private Inet6Address destination;
 
 	public Ipv6Header() {
@@ -69,8 +69,8 @@ public class Ipv6Header extends Layer3Header {
 		version = scanner.readInt("Version", 6);
 		trafficClass = scanner.readInt("Traffic Class", 0);
 		flowLabel = scanner.readInt("Flow Label", 0);
-		payloadLength = scanner.readInteger("Payload Length", "auto");
-		nextHeader = scanner.readProtocol("Next Header", "auto");
+		payloadLength = scanner.readInteger("Payload Length");
+		nextHeader = scanner.readProtocol("Next Header");
 		hopLimit = scanner.readInt("Hop Limit", 64);
 		source = scanner.readAddress6("Source Address");
 		destination = scanner.readAddress6("Destination Address");
@@ -156,17 +156,12 @@ public class Ipv6Header extends Layer3Header {
 	}
 
 	@Override
-	public void modifyHdrFromStdIn(FieldScanner scanner) {
-		Util.modifyFieldValues(this, scanner);
-	}
-
-	@Override
 	public int getHdrIndex() {
 		return -6;
 	}
 
 	@Override
-	public PacketContent loadFromStream(FileInputStream in) throws IOException {
+	public PacketContent loadFromStream(InputStream in) throws IOException {
 		int[] header = Util.streamToArray(in, LENGTH);
 
 		version = header[0] >> 4;

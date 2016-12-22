@@ -5,6 +5,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.ListIterator;
 
+import mx.nic.jool.pktgen.enums.Layer;
+
 public class Packet extends SliceableList<Fragment> {
 
 	/** Warning shutupper; I don't care about this. */
@@ -30,7 +32,7 @@ public class Packet extends SliceableList<Fragment> {
 			boolean foundLayer4 = false;
 
 			for (PacketContent currentContent : fragment) {
-				if (currentContent.getLayer() > 3)
+				if (currentContent.getLayer().ht(Layer.INTERNET))
 					foundLayer4 = true;
 
 				if (foundContent && foundLayer4)

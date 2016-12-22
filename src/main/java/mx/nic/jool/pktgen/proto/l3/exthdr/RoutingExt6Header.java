@@ -1,15 +1,14 @@
 package mx.nic.jool.pktgen.proto.l3.exthdr;
 
 import java.io.ByteArrayOutputStream;
-import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.Inet6Address;
 import java.util.ArrayList;
 import java.util.List;
 
 import mx.nic.jool.pktgen.FieldScanner;
 import mx.nic.jool.pktgen.PacketUtils;
-import mx.nic.jool.pktgen.auto.Util;
 import mx.nic.jool.pktgen.pojo.Fragment;
 import mx.nic.jool.pktgen.pojo.Packet;
 import mx.nic.jool.pktgen.pojo.PacketContent;
@@ -20,19 +19,17 @@ public class RoutingExt6Header extends Extension6Header {
 	private Integer hdrExtLength;
 	private int routingType;
 	private Integer segmentsLeft;
-
 	private long reserved;
-
 	private List<Inet6Address> ipv6List;
 
 	@Override
 	public void readFromStdIn(FieldScanner scanner) {
 		boolean newIn6Addr;
 
-		nextHeader = scanner.readProtocol("Next Header", "auto");
-		hdrExtLength = scanner.readInteger("Header Extension Length", "auto");
+		nextHeader = scanner.readProtocol("Next Header");
+		hdrExtLength = scanner.readInteger("Header Extension Length");
 		routingType = scanner.readInt("Routing Type", 0);
-		segmentsLeft = scanner.readInteger("Segments Left", "auto");
+		segmentsLeft = scanner.readInteger("Segments Left");
 
 		reserved = scanner.readLong("Reserved", 0);
 
@@ -99,17 +96,12 @@ public class RoutingExt6Header extends Extension6Header {
 	}
 
 	@Override
-	public void modifyHdrFromStdIn(FieldScanner scanner) {
-		Util.modifyFieldValues(this, scanner);
-	}
-
-	@Override
 	public int getHdrIndex() {
 		return 43;
 	}
 
 	@Override
-	public PacketContent loadFromStream(FileInputStream in) throws IOException {
+	public PacketContent loadFromStream(InputStream in) throws IOException {
 		throw new IllegalArgumentException("Sorry; Routing headers are not supported in load-from-file mode yet.");
 	}
 

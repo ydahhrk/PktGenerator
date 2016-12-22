@@ -1,15 +1,14 @@
 package mx.nic.jool.pktgen.proto.l4;
 
 import java.io.ByteArrayOutputStream;
-import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.concurrent.ThreadLocalRandom;
 
 import mx.nic.jool.pktgen.FieldScanner;
 import mx.nic.jool.pktgen.PacketUtils;
-import mx.nic.jool.pktgen.annotations.Readable;
+import mx.nic.jool.pktgen.annotation.HeaderField;
 import mx.nic.jool.pktgen.auto.Util;
-import mx.nic.jool.pktgen.enums.Type;
 import mx.nic.jool.pktgen.pojo.Fragment;
 import mx.nic.jool.pktgen.pojo.Packet;
 import mx.nic.jool.pktgen.pojo.PacketContent;
@@ -19,21 +18,21 @@ public class UdpHeader extends Layer4Header {
 
 	public static final int LENGTH = 8;
 
-	@Readable(defaultValue = "2000", type = Type.INT)
+	@HeaderField
 	private int sourcePort = 2000;
-	@Readable(defaultValue = "2000", type = Type.INT)
+	@HeaderField
 	private int destinationPort = 4000;
-	@Readable(defaultValue = "auto", type = Type.INTEGER)
+	@HeaderField
 	private Integer length = null;
-	@Readable(defaultValue = "auto", type = Type.INTEGER)
+	@HeaderField
 	private Integer checksum = null;
 
 	@Override
 	public void readFromStdIn(FieldScanner scanner) {
 		sourcePort = scanner.readInt("Source Port");
 		destinationPort = scanner.readInt("Destination Port");
-		length = scanner.readInteger("Length", "auto");
-		checksum = scanner.readInteger("Checksum", "auto");
+		length = scanner.readInteger("Length");
+		checksum = scanner.readInteger("Checksum");
 	}
 
 	@Override
@@ -102,18 +101,12 @@ public class UdpHeader extends Layer4Header {
 	}
 
 	@Override
-	public void modifyHdrFromStdIn(FieldScanner scanner) {
-		Util.modifyFieldValues(this, scanner);
-		// modifyFieldValues(null, scanner);
-	}
-
-	@Override
 	public int getHdrIndex() {
 		return 17;
 	}
 
 	@Override
-	public PacketContent loadFromStream(FileInputStream in) throws IOException {
+	public PacketContent loadFromStream(InputStream in) throws IOException {
 		int[] header = Util.streamToArray(in, LENGTH);
 
 		sourcePort = Util.joinBytes(header, 0, 1);

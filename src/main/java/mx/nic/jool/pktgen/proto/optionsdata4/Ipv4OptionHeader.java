@@ -1,7 +1,7 @@
 package mx.nic.jool.pktgen.proto.optionsdata4;
 
-import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 
 import mx.nic.jool.pktgen.pojo.PacketContent;
 import mx.nic.jool.pktgen.proto.l3.Layer3Header;
@@ -19,7 +19,7 @@ public abstract class Ipv4OptionHeader extends Layer3Header {
 	}
 
 	@Override
-	public PacketContent loadFromStream(FileInputStream in) throws IOException {
+	public PacketContent loadFromStream(InputStream in) throws IOException {
 		throw new IllegalArgumentException("Not implemented yet; sorry.");
 	}
 

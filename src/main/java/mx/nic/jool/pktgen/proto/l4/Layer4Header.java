@@ -4,12 +4,13 @@ import java.io.IOException;
 import java.util.Stack;
 
 import mx.nic.jool.pktgen.CsumBuilder;
+import mx.nic.jool.pktgen.enums.Layer;
 import mx.nic.jool.pktgen.pojo.Fragment;
 import mx.nic.jool.pktgen.pojo.Packet;
 import mx.nic.jool.pktgen.pojo.PacketContent;
 import mx.nic.jool.pktgen.proto.l3.Layer3Header;
 
-public abstract class Layer4Header implements PacketContent {
+public abstract class Layer4Header extends PacketContent {
 
 	private void includePseudoHeader(Packet packet, Fragment fragment, CsumBuilder csum) throws IOException {
 		Layer3Header lastL3Header = null;
@@ -69,8 +70,8 @@ public abstract class Layer4Header implements PacketContent {
 	}
 
 	@Override
-	public int getLayer() {
-		return 4;
+	public Layer getLayer() {
+		return Layer.TRANSPORT;
 	}
 
 }

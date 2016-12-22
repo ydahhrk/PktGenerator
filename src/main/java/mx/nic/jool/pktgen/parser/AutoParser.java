@@ -6,8 +6,8 @@ import mx.nic.jool.pktgen.pojo.PacketContent;
 public class AutoParser implements Parser {
 
 	@Override
-	public void handleContent(PacketContent nextContent, FieldScanner scanner) {
-		nextContent.modifyHdrFromStdIn(scanner);
+	public void buildPacketContentOutOfInput(PacketContent nextContent, FieldScanner scanner) {
+		nextContent.modifyFromStdIn(scanner);
 	}
 
 }

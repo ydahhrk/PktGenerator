@@ -6,7 +6,7 @@ import mx.nic.jool.pktgen.pojo.PacketContent;
 public class ManualParser implements Parser {
 
 	@Override
-	public void handleContent(PacketContent nextContent, FieldScanner scanner) {
+	public void buildPacketContentOutOfInput(PacketContent nextContent, FieldScanner scanner) {
 		nextContent.readFromStdIn(scanner);
 	}
 

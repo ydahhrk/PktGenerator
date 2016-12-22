@@ -7,6 +7,7 @@ import mx.nic.jool.pktgen.pojo.Packet;
 import mx.nic.jool.pktgen.pojo.Payload;
 import mx.nic.jool.pktgen.proto.l3.Ipv4Header;
 import mx.nic.jool.pktgen.proto.l3.Ipv6Header;
+import mx.nic.jool.pktgen.proto.l3.exthdr.FragmentExt6Header;
 import mx.nic.jool.pktgen.proto.l4.Icmpv4ErrorHeader;
 import mx.nic.jool.pktgen.proto.l4.Icmpv6ErrorHeader;
 import mx.nic.jool.pktgen.proto.l4.UdpHeader;
@@ -20,19 +21,19 @@ public class FragTests {
 
 	private void minMtu6Test(String prefix) throws IOException {
 		Util.writePacket(prefix + "/sender/frag-minmtu6-big", //
-				Util.hdr4(true, false, 0x1234), //
+				hdr4(true, false, 0x1234), //
 				new UdpHeader(), //
 				new Payload(1400));
 
 		Packet result = new Packet();
 		result.add(new Fragment( //
-				Util.hdr6(false), // 40
-				Util.hdrFrag(0x00001234), // + 8
+				hdr6(false), // 40
+				hdrFrag(0x00001234), // + 8
 				new UdpHeader(), // + 8
 				new Payload(1224))); // + 1224 = 1280
 		result.add(new Fragment( //
-				Util.hdr6(false), //
-				Util.hdrFrag(0x00001234), //
+				hdr6(false), //
+				hdrFrag(0x00001234), //
 				new Payload(176, 0xc8))); // 1400 - 1224 = 176
 		Util.writePacket(prefix + "/receiver/frag-minmtu6-big", result);
 	}
@@ -49,7 +50,7 @@ public class FragTests {
 	 */
 	private void icmpErrorTest(String prefix) throws IOException {
 		Util.writePacket(prefix + "/sender/frag-icmp4", //
-				Util.hdr4(true, true, 0), //
+				hdr4(true, true, 0), //
 				new Icmpv4ErrorHeader(), //
 				new Ipv4Header(), //
 				new UdpHeader(), //
@@ -63,7 +64,7 @@ public class FragTests {
 		hdrUdp.setChecksum(0x3022);
 
 		Util.writePacket(prefix + "/receiver/frag-icmp4", //
-				Util.hdr6(false), //
+				hdr6(false), //
 				new Icmpv6ErrorHeader(), //
 				innerHdr6, //
 				hdrUdp, //
@@ -72,7 +73,7 @@ public class FragTests {
 		// ---------------------------------------------------------------
 
 		Util.writePacket(prefix + "/sender/frag-icmp6", //
-				Util.hdr6(true), //
+				hdr6(true), //
 				new Icmpv6ErrorHeader(), //
 				new Ipv6Header(), //
 				new UdpHeader(), //
@@ -83,11 +84,74 @@ public class FragTests {
 		hdr4Inner.setTotalLength(1328);
 
 		Util.writePacket(prefix + "/receiver/frag-icmp6", //
-				Util.hdr4(false, true, 0), //
+				hdr4(false, true, 0), //
 				new Icmpv4ErrorHeader(), //
 				hdr4Inner, //
 				hdrUdp, //
 				new Payload(520)); // 20 + 8 + 20 + 8 + 520 = 576
 	}
+
+	private static Ipv4Header hdr4(boolean sender, boolean df, int id) {
+		Ipv4Header result = new Ipv4Header();
+
+		result.setIdentification(id);
+		result.setDf(df);
+
+		if (!sender) {
+			result.setTtl(63);
+			result.swapAddresses();
+		}
+
+		return result;
+	}
+
+	// private static Ipv4Header hdr4Inner(boolean sender, boolean df, int id) {
+	// Ipv4Header result = hdr4(sender, df, id);
+	// result.setIdentification(id);
+	// result.setDf(df);
+	// result.setTtl(63);
+	// result.swapAddresses();
+	// return result;
+	// }
+
+	private static Ipv6Header hdr6(boolean sender) {
+		Ipv6Header result = new Ipv6Header();
+
+		if (!sender) {
+			result.setHopLimit(63);
+			result.swapAddresses();
+		}
+
+		return result;
+	}
+
+	// private static Ipv6Header hdr6Inner(boolean sender) {
+	// Ipv6Header result = hdr6(sender);
+	// result.setHopLimit(63);
+	// result.swapAddresses();
+	// return result;
+	// }
+
+	private static FragmentExt6Header hdrFrag(long id) {
+		FragmentExt6Header result = new FragmentExt6Header();
+		result.setIdentification(id);
+		return result;
+	}
+
+	// private static UdpHeader hdrUdp(boolean sixToFour) {
+	// UdpHeader result = new UdpHeader();
+	// if (!sixToFour) {
+	// result.swapPorts();
+	// }
+	// return result;
+	// }
+	//
+	// private static UdpHeader hdrUdpInner(boolean sixToFour) {
+	// UdpHeader result = new UdpHeader();
+	// if (sixToFour) {
+	// result.swapPorts();
+	// }
+	// return result;
+	// }
 
 }

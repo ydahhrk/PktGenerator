@@ -3,6 +3,7 @@ package mx.nic.jool.pktgen.proto.l3;
 import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -13,9 +14,8 @@ import mx.nic.jool.pktgen.ChecksumStatus;
 import mx.nic.jool.pktgen.CsumBuilder;
 import mx.nic.jool.pktgen.FieldScanner;
 import mx.nic.jool.pktgen.PacketUtils;
-import mx.nic.jool.pktgen.annotations.Readable;
+import mx.nic.jool.pktgen.annotation.HeaderField;
 import mx.nic.jool.pktgen.auto.Util;
-import mx.nic.jool.pktgen.enums.Type;
 import mx.nic.jool.pktgen.pojo.Fragment;
 import mx.nic.jool.pktgen.pojo.Packet;
 import mx.nic.jool.pktgen.pojo.PacketContent;
@@ -45,33 +45,33 @@ public class Ipv4Header extends Layer3Header {
 
 	public static final int LENGTH = 20;
 
-	@Readable(defaultValue = "4", type = Type.INT)
+	@HeaderField
 	private int version = 4;
-	@Readable(defaultValue = "auto", type = Type.INTEGER)
+	@HeaderField
 	private Integer ihl = null;
-	@Readable(defaultValue = "0", type = Type.INT)
+	@HeaderField
 	private int tos = 0;
-	@Readable(defaultValue = "auto", type = Type.INTEGER)
+	@HeaderField
 	private Integer totalLength = null;
-	@Readable(defaultValue = "0", type = Type.INT)
+	@HeaderField
 	private int identification = 0;
-	@Readable(defaultValue = "false", type = Type.BOOLEAN)
+	@HeaderField
 	private boolean reserved = false;
-	@Readable(defaultValue = "true", type = Type.BOOLEAN)
+	@HeaderField
 	private boolean df = true;
-	@Readable(defaultValue = "null", type = Type.BOOLEAN)
+	@HeaderField
 	private Boolean mf = null;
-	@Readable(defaultValue = "auto", type = Type.INTEGER)
+	@HeaderField
 	private Integer fragmentOffset = null;
-	@Readable(defaultValue = "64", type = Type.INT)
+	@HeaderField
 	private int ttl = 64;
-	@Readable(defaultValue = "auto", type = Type.INTEGER)
+	@HeaderField
 	private Integer protocol = null;
-	@Readable(defaultValue = "auto", type = Type.INTEGER)
+	@HeaderField
 	private Integer headerChecksum = null;
-	@Readable(defaultValue = "auto", type = Type.INET4ADDRESS)
+	@HeaderField
 	private Inet4Address source;
-	@Readable(defaultValue = "auto", type = Type.INET4ADDRESS)
+	@HeaderField
 	private Inet4Address destination;
 
 	public Ipv4Header() {
@@ -82,17 +82,17 @@ public class Ipv4Header extends Layer3Header {
 	@Override
 	public void readFromStdIn(FieldScanner scanner) {
 		version = scanner.readInt("Version", 4);
-		ihl = scanner.readInteger("IHL", "auto");
+		ihl = scanner.readInteger("IHL");
 		tos = scanner.readInt("TOS", 0);
-		totalLength = scanner.readInteger("Total Length", "auto");
+		totalLength = scanner.readInteger("Total Length");
 		identification = scanner.readInt("Identification", 0);
 		reserved = scanner.readBoolean("Reserved", false);
 		df = scanner.readBoolean("DF", true);
 		mf = scanner.readBoolean("MF", null);
-		fragmentOffset = scanner.readInteger("Fragment Offset (bytes)", "auto");
+		fragmentOffset = scanner.readInteger("Fragment Offset (bytes)");
 		ttl = scanner.readInt("TTL", 64);
-		protocol = scanner.readProtocol("Protocol", "auto");
-		headerChecksum = scanner.readInteger("Checksum", "auto");
+		protocol = scanner.readProtocol("Protocol");
+		headerChecksum = scanner.readInteger("Checksum");
 		source = scanner.readAddress4("Source Address");
 		destination = scanner.readAddress4("Destination Address");
 	}
@@ -244,17 +244,12 @@ public class Ipv4Header extends Layer3Header {
 	}
 
 	@Override
-	public void modifyHdrFromStdIn(FieldScanner scanner) {
-		Util.modifyFieldValues(this, scanner);
-	}
-
-	@Override
 	public int getHdrIndex() {
 		return -4;
 	}
 
 	@Override
-	public PacketContent loadFromStream(FileInputStream in) throws IOException {
+	public PacketContent loadFromStream(InputStream in) throws IOException {
 		int[] header = Util.streamToArray(in, LENGTH);
 
 		version = header[0] >> 4;

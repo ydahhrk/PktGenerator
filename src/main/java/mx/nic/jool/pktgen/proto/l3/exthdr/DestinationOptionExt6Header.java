@@ -1,8 +1,8 @@
 package mx.nic.jool.pktgen.proto.l3.exthdr;
 
 import java.io.ByteArrayOutputStream;
-import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -31,8 +31,8 @@ public class DestinationOptionExt6Header extends Extension6Header {
 		 */
 		int octectsLength = 2;
 
-		nextHeader = scanner.readProtocol("Next Header", "auto");
-		hdrExtLength = scanner.readInteger("Header Extension Length", "auto");
+		nextHeader = scanner.readProtocol("Next Header");
+		hdrExtLength = scanner.readInteger("Header Extension Length");
 		tlvList = new ArrayList<>();
 
 		OptionDataTypes optionType;
@@ -196,7 +196,7 @@ public class DestinationOptionExt6Header extends Extension6Header {
 	}
 
 	@Override
-	public void modifyHdrFromStdIn(FieldScanner scanner) {
+	public void modifyFromStdIn(FieldScanner scanner) {
 		readFromStdIn(scanner);
 	}
 
@@ -206,7 +206,7 @@ public class DestinationOptionExt6Header extends Extension6Header {
 	}
 
 	@Override
-	public PacketContent loadFromStream(FileInputStream in) throws IOException {
+	public PacketContent loadFromStream(InputStream in) throws IOException {
 		throw new IllegalArgumentException("Sorry; DestOptExt headers are not supported in load-from-file mode yet.");
 	}
 

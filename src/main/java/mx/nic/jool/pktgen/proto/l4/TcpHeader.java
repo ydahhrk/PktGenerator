@@ -1,15 +1,14 @@
 package mx.nic.jool.pktgen.proto.l4;
 
 import java.io.ByteArrayOutputStream;
-import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.concurrent.ThreadLocalRandom;
 
 import mx.nic.jool.pktgen.FieldScanner;
 import mx.nic.jool.pktgen.PacketUtils;
-import mx.nic.jool.pktgen.annotations.Readable;
+import mx.nic.jool.pktgen.annotation.HeaderField;
 import mx.nic.jool.pktgen.auto.Util;
-import mx.nic.jool.pktgen.enums.Type;
 import mx.nic.jool.pktgen.pojo.Fragment;
 import mx.nic.jool.pktgen.pojo.Packet;
 import mx.nic.jool.pktgen.pojo.PacketContent;
@@ -19,41 +18,41 @@ public class TcpHeader extends Layer4Header {
 
 	public static final int LENGTH = 20;
 
-	@Readable(defaultValue = "2000", type = Type.INT)
+	@HeaderField
 	private int sourcePort = 2000;
-	@Readable(defaultValue = "4000", type = Type.INT)
+	@HeaderField
 	private int destinationPort = 4000;
-	@Readable(defaultValue = "0", type = Type.LONG)
+	@HeaderField
 	private long sequenceNumber = 0;
-	@Readable(defaultValue = "0", type = Type.LONG)
+	@HeaderField
 	private long acknowledgmentNumber = 0;
-	@Readable(defaultValue = "5", type = Type.INT)
+	@HeaderField
 	private int dataOffset = LENGTH >> 2;
-	@Readable(defaultValue = "0", type = Type.INT)
+	@HeaderField
 	private int reserved = 0;
-	@Readable(defaultValue = "false", type = Type.BOOLEAN)
+	@HeaderField
 	private boolean ns = false;
-	@Readable(defaultValue = "false", type = Type.BOOLEAN)
+	@HeaderField
 	private boolean cwr = false;
-	@Readable(defaultValue = "false", type = Type.BOOLEAN)
+	@HeaderField
 	private boolean ece = false;
-	@Readable(defaultValue = "false", type = Type.BOOLEAN)
+	@HeaderField
 	private boolean urg = false;
-	@Readable(defaultValue = "false", type = Type.BOOLEAN)
+	@HeaderField
 	private boolean ack = false;
-	@Readable(defaultValue = "false", type = Type.BOOLEAN)
+	@HeaderField
 	private boolean psh = false;
-	@Readable(defaultValue = "false", type = Type.BOOLEAN)
+	@HeaderField
 	private boolean rst = false;
-	@Readable(defaultValue = "true", type = Type.BOOLEAN)
+	@HeaderField
 	private boolean syn = true;
-	@Readable(defaultValue = "false", type = Type.BOOLEAN)
+	@HeaderField
 	private boolean fin = false;
-	@Readable(defaultValue = "100", type = Type.INT)
+	@HeaderField
 	private int windowSize = 100;
-	@Readable(defaultValue = "auto", type = Type.INTEGER)
+	@HeaderField
 	private Integer checksum = null;
-	@Readable(defaultValue = "0", type = Type.INT)
+	@HeaderField
 	private int urgentPointer = 0;
 
 	@Override
@@ -74,7 +73,7 @@ public class TcpHeader extends Layer4Header {
 		syn = scanner.readBoolean("SYN", false);
 		fin = scanner.readBoolean("FIN", false);
 		windowSize = scanner.readInt("Window Size", 100);
-		checksum = scanner.readInteger("Checksum", "auto");
+		checksum = scanner.readInteger("Checksum");
 		urgentPointer = scanner.readInt("Urgent Pointer", 0);
 	}
 
@@ -141,17 +140,12 @@ public class TcpHeader extends Layer4Header {
 	}
 
 	@Override
-	public void modifyHdrFromStdIn(FieldScanner scanner) {
-		Util.modifyFieldValues(this, scanner);
-	}
-
-	@Override
 	public int getHdrIndex() {
 		return 6;
 	}
 
 	@Override
-	public PacketContent loadFromStream(FileInputStream in) throws IOException {
+	public PacketContent loadFromStream(InputStream in) throws IOException {
 		int[] header = Util.streamToArray(in, LENGTH);
 
 		sourcePort = Util.joinBytes(header, 0, 1);

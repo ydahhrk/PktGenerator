@@ -17,9 +17,8 @@ public class PacketUtils {
 		if (integer == null)
 			integer = 0;
 
-		integer = integer & 0xFFFF;
-		out.write(integer >> 8);
-		out.write(integer & 0xFF);
+		out.write((integer >> 8) & 0xFF);
+		out.write((integer >> 0) & 0xFF);
 	}
 
 	public static void write32BitInt(OutputStream out, Long integer) throws IOException {
@@ -29,7 +28,7 @@ public class PacketUtils {
 		out.write((int) ((integer >> 24) & 0xFF));
 		out.write((int) ((integer >> 16) & 0xFF));
 		out.write((int) ((integer >> 8) & 0xFF));
-		out.write((int) (integer & 0xFF));
+		out.write((int) ((integer >> 0) & 0xFF));
 	}
 
 }

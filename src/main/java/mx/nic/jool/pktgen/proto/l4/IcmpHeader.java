@@ -1,15 +1,14 @@
 package mx.nic.jool.pktgen.proto.l4;
 
 import java.io.ByteArrayOutputStream;
-import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.concurrent.ThreadLocalRandom;
 
 import mx.nic.jool.pktgen.FieldScanner;
 import mx.nic.jool.pktgen.PacketUtils;
-import mx.nic.jool.pktgen.annotations.Readable;
+import mx.nic.jool.pktgen.annotation.HeaderField;
 import mx.nic.jool.pktgen.auto.Util;
-import mx.nic.jool.pktgen.enums.Type;
 import mx.nic.jool.pktgen.pojo.PacketContent;
 
 /**
@@ -19,22 +18,22 @@ public abstract class IcmpHeader extends Layer4Header {
 
 	public static final int LENGTH = 8;
 
-	@Readable(defaultValue = "8", type = Type.INT)
+	@HeaderField
 	protected int type;
-	@Readable(defaultValue = "0", type = Type.INT)
+	@HeaderField
 	protected int code;
-	@Readable(defaultValue = "auto", type = Type.INTEGER)
+	@HeaderField
 	protected Integer checksum = null;
-	@Readable(defaultValue = "0", type = Type.INT)
+	@HeaderField
 	protected int restOfHeader1 = 0;
-	@Readable(defaultValue = "0", type = Type.INT)
+	@HeaderField
 	protected int restOfHeader2 = 0;
 
 	@Override
 	public void readFromStdIn(FieldScanner scanner) {
 		type = scanner.readInt("Type", 3);
 		code = scanner.readInt("Code", 0);
-		checksum = scanner.readInteger("Checksum", "auto");
+		checksum = scanner.readInteger("Checksum");
 		restOfHeader1 = scanner.readInt("Unused [higher 16 bits]", 0);
 		restOfHeader2 = scanner.readInt("Unused [lower 16 bits]", 0);
 	}
@@ -70,7 +69,7 @@ public abstract class IcmpHeader extends Layer4Header {
 	}
 
 	@Override
-	public void modifyHdrFromStdIn(FieldScanner scanner) {
+	public void modifyFromStdIn(FieldScanner scanner) {
 		String fieldToModify;
 		do {
 			printValues();
@@ -90,7 +89,7 @@ public abstract class IcmpHeader extends Layer4Header {
 				code = scanner.readInt("Code", 0);
 				break;
 			case "checksum":
-				checksum = scanner.readInteger("Checksum", "auto");
+				checksum = scanner.readInteger("Checksum");
 				break;
 			case "restOfHeader1":
 				restOfHeader1 = scanner.readInt("Unused [higher 16 bits]", 0);
@@ -107,7 +106,7 @@ public abstract class IcmpHeader extends Layer4Header {
 	}
 
 	@Override
-	public PacketContent loadFromStream(FileInputStream in) throws IOException {
+	public PacketContent loadFromStream(InputStream in) throws IOException {
 		int[] header = Util.streamToArray(in, LENGTH);
 
 		type = header[0];

@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.util.Scanner;
 import java.util.Stack;
 
+import mx.nic.jool.pktgen.enums.Layer;
 import mx.nic.jool.pktgen.proto.PacketContentFactory;
 import mx.nic.jool.pktgen.proto.l3.Ipv4Header;
 import mx.nic.jool.pktgen.proto.l3.Ipv6Header;
@@ -82,7 +83,7 @@ public class Fragment extends SliceableList<PacketContent> {
 		boolean foundL4 = false;
 
 		for (PacketContent content : this) {
-			if (content.getLayer() > 3)
+			if (content.getLayer().ht(Layer.INTERNET))
 				foundL4 = true;
 			if (foundL4)
 				result += content.toWire().length;
