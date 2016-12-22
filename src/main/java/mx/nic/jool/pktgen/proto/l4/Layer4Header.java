@@ -9,11 +9,9 @@ import mx.nic.jool.pktgen.pojo.Packet;
 import mx.nic.jool.pktgen.pojo.PacketContent;
 import mx.nic.jool.pktgen.proto.l3.Layer3Header;
 
-
 public abstract class Layer4Header implements PacketContent {
 
-	private void includePseudoHeader(Packet packet, Fragment fragment,
-			CsumBuilder csum) throws IOException {
+	private void includePseudoHeader(Packet packet, Fragment fragment, CsumBuilder csum) throws IOException {
 		Layer3Header lastL3Header = null;
 
 		for (PacketContent content : fragment) {
@@ -24,9 +22,8 @@ public abstract class Layer4Header implements PacketContent {
 		}
 
 		if (lastL3Header == null) {
-			System.out.println("Warning: I'm a transport "
-					+ "header and I don't have a network header. "
-					+ "My checksum won't include a pseudoheader.");
+			System.out.println("Warning: I'm a transport header and I don't have a network header. "
+					+ "My checksum will not include a pseudoheader.");
 			return;
 		}
 
@@ -34,7 +31,7 @@ public abstract class Layer4Header implements PacketContent {
 		for (PacketContent content : packet.getL4ContentAfter(this)) {
 			payloadLength += content.toWire().length;
 		}
-		
+
 		Stack<PacketContent> contentBefore = fragment.getContentBefore(this);
 		while (!contentBefore.empty()) {
 			PacketContent content = contentBefore.pop();
@@ -48,8 +45,7 @@ public abstract class Layer4Header implements PacketContent {
 		}
 	}
 
-	protected int buildChecksum(Packet packet, Fragment fragment,
-			boolean includePseudoheader) throws IOException {
+	protected int buildChecksum(Packet packet, Fragment fragment, boolean includePseudoheader) throws IOException {
 		CsumBuilder csum = new CsumBuilder();
 
 		try {
@@ -71,7 +67,7 @@ public abstract class Layer4Header implements PacketContent {
 			csum.close();
 		}
 	}
-	
+
 	@Override
 	public int getLayer() {
 		return 4;

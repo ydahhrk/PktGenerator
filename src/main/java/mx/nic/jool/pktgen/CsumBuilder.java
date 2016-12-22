@@ -7,21 +7,21 @@ public class CsumBuilder extends OutputStream {
 
 	public static ChecksumStatus checksumStatus = ChecksumStatus.CORRECT;
 	private long accumulated = 0;
-	
+
 	private void sum(int byte1, int byte2) {
-		accumulated +=  byte1 << 8 | byte2;
-		
+		accumulated += byte1 << 8 | byte2;
+
 		long carry = accumulated >> 16;
 		if (carry != 0)
 			accumulated = (accumulated & 0xFFFF) + carry;
 	}
-	
+
 	@Override
 	public void write(int arg0) throws IOException {
 		sum((arg0 >> 24) & 0xFF, (arg0 >> 16) & 0xFF);
 		sum((arg0 >> 8) & 0xFF, (arg0 >> 0) & 0xFF);
 	}
-	
+
 	@Override
 	public void write(byte[] bytes) throws IOException {
 		/* TODO does not support headers with uneven length. */
@@ -35,13 +35,13 @@ public class CsumBuilder extends OutputStream {
 			sum(byte1, byte2);
 		}
 	}
-	
+
 	public int finish(ChecksumStatus status) {
 		int result = 0;
-		
+
 		if (status == null)
 			status = checksumStatus;
-		
+
 		switch (status) {
 		case CORRECT:
 			result = (int) (accumulated & 0xFFFF);
@@ -54,7 +54,7 @@ public class CsumBuilder extends OutputStream {
 			result = 0xFFFF;
 			break;
 		}
-		
+
 		return ~result;
 	}
 

@@ -45,11 +45,11 @@ public class StreamIdentifier extends Ipv4OptionHeader {
 	@Override
 	public PacketContent createClone() {
 		StreamIdentifier result = new StreamIdentifier();
-		
+
 		result.optionType = optionType;
 		result.length = length;
 		result.streamID = streamID;
-		
+
 		return result;
 	}
 
@@ -59,8 +59,7 @@ public class StreamIdentifier extends Ipv4OptionHeader {
 	}
 
 	@Override
-	public void postProcess(Packet packet, Fragment fragment)
-			throws IOException {
+	public void postProcess(Packet packet, Fragment fragment) throws IOException {
 		// no code
 
 	}

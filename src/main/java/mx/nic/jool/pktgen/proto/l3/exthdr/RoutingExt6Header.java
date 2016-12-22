@@ -46,10 +46,9 @@ public class RoutingExt6Header extends Extension6Header {
 		} while (newIn6Addr);
 
 	}
-	
+
 	@Override
-	public void postProcess(Packet packet, Fragment fragment)
-			throws IOException {
+	public void postProcess(Packet packet, Fragment fragment) throws IOException {
 		if (nextHeader == null) {
 			nextHeader = fragment.getNextHdr(packet, this);
 		}
@@ -64,21 +63,18 @@ public class RoutingExt6Header extends Extension6Header {
 	@Override
 	public PacketContent createClone() {
 		RoutingExt6Header result = new RoutingExt6Header();
-		
+
 		result.nextHeader = nextHeader;
 		result.hdrExtLength = hdrExtLength;
 		result.routingType = routingType;
 		result.segmentsLeft = segmentsLeft;
 		result.reserved = reserved;
-		/*
-		 * TODO deep copy?
-		 * others do this as well.
-		 */
+		/* TODO deep copy? others do this as well. */
 		result.ipv6List = ipv6List;
-		
+
 		return result;
 	}
-	
+
 	@Override
 	public byte[] toWire() throws IOException {
 		ByteArrayOutputStream out = new ByteArrayOutputStream();

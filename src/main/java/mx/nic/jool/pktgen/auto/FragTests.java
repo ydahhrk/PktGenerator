@@ -40,13 +40,12 @@ public class FragTests {
 	/**
 	 * Tests Jool truncates ICMP errors if they're too big.
 	 * 
-	 * From RFC 1812:
-	 * the ICMP datagram SHOULD contain as much of the original datagram as
-	 * possible without the length of the ICMP datagram exceeding 576 bytes.
+	 * From RFC 1812: the ICMP datagram SHOULD contain as much of the original
+	 * datagram as possible without the length of the ICMP datagram exceeding
+	 * 576 bytes.
 	 * 
-	 * From RFC 4443:
-	 * As much of invoking packet as possible without the ICMPv6 packet
-	 * exceeding the minimum IPv6 MTU [ie. 1280 bytes]
+	 * From RFC 4443: As much of invoking packet as possible without the ICMPv6
+	 * packet exceeding the minimum IPv6 MTU [ie. 1280 bytes]
 	 */
 	private void icmpErrorTest(String prefix) throws IOException {
 		Util.writePacket(prefix + "/sender/frag-icmp4", //
@@ -90,5 +89,5 @@ public class FragTests {
 				hdrUdp, //
 				new Payload(520)); // 20 + 8 + 20 + 8 + 520 = 576
 	}
-	
+
 }

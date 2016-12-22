@@ -45,8 +45,7 @@ public class RecordRoute extends Ipv4OptionHeader {
 		if (pointer % 4 != 0) {
 			System.err.println("The pointer wasn't in multiples of 4, ");
 			boolean defaultValue = false;
-			defaultValue = scanner.readBoolean("Default value of pointer",
-					true);
+			defaultValue = scanner.readBoolean("Default value of pointer", true);
 			if (defaultValue)
 				pointer = 4;
 		}
@@ -103,8 +102,7 @@ public class RecordRoute extends Ipv4OptionHeader {
 	}
 
 	@Override
-	public void postProcess(Packet packet, Fragment fragment)
-			throws IOException {
+	public void postProcess(Packet packet, Fragment fragment) throws IOException {
 		if (optionLength == null) {
 			optionLength = 3; /* The first 3 octects. */
 			optionLength += routeData.size() * 4;

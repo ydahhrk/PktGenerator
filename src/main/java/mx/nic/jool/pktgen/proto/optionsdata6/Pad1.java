@@ -8,19 +8,17 @@ import mx.nic.jool.pktgen.FieldScanner;
 import mx.nic.jool.pktgen.PacketUtils;
 import mx.nic.jool.pktgen.pojo.PacketContent;
 
-
 public class Pad1 implements TypeLengthValue {
 
 	private int optionType = 0x00;
-	
+
 	@Override
 	public void readFromStdIn(FieldScanner scanner) {
-		// no code 
+		// no code
 	}
 
 	@Override
-	public void postProcess(PacketContent previousHeader,
-			Stack<PacketContent> payload) throws IOException {
+	public void postProcess(PacketContent previousHeader, Stack<PacketContent> payload) throws IOException {
 		// no code
 	}
 

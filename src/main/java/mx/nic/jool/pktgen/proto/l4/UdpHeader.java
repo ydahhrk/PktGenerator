@@ -19,13 +19,13 @@ public class UdpHeader extends Layer4Header {
 
 	public static final int LENGTH = 8;
 
-	@Readable(defaultValue="2000", type=Type.INT)
+	@Readable(defaultValue = "2000", type = Type.INT)
 	private int sourcePort = 2000;
-	@Readable(defaultValue="2000", type=Type.INT)
+	@Readable(defaultValue = "2000", type = Type.INT)
 	private int destinationPort = 4000;
-	@Readable(defaultValue="auto", type=Type.INTEGER)
+	@Readable(defaultValue = "auto", type = Type.INTEGER)
 	private Integer length = null;
-	@Readable(defaultValue="auto", type=Type.INTEGER)
+	@Readable(defaultValue = "auto", type = Type.INTEGER)
 	private Integer checksum = null;
 
 	@Override
@@ -37,8 +37,7 @@ public class UdpHeader extends Layer4Header {
 	}
 
 	@Override
-	public void postProcess(Packet packet, Fragment fragment)
-			throws IOException {
+	public void postProcess(Packet packet, Fragment fragment) throws IOException {
 		if (length == null) {
 			length = LENGTH;
 			for (PacketContent content : packet.getL4ContentAfter(this)) {
@@ -62,16 +61,16 @@ public class UdpHeader extends Layer4Header {
 
 		return out.toByteArray();
 	}
-	
+
 	@Override
 	public PacketContent createClone() {
 		UdpHeader result = new UdpHeader();
-		
+
 		result.sourcePort = sourcePort;
 		result.destinationPort = destinationPort;
 		result.length = length;
 		result.checksum = checksum;
-		
+
 		return result;
 	}
 
@@ -85,19 +84,19 @@ public class UdpHeader extends Layer4Header {
 		sourcePort = destinationPort;
 		destinationPort = tmp;
 	}
-	
+
 	public Integer getLength() {
 		return length;
 	}
-	
+
 	public void setLength(Integer length) {
 		this.length = length;
 	}
-	
+
 	public Integer getChecksum() {
 		return checksum;
 	}
-	
+
 	public void setChecksum(Integer checksum) {
 		this.checksum = checksum;
 	}
@@ -105,14 +104,14 @@ public class UdpHeader extends Layer4Header {
 	@Override
 	public void modifyHdrFromStdIn(FieldScanner scanner) {
 		Util.modifyFieldValues(this, scanner);
-//		modifyFieldValues(null, scanner);
+		// modifyFieldValues(null, scanner);
 	}
 
 	@Override
 	public int getHdrIndex() {
 		return 17;
 	}
-	
+
 	@Override
 	public PacketContent loadFromStream(FileInputStream in) throws IOException {
 		int[] header = Util.streamToArray(in, LENGTH);
@@ -124,11 +123,11 @@ public class UdpHeader extends Layer4Header {
 
 		return new Payload();
 	}
-	
+
 	@Override
 	public void randomize() {
 		ThreadLocalRandom random = ThreadLocalRandom.current();
-		
+
 		sourcePort = random.nextInt(0x10000);
 		destinationPort = random.nextInt(0x10000);
 		length = null;

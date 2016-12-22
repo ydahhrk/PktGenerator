@@ -35,12 +35,10 @@ public class HopByHopExt6Header extends Extension6Header {
 		OptionDataTypes optionType;
 		do {
 			// TODO english
-			System.out.println("Tamaño actual de la cabecera: " + octectsLength
-					+ " bytes."
-					+ "\nSe recomienda un tamaño de 8, 16 o 32 bytes.");
+			System.out.println("Tamaño actual de la cabecera: " + octectsLength + " bytes.");
+			System.out.println("Se recomienda un tamaño de 8, 16 o 32 bytes.");
 
-			Integer nextOptionInt = scanner.readOptionDataType(
-					"Next Option Data Type", "exit");
+			Integer nextOptionInt = scanner.readOptionDataType("Next Option Data Type", "exit");
 
 			if (nextOptionInt == null)
 				break;
@@ -76,18 +74,16 @@ public class HopByHopExt6Header extends Extension6Header {
 
 		} while (true);
 
-		boolean validLength = (octectsLength == 8) || (octectsLength == 16)
-				|| (octectsLength == 32);
+		boolean validLength = (octectsLength == 8) || (octectsLength == 16) || (octectsLength == 32);
 
 		if (!validLength) {
-			System.err.println("The length of this header is invalid."
-					+ "\nDo you want to auto-fix it?");
+			System.err.println("The length of this header is invalid.");
+			System.err.println("Do you want to auto-fix it?");
 			autoPadding = scanner.readBoolean("autoPadding", false);
 			if (autoPadding) {
 				autoPadding(octectsLength);
 			} else {
-				System.err
-						.println("Don't know what could happen if you send this dpkt.");
+				System.err.println("Don't know what could happen if you send this dpkt.");
 			}
 		}
 
@@ -127,7 +123,8 @@ public class HopByHopExt6Header extends Extension6Header {
 		// addAutoPadN(pad);
 		// }
 		// } else {
-		// System.err.println("Warning: The number of bytes exceed the RFC 2460 recommendations. \n"
+		// System.err.println("Warning: The number of bytes exceed the RFC 2460
+		// recommendations. \n"
 		// + "I won't add padding.");
 		// }
 	}
@@ -149,8 +146,7 @@ public class HopByHopExt6Header extends Extension6Header {
 	}
 
 	@Override
-	public void postProcess(Packet packet, Fragment fragment)
-			throws IOException {
+	public void postProcess(Packet packet, Fragment fragment) throws IOException {
 		if (nextHeader == null) {
 			nextHeader = fragment.getNextHdr(packet, this);
 		}
@@ -164,8 +160,7 @@ public class HopByHopExt6Header extends Extension6Header {
 			hdrExtLength = (length / 8) > 0 ? (length / 8) - 1 : 0;
 
 			if (length % 8 != 0) {
-				System.err.println("Warning: I'm a \"Hop by Hop Extension 6 "
-						+ "header\" and my length isn't a multiple of 8. ");
+				System.err.println("Warning: I'm a \"Hop by Hop\" header and my length isn't a multiple of 8. ");
 			}
 			/*
 			 * TODO: verificar que el tamaño de esta cabecera sea de 32 octetos,
@@ -176,9 +171,8 @@ public class HopByHopExt6Header extends Extension6Header {
 
 		PacketContent previous = fragment.getPrevious(this);
 		if ((previous == null) || !(previous instanceof Ipv6Header)) {
-			System.out.println("Warning: I'm a \"Hop by Hop Extension 6 "
-					+ "header\" and my previous content isn't an IPv6 header. "
-					+ "(RFC 2460 # 4.1)");
+			System.err.println("Warning: I'm a \"Hop by Hop\" header and my previous content isn't an IPv6 header.");
+			System.err.println("(RFC 2460 # 4.1)");
 		}
 
 	}
@@ -234,7 +228,7 @@ public class HopByHopExt6Header extends Extension6Header {
 		// return PacketContentFactory.forNexthdr(nextHeader);
 		throw new IllegalArgumentException("Sorry; HopByHop headers are not supported in load-from-file mode yet.");
 	}
-	
+
 	@Override
 	public void randomize() {
 		throw new IllegalArgumentException("Sorry; HopByHop headers are not supported in random mode yet.");

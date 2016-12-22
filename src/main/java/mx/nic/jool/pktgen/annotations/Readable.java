@@ -7,9 +7,10 @@ import java.lang.annotation.Target;
 
 import mx.nic.jool.pktgen.enums.Type;
 
-@Target(value = {ElementType.FIELD})
+@Target(value = { ElementType.FIELD })
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Readable {
 	Type type();
+
 	String defaultValue();
 }

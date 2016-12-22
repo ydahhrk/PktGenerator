@@ -42,36 +42,36 @@ public class Ipv4Header extends Layer3Header {
 			throw new IllegalArgumentException("There's something wrong with address.properties.");
 		}
 	}
-	
+
 	public static final int LENGTH = 20;
 
-	@Readable(defaultValue="4", type=Type.INT)
+	@Readable(defaultValue = "4", type = Type.INT)
 	private int version = 4;
-	@Readable(defaultValue="auto", type=Type.INTEGER)
+	@Readable(defaultValue = "auto", type = Type.INTEGER)
 	private Integer ihl = null;
-	@Readable(defaultValue="0", type=Type.INT)
+	@Readable(defaultValue = "0", type = Type.INT)
 	private int tos = 0;
-	@Readable(defaultValue="auto", type=Type.INTEGER)
+	@Readable(defaultValue = "auto", type = Type.INTEGER)
 	private Integer totalLength = null;
-	@Readable(defaultValue="0", type=Type.INT)
+	@Readable(defaultValue = "0", type = Type.INT)
 	private int identification = 0;
-	@Readable(defaultValue="false", type=Type.BOOLEAN)
+	@Readable(defaultValue = "false", type = Type.BOOLEAN)
 	private boolean reserved = false;
-	@Readable(defaultValue="true", type=Type.BOOLEAN)
+	@Readable(defaultValue = "true", type = Type.BOOLEAN)
 	private boolean df = true;
-	@Readable(defaultValue="null", type=Type.BOOLEAN)
+	@Readable(defaultValue = "null", type = Type.BOOLEAN)
 	private Boolean mf = null;
-	@Readable(defaultValue="auto", type=Type.INTEGER)
+	@Readable(defaultValue = "auto", type = Type.INTEGER)
 	private Integer fragmentOffset = null;
-	@Readable(defaultValue="64", type=Type.INT)
+	@Readable(defaultValue = "64", type = Type.INT)
 	private int ttl = 64;
-	@Readable(defaultValue="auto", type=Type.INTEGER)
+	@Readable(defaultValue = "auto", type = Type.INTEGER)
 	private Integer protocol = null;
-	@Readable(defaultValue="auto", type=Type.INTEGER)
+	@Readable(defaultValue = "auto", type = Type.INTEGER)
 	private Integer headerChecksum = null;
-	@Readable(defaultValue="auto", type=Type.INET4ADDRESS)
+	@Readable(defaultValue = "auto", type = Type.INET4ADDRESS)
 	private Inet4Address source;
-	@Readable(defaultValue="auto", type=Type.INET4ADDRESS)
+	@Readable(defaultValue = "auto", type = Type.INET4ADDRESS)
 	private Inet4Address destination;
 
 	public Ipv4Header() {
@@ -108,8 +108,7 @@ public class Ipv4Header extends Layer3Header {
 	}
 
 	@Override
-	public void postProcess(Packet packet, Fragment fragment)
-			throws IOException {
+	public void postProcess(Packet packet, Fragment fragment) throws IOException {
 		if (ihl == null) {
 			int mod;
 			int headerLength = LENGTH;
@@ -119,7 +118,7 @@ public class Ipv4Header extends Layer3Header {
 					break;
 				headerLength += content.toWire().length;
 			}
-			
+
 			mod = headerLength % 4;
 			// TODO add padding?
 			ihl = (mod == 0) ? (headerLength >> 2) : ((headerLength >> 2) + 1);
@@ -167,9 +166,11 @@ public class Ipv4Header extends Layer3Header {
 
 		int fragOffset = (fragmentOffset != null) ? fragmentOffset : 0;
 		boolean mFrags = (mf != null) ? mf : false;
-		PacketUtils.write16BitInt(out, ((reserved ? 1 : 0) << 15)
-				| ((df ? 1 : 0) << 14) | ((mFrags ? 1 : 0) << 13)
-				| (fragOffset >> 3));
+		PacketUtils.write16BitInt(out,
+				((reserved ? 1 : 0) << 15) //
+						| ((df ? 1 : 0) << 14) //
+						| ((mFrags ? 1 : 0) << 13) //
+						| (fragOffset >> 3));
 
 		PacketUtils.write8BitInt(out, ttl);
 		PacketUtils.write8BitInt(out, protocol);
@@ -179,11 +180,11 @@ public class Ipv4Header extends Layer3Header {
 
 		return out.toByteArray();
 	}
-	
+
 	@Override
 	public PacketContent createClone() {
 		Ipv4Header result = new Ipv4Header();
-		
+
 		result.version = version;
 		result.ihl = ihl;
 		result.tos = tos;
@@ -198,7 +199,7 @@ public class Ipv4Header extends Layer3Header {
 		result.headerChecksum = headerChecksum;
 		result.source = source;
 		result.destination = destination;
-		
+
 		return result;
 	}
 
@@ -211,7 +212,7 @@ public class Ipv4Header extends Layer3Header {
 		PacketUtils.write8BitInt(out, 0);
 		PacketUtils.write8BitInt(out, nextHdr);
 		PacketUtils.write16BitInt(out, payloadLength);
-		
+
 		return out.toByteArray();
 	}
 
@@ -223,7 +224,7 @@ public class Ipv4Header extends Layer3Header {
 	public void setTotalLength(Integer totalLength) {
 		this.totalLength = totalLength;
 	}
-	
+
 	public void setIdentification(int identification) {
 		this.identification = identification;
 	}
@@ -255,7 +256,7 @@ public class Ipv4Header extends Layer3Header {
 	@Override
 	public PacketContent loadFromStream(FileInputStream in) throws IOException {
 		int[] header = Util.streamToArray(in, LENGTH);
-		
+
 		version = header[0] >> 4;
 		ihl = header[0] & 0xF;
 		if (ihl != 5)

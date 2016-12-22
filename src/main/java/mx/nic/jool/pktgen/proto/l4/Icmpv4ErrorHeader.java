@@ -26,7 +26,7 @@ public class Icmpv4ErrorHeader extends Icmpv4Header {
 	protected PacketContent getNextContent() {
 		return new Ipv4Header();
 	}
-	
+
 	@Override
 	public void randomize() {
 		super.randomize();

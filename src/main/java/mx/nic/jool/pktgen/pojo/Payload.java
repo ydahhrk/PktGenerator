@@ -15,18 +15,18 @@ public class Payload implements PacketContent {
 	public Payload() {
 		this(56);
 	}
-	
+
 	public Payload(int size) {
-		this(size, 0);		
+		this(size, 0);
 	}
-	
+
 	public Payload(int size, int offset) {
 		bytes = new byte[size];
 		for (int x = 0; x < size; x++) {
 			bytes[x] = (byte) (x + offset);
 		}
 	}
-	
+
 	@Override
 	public void readFromStdIn(FieldScanner scanner) {
 		boolean readFromFile = false;
@@ -66,8 +66,7 @@ public class Payload implements PacketContent {
 			int payloadNumber = 0;
 			bytes = new byte[length];
 			boolean customPayload;
-			customPayload = scanner.readBoolean(
-					"Automatic Insert [0,1,2,3..255,0,1,2...]", true);
+			customPayload = scanner.readBoolean("Automatic Insert [0,1,2,3..255,0,1,2...]", true);
 			if (customPayload) {
 				for (int i = 0; i < length; i++) {
 					bytes[i] = (byte) payloadNumber;
@@ -77,8 +76,7 @@ public class Payload implements PacketContent {
 				}
 			} else {
 				for (int x = 0; x < length; x++) {
-					bytes[x] = (byte) scanner.readInt("byte " + x,
-							payloadNumber);
+					bytes[x] = (byte) scanner.readInt("byte " + x, payloadNumber);
 					payloadNumber++;
 					if (payloadNumber > 255)
 						payloadNumber = 0;
@@ -88,9 +86,7 @@ public class Payload implements PacketContent {
 
 		if (bytes.length % 2 == 1) {
 			// See pkt.CsumBuilder#write(byte[]).
-			System.out
-					.println("Warning: If you append stuff after this payload, "
-							+ "your checksums will go bananas.");
+			System.out.println("Warning: If you append stuff after this payload, your checksums will go bananas.");
 		}
 	}
 
@@ -117,8 +113,7 @@ public class Payload implements PacketContent {
 	}
 
 	@Override
-	public void postProcess(Packet packet, Fragment fragment)
-			throws IOException {
+	public void postProcess(Packet packet, Fragment fragment) throws IOException {
 		// No code
 	}
 

@@ -8,13 +8,12 @@ import mx.nic.jool.pktgen.pojo.Packet;
 public abstract class Icmpv4Header extends IcmpHeader {
 
 	@Override
-	public void postProcess(Packet packet, Fragment fragment)
-			throws IOException {
+	public void postProcess(Packet packet, Fragment fragment) throws IOException {
 		if (checksum == null) {
 			checksum = buildChecksum(packet, fragment, false);
 		}
 	}
-	
+
 	@Override
 	public int getHdrIndex() {
 		return 1;

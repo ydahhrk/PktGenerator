@@ -26,7 +26,7 @@ public class NoOperation extends Ipv4OptionHeader {
 
 		return out.toByteArray();
 	}
-	
+
 	@Override
 	public PacketContent createClone() {
 		return new NoOperation();
@@ -38,14 +38,13 @@ public class NoOperation extends Ipv4OptionHeader {
 	}
 
 	@Override
-	public void postProcess(Packet packet, Fragment fragment)
-			throws IOException {
+	public void postProcess(Packet packet, Fragment fragment) throws IOException {
 		// No code
 	}
 
 	@Override
 	public void modifyHdrFromStdIn(FieldScanner scanner) {
-		//No code, option Type = 1;
+		// No code, option Type = 1;
 	}
 
 	@Override

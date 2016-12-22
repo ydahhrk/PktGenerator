@@ -12,7 +12,6 @@ import mx.nic.jool.pktgen.auto.Util;
 import mx.nic.jool.pktgen.enums.Type;
 import mx.nic.jool.pktgen.pojo.PacketContent;
 
-
 /**
  * Yes, layer 4. It is layer 4 for most intents and purposes. Shut up.
  */
@@ -30,7 +29,7 @@ public abstract class IcmpHeader extends Layer4Header {
 	protected int restOfHeader1 = 0;
 	@Readable(defaultValue = "0", type = Type.INT)
 	protected int restOfHeader2 = 0;
-	
+
 	@Override
 	public void readFromStdIn(FieldScanner scanner) {
 		type = scanner.readInt("Type", 3);
@@ -52,7 +51,7 @@ public abstract class IcmpHeader extends Layer4Header {
 
 		return out.toByteArray();
 	}
-	
+
 	protected IcmpHeader createCloneIcmp(IcmpHeader result) {
 		result.type = type;
 		result.code = code;
@@ -61,7 +60,7 @@ public abstract class IcmpHeader extends Layer4Header {
 		result.restOfHeader2 = restOfHeader2;
 		return result;
 	}
-	
+
 	private void printValues() {
 		System.out.println("type: " + type);
 		System.out.println("code: " + code);
@@ -69,21 +68,20 @@ public abstract class IcmpHeader extends Layer4Header {
 		System.out.println("restOfHeader1: " + restOfHeader1);
 		System.out.println("restOfHeader2: " + restOfHeader2);
 	}
-	
+
 	@Override
 	public void modifyHdrFromStdIn(FieldScanner scanner) {
 		String fieldToModify;
 		do {
 			printValues();
-			
+
 			fieldToModify = scanner.readLine("Field to edit (case sensitive)", "exit");
 			if (fieldToModify.equalsIgnoreCase("exit"))
 				break;
-			
+
 			if (fieldToModify == null || fieldToModify.isEmpty())
 				continue;
-			
-			
+
 			switch (fieldToModify) {
 			case "type":
 				type = scanner.readInt("Type", 8);
@@ -104,7 +102,7 @@ public abstract class IcmpHeader extends Layer4Header {
 				System.out.println(fieldToModify + " is not the name of a header field.");
 				break;
 			}
-			
+
 		} while (true);
 	}
 
@@ -122,14 +120,14 @@ public abstract class IcmpHeader extends Layer4Header {
 	}
 
 	protected abstract PacketContent getNextContent();
-	
+
 	@Override
 	public void randomize() {
 		ThreadLocalRandom random = ThreadLocalRandom.current();
-		
+
 		type = random.nextInt(0x100);
 		code = random.nextInt(0x100);
-//		checksum = null;
+		// checksum = null;
 		restOfHeader1 = random.nextInt(0x10000);
 		restOfHeader2 = random.nextInt(0x10000);
 	}

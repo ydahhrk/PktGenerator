@@ -30,7 +30,7 @@ public class Icmpv4InfoHeader extends Icmpv4Header {
 	@Override
 	public void randomize() {
 		super.randomize();
-		
+
 		ThreadLocalRandom random = ThreadLocalRandom.current();
 		this.type = random.nextBoolean() ? 0 : 8;
 	}

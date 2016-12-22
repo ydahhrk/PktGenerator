@@ -21,22 +21,16 @@ public class TcpHeader extends Layer4Header {
 
 	@Readable(defaultValue = "2000", type = Type.INT)
 	private int sourcePort = 2000;
-	
 	@Readable(defaultValue = "4000", type = Type.INT)
 	private int destinationPort = 4000;
-	
 	@Readable(defaultValue = "0", type = Type.LONG)
 	private long sequenceNumber = 0;
-	
 	@Readable(defaultValue = "0", type = Type.LONG)
 	private long acknowledgmentNumber = 0;
-	
 	@Readable(defaultValue = "5", type = Type.INT)
 	private int dataOffset = LENGTH >> 2;
-	
 	@Readable(defaultValue = "0", type = Type.INT)
 	private int reserved = 0;
-	
 	@Readable(defaultValue = "false", type = Type.BOOLEAN)
 	private boolean ns = false;
 	@Readable(defaultValue = "false", type = Type.BOOLEAN)
@@ -55,13 +49,10 @@ public class TcpHeader extends Layer4Header {
 	private boolean syn = true;
 	@Readable(defaultValue = "false", type = Type.BOOLEAN)
 	private boolean fin = false;
-	
 	@Readable(defaultValue = "100", type = Type.INT)
 	private int windowSize = 100;
-	
 	@Readable(defaultValue = "auto", type = Type.INTEGER)
 	private Integer checksum = null;
-	
 	@Readable(defaultValue = "0", type = Type.INT)
 	private int urgentPointer = 0;
 
@@ -88,8 +79,7 @@ public class TcpHeader extends Layer4Header {
 	}
 
 	@Override
-	public void postProcess(Packet packet, Fragment fragment)
-			throws IOException {
+	public void postProcess(Packet packet, Fragment fragment) throws IOException {
 		if (checksum == null) {
 			checksum = buildChecksum(packet, fragment, true);
 		}
@@ -103,22 +93,26 @@ public class TcpHeader extends Layer4Header {
 		PacketUtils.write16BitInt(out, destinationPort);
 		PacketUtils.write32BitInt(out, sequenceNumber);
 		PacketUtils.write32BitInt(out, acknowledgmentNumber);
-		PacketUtils.write8BitInt(out, (dataOffset << 4) | (reserved << 1)
-				| (ns ? 1 : 0));
-		PacketUtils.write8BitInt(out, (cwr ? (1 << 7) : 0)
-				| (ece ? (1 << 6) : 0) | (urg ? (1 << 5) : 0)
-				| (ack ? (1 << 4) : 0) | (psh ? (1 << 3) : 0)
-				| (rst ? (1 << 2) : 0) | (syn ? (1 << 1) : 0) | (fin ? 1 : 0));
+		PacketUtils.write8BitInt(out, (dataOffset << 4) | (reserved << 1) | (ns ? 1 : 0));
+		PacketUtils.write8BitInt(out,
+				(cwr ? (1 << 7) : 0) //
+						| (ece ? (1 << 6) : 0) //
+						| (urg ? (1 << 5) : 0) //
+						| (ack ? (1 << 4) : 0) //
+						| (psh ? (1 << 3) : 0) //
+						| (rst ? (1 << 2) : 0) //
+						| (syn ? (1 << 1) : 0) //
+						| (fin ? 1 : 0));
 		PacketUtils.write16BitInt(out, windowSize);
 		PacketUtils.write16BitInt(out, checksum);
 		PacketUtils.write16BitInt(out, urgentPointer);
 		return out.toByteArray();
 	}
-	
+
 	@Override
 	public PacketContent createClone() {
 		TcpHeader result = new TcpHeader();
-		
+
 		result.sourcePort = sourcePort;
 		result.destinationPort = destinationPort;
 		result.sequenceNumber = sequenceNumber;
@@ -137,7 +131,7 @@ public class TcpHeader extends Layer4Header {
 		result.windowSize = windowSize;
 		result.checksum = checksum;
 		result.urgentPointer = urgentPointer;
-		
+
 		return result;
 	}
 
@@ -185,12 +179,12 @@ public class TcpHeader extends Layer4Header {
 	@Override
 	public void randomize() {
 		ThreadLocalRandom random = ThreadLocalRandom.current();
-		
+
 		sourcePort = random.nextInt(0x10000);
 		destinationPort = random.nextInt(0x10000);
 		sequenceNumber = random.nextLong(0x100000000L);
 		acknowledgmentNumber = random.nextLong(0x100000000L);
-//		dataOffset = LENGTH >> 2; // TODO
+		// dataOffset = LENGTH >> 2; // TODO
 		reserved = (random.nextInt(10) > 0) ? random.nextInt(8) : 0;
 		ns = random.nextBoolean();
 		cwr = random.nextBoolean();

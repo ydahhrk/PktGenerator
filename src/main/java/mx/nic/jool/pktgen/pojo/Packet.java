@@ -9,7 +9,7 @@ public class Packet extends SliceableList<Fragment> {
 
 	/** Warning shutupper; I don't care about this. */
 	private static final long serialVersionUID = 1L;
-	
+
 	public Packet() {
 		super();
 	}
@@ -17,7 +17,7 @@ public class Packet extends SliceableList<Fragment> {
 	public Packet(PacketContent... content) {
 		super(new Fragment(content));
 	}
-	
+
 	public Packet(Fragment... frags) {
 		super(frags);
 	}
@@ -32,7 +32,7 @@ public class Packet extends SliceableList<Fragment> {
 			for (PacketContent currentContent : fragment) {
 				if (currentContent.getLayer() > 3)
 					foundLayer4 = true;
-				
+
 				if (foundContent && foundLayer4)
 					result.add(currentContent);
 
@@ -53,11 +53,11 @@ public class Packet extends SliceableList<Fragment> {
 			}
 		}
 	}
-	
+
 	public void add(PacketContent... contents) {
 		this.add(new Fragment(contents));
 	}
-	
+
 	public void postProcess() throws IOException {
 		ListIterator<Fragment> fragmentIterator = listIterator(size());
 		while (fragmentIterator.hasPrevious()) {

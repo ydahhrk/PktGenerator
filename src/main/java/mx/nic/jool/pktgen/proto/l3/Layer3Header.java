@@ -11,7 +11,6 @@ public abstract class Layer3Header implements PacketContent {
 		return 3;
 	}
 
-	public abstract byte[] getPseudoHeader(int payloadLength, int nexthdr)
-			throws IOException;
+	public abstract byte[] getPseudoHeader(int payloadLength, int nexthdr) throws IOException;
 
 }

@@ -39,7 +39,7 @@ public class Ipv6Header extends Layer3Header {
 			throw new IllegalArgumentException("There's something wrong with address.properties.");
 		}
 	}
-	
+
 	public static final int LENGTH = 40;
 
 	@Readable(defaultValue = "6", type = Type.INT)
@@ -48,14 +48,12 @@ public class Ipv6Header extends Layer3Header {
 	private int trafficClass = 0;
 	@Readable(defaultValue = "0", type = Type.INT)
 	private int flowLabel = 0;
-
 	@Readable(defaultValue = "auto", type = Type.INTEGER)
 	private Integer payloadLength = null;
 	@Readable(defaultValue = "auto", type = Type.INTEGER)
 	private Integer nextHeader = null;
 	@Readable(defaultValue = "64", type = Type.INT)
 	private int hopLimit = 64;
-
 	@Readable(defaultValue = "", type = Type.INET6ADDRESS)
 	private Inet6Address source;
 	@Readable(defaultValue = "", type = Type.INET6ADDRESS)
@@ -79,8 +77,7 @@ public class Ipv6Header extends Layer3Header {
 	}
 
 	@Override
-	public void postProcess(Packet packet, Fragment fragment)
-			throws IOException {
+	public void postProcess(Packet packet, Fragment fragment) throws IOException {
 		if (payloadLength == null) {
 			payloadLength = 0;
 			for (PacketContent content : fragment.sliceExclusive(this)) {
@@ -98,8 +95,7 @@ public class Ipv6Header extends Layer3Header {
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
 
 		PacketUtils.write8BitInt(out, (version << 4) | (trafficClass >> 4));
-		PacketUtils.write8BitInt(out, ((trafficClass & 0xFF) << 4)
-				| (flowLabel >> 16));
+		PacketUtils.write8BitInt(out, ((trafficClass & 0xFF) << 4) | (flowLabel >> 16));
 		PacketUtils.write16BitInt(out, flowLabel & 0xFFFF);
 		PacketUtils.write16BitInt(out, payloadLength);
 		PacketUtils.write8BitInt(out, nextHeader);
@@ -109,11 +105,11 @@ public class Ipv6Header extends Layer3Header {
 
 		return out.toByteArray();
 	}
-	
+
 	@Override
 	public PacketContent createClone() {
 		Ipv6Header result = new Ipv6Header();
-		
+
 		result.version = version;
 		result.trafficClass = trafficClass;
 		result.flowLabel = flowLabel;
@@ -122,13 +118,12 @@ public class Ipv6Header extends Layer3Header {
 		result.hopLimit = hopLimit;
 		result.source = source;
 		result.destination = destination;
-		
+
 		return result;
 	}
 
 	@Override
-	public byte[] getPseudoHeader(int payloadLength, int nextHdr)
-			throws IOException {
+	public byte[] getPseudoHeader(int payloadLength, int nextHdr) throws IOException {
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
 
 		out.write(source.getAddress());
@@ -149,7 +144,7 @@ public class Ipv6Header extends Layer3Header {
 	public void setPayloadLength(Integer payloadLength) {
 		this.payloadLength = payloadLength;
 	}
-	
+
 	public void setHopLimit(int hopLimit) {
 		this.hopLimit = hopLimit;
 	}
@@ -206,18 +201,18 @@ public class Ipv6Header extends Layer3Header {
 				(byte) bytes[offset + 15], //
 		});
 	}
-	
+
 	@Override
 	public void randomize() {
 		ThreadLocalRandom random = ThreadLocalRandom.current();
-		
-//		version = 6;
+
+		// version = 6;
 		trafficClass = random.nextInt(0x100);
 		flowLabel = random.nextInt(0x100000);
-//		payloadLength = null;
-//		nextHeader = null;
+		// payloadLength = null;
+		// nextHeader = null;
 		hopLimit = random.nextInt(0x100);
-//		source; TODO
-//		destination;
+		// source; TODO
+		// destination;
 	}
 }

@@ -37,12 +37,10 @@ public class DestinationOptionExt6Header extends Extension6Header {
 
 		OptionDataTypes optionType;
 		do {
-			System.out.println("Actual header size: " + octectsLength
-					+ " bytes.");
+			System.out.println("Actual header size: " + octectsLength + " bytes.");
 			System.out.println("8, 16 or 32 bytes is recommended.");
 
-			Integer nextOptionInt = scanner.readOptionDataType(
-					"Next Option Data Type", "exit");
+			Integer nextOptionInt = scanner.readOptionDataType("Next Option Data Type", "exit");
 
 			if (nextOptionInt == null)
 				break;
@@ -78,8 +76,7 @@ public class DestinationOptionExt6Header extends Extension6Header {
 
 		} while (true);
 
-		boolean validLength = (octectsLength == 8) || (octectsLength == 16)
-				|| (octectsLength == 32);
+		boolean validLength = (octectsLength == 8) || (octectsLength == 16) || (octectsLength == 32);
 
 		if (!validLength) {
 			System.err.println("The length of this header is invalid.");
@@ -89,8 +86,7 @@ public class DestinationOptionExt6Header extends Extension6Header {
 			if (autoPadding) {
 				autoPadding(octectsLength);
 			} else {
-				System.err.println("Don't know what might happen "
-						+ "if you send this dpkt.");
+				System.err.println("Don't know what might happen if you send this dpkt.");
 			}
 		}
 
@@ -130,7 +126,8 @@ public class DestinationOptionExt6Header extends Extension6Header {
 		// addAutoPadN(pad);
 		// }
 		// } else {
-		// System.err.println("Warning: The number of bytes exceed the RFC 2460 recommendations. \n"
+		// System.err.println("Warning: The number of bytes exceed the RFC 2460
+		// recommendations. \n"
 		// + "I won't add padding.");
 		// }
 	}
@@ -148,8 +145,7 @@ public class DestinationOptionExt6Header extends Extension6Header {
 	}
 
 	@Override
-	public void postProcess(Packet packet, Fragment fragment)
-			throws IOException {
+	public void postProcess(Packet packet, Fragment fragment) throws IOException {
 		if (nextHeader == null) {
 			nextHeader = fragment.getNextHdr(packet, this);
 		}
@@ -186,11 +182,11 @@ public class DestinationOptionExt6Header extends Extension6Header {
 	@Override
 	public PacketContent createClone() {
 		DestinationOptionExt6Header result = new DestinationOptionExt6Header();
-		
+
 		result.nextHeader = nextHeader;
 		result.hdrExtLength = hdrExtLength;
 		result.tlvList = tlvList;
-		
+
 		return result;
 	}
 

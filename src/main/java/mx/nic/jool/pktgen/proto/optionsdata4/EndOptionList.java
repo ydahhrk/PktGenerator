@@ -17,7 +17,7 @@ public class EndOptionList extends Ipv4OptionHeader {
 	public void readFromStdIn(FieldScanner scanner) {
 		// No code, option Type = 0;
 	}
-	
+
 	@Override
 	public byte[] toWire() throws IOException {
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -26,7 +26,7 @@ public class EndOptionList extends Ipv4OptionHeader {
 
 		return out.toByteArray();
 	}
-	
+
 	@Override
 	public PacketContent createClone() {
 		return new EndOptionList();
@@ -38,8 +38,7 @@ public class EndOptionList extends Ipv4OptionHeader {
 	}
 
 	@Override
-	public void postProcess(Packet packet, Fragment fragment)
-			throws IOException {
+	public void postProcess(Packet packet, Fragment fragment) throws IOException {
 		// No code
 	}
 

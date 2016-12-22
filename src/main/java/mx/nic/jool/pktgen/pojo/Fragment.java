@@ -47,8 +47,7 @@ public class Fragment extends SliceableList<PacketContent> {
 
 			if (next instanceof Payload) {
 				// This is a "subsequent" fragment. We need to go find the layer
-				// 4
-				// header in the first fragment.
+				// 4 header in the first fragment.
 				for (PacketContent currentContent : packet.get(0)) {
 					if (currentContent instanceof Layer4Header) {
 						return currentContent.getHdrIndex();
@@ -63,7 +62,7 @@ public class Fragment extends SliceableList<PacketContent> {
 
 	public void export(String fileName) throws IOException {
 		fileName += ".pkt";
-		
+
 		File file = new File(fileName);
 		if (file.exists())
 			System.out.println("Warning: I'm rewriting file " + fileName);
@@ -145,7 +144,7 @@ public class Fragment extends SliceableList<PacketContent> {
 		}
 
 		Fragment frag = new Fragment();
-		
+
 		// Yes, open it again. We already wasted one byte and I don't want to
 		// handle that.
 		try (FileInputStream in = new FileInputStream(file)) {

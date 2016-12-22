@@ -16,12 +16,12 @@ public class Icmpv6InfoHeader extends Icmpv6Header {
 	public PacketContent createClone() {
 		return createCloneIcmp(new Icmpv6InfoHeader());
 	}
-	
+
 	@Override
 	public String getShortName() {
 		return "i6info";
 	}
-	
+
 	@Override
 	protected PacketContent getNextContent() {
 		return new Payload();
@@ -30,7 +30,7 @@ public class Icmpv6InfoHeader extends Icmpv6Header {
 	@Override
 	public void randomize() {
 		super.randomize();
-		
+
 		ThreadLocalRandom random = ThreadLocalRandom.current();
 		this.type = random.nextBoolean() ? 128 : 129;
 	}
