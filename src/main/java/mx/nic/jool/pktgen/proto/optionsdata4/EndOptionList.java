@@ -51,4 +51,9 @@ public class EndOptionList extends Ipv4OptionHeader {
 	public void randomize() {
 		// No code
 	}
+
+	@Override
+	public void unsetLengths() {
+		// No lengths.
+	}
 }

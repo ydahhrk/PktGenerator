@@ -5,14 +5,13 @@ import java.io.IOException;
 import java.util.Scanner;
 import java.util.concurrent.ThreadLocalRandom;
 
+import mx.nic.jool.pktgen.menu.MainMenu;
 import mx.nic.jool.pktgen.parser.AutoParser;
 import mx.nic.jool.pktgen.parser.ManualParser;
 import mx.nic.jool.pktgen.parser.Parser;
 import mx.nic.jool.pktgen.pojo.Fragment;
 import mx.nic.jool.pktgen.pojo.Packet;
-import mx.nic.jool.pktgen.pojo.PacketContent;
 import mx.nic.jool.pktgen.pojo.Payload;
-import mx.nic.jool.pktgen.proto.PacketContentFactory;
 import mx.nic.jool.pktgen.proto.l3.Ipv4Header;
 import mx.nic.jool.pktgen.proto.l4.Icmpv6ErrorHeader;
 import mx.nic.jool.pktgen.proto.l4.TcpHeader;
@@ -48,46 +47,12 @@ public class PacketGenerator {
 		}
 	}
 
-	private static PacketContent findPreviousContent(Fragment frag, String headerIndex) {
-		int index;
-		try {
-			index = Integer.parseInt(headerIndex);
-		} catch (NumberFormatException e) {
-			return null;
-		}
-
-		return frag.get(index);
-	}
-
 	private static void handleMenuMode(Parser parser, Fragment frag) throws IOException {
+		Packet packet = new Packet();
+
+		MainMenu menu = new MainMenu();
 		try (FieldScanner scanner = new FieldScanner(new Scanner(System.in))) {
-			Packet packet = new Packet();
-
-			/* Build the packet. */
-			do {
-				System.out.println();
-				PacketContentFactory.printStringProtocols();
-				frag.print();
-
-				String nextProto = scanner.readLine("Next", "exit");
-				if ("exit".equals(nextProto))
-					break;
-
-				PacketContent newContent = PacketContentFactory.forName(nextProto);
-				if (newContent != null) {
-					parser.buildPacketContentOutOfInput(newContent, scanner);
-					frag.add(newContent);
-					continue;
-				}
-
-				PacketContent oldContent = findPreviousContent(frag, nextProto);
-				if (oldContent != null) {
-					parser.buildPacketContentOutOfInput(oldContent, scanner);
-					continue;
-				}
-
-				System.err.println("Sorry; I don't understand you. Please request one of the options shown.");
-			} while (true);
+			menu.handle(parser, scanner, frag);
 
 			/* Wrap up */
 			packet.add(frag);

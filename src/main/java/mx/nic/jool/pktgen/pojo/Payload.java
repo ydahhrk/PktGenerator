@@ -161,4 +161,14 @@ public class Payload extends PacketContent {
 		ThreadLocalRandom random = ThreadLocalRandom.current();
 		random.nextBytes(bytes);
 	}
+
+	@Override
+	public void unsetChecksum() {
+		// No checksums.
+	}
+
+	@Override
+	public void unsetLengths() {
+		// No lengths.
+	}
 }

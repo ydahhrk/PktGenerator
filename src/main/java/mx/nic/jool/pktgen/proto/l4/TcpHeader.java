@@ -193,4 +193,14 @@ public class TcpHeader extends Layer4Header {
 		checksum = null;
 		urgentPointer = random.nextInt(0x10000);
 	}
+
+	@Override
+	public void unsetChecksum() {
+		this.checksum = null;
+	}
+
+	@Override
+	public void unsetLengths() {
+		// TODO not sure if dataOffset counts.
+	}
 }

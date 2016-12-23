@@ -66,4 +66,9 @@ public class StreamIdentifier extends Ipv4OptionHeader {
 	public void randomize() {
 		throw new IllegalArgumentException("Sorry; StreamIdentifiers are not supported in random mode yet.");
 	}
+
+	@Override
+	public void unsetLengths() {
+		// TODO length is not nullable.
+	}
 }

@@ -130,4 +130,14 @@ public abstract class IcmpHeader extends Layer4Header {
 		restOfHeader1 = random.nextInt(0x10000);
 		restOfHeader2 = random.nextInt(0x10000);
 	}
+
+	@Override
+	public void unsetChecksum() {
+		this.checksum = null;
+	}
+
+	@Override
+	public void unsetLengths() {
+		// No lengths.
+	}
 }

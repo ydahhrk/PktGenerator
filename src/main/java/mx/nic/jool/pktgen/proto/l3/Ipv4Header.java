@@ -300,4 +300,15 @@ public class Ipv4Header extends Layer3Header {
 		// source;
 		// destination;
 	}
+
+	@Override
+	public void unsetChecksum() {
+		this.headerChecksum = null;
+	}
+
+	@Override
+	public void unsetLengths() {
+		this.ihl = null;
+		this.totalLength = null;
+	}
 }

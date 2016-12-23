@@ -128,4 +128,9 @@ public class FragmentExt6Header extends Extension6Header {
 		mFlag = random.nextBoolean();
 		identification = random.nextLong(0x100000000L);
 	}
+
+	@Override
+	public void unsetLengths() {
+		// No lengths.
+	}
 }

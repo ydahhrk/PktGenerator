@@ -126,4 +126,14 @@ public class UdpHeader extends Layer4Header {
 		length = null;
 		checksum = null;
 	}
+
+	@Override
+	public void unsetChecksum() {
+		this.checksum = null;
+	}
+
+	@Override
+	public void unsetLengths() {
+		this.length = null;
+	}
 }

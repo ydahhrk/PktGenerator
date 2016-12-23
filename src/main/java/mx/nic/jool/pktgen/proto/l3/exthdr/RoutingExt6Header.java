@@ -109,4 +109,9 @@ public class RoutingExt6Header extends Extension6Header {
 	public void randomize() {
 		throw new IllegalArgumentException("Sorry; Routing headers are not supported in random mode yet.");
 	}
+
+	@Override
+	public void unsetLengths() {
+		this.hdrExtLength = null;
+	}
 }

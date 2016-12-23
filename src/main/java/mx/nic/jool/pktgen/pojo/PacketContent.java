@@ -69,7 +69,6 @@ public abstract class PacketContent {
 	private int showFieldValues(Field[] fields, PacketContent obj) {
 		int annotationsLength = 0;
 
-		System.out.println();
 		System.out.print(obj.getClass().getSimpleName());
 		System.out.println(" Fields:");
 		for (Field field : fields) {
@@ -150,5 +149,9 @@ public abstract class PacketContent {
 	 * TODO Review the deepness of the copy implementations.
 	 */
 	public abstract PacketContent createClone();
+
+	public abstract void unsetChecksum();
+	
+	public abstract void unsetLengths();
 
 }

@@ -210,4 +210,14 @@ public class Ipv6Header extends Layer3Header {
 		// source; TODO
 		// destination;
 	}
+	
+	@Override
+	public void unsetChecksum() {
+		// No checksum.
+	}
+
+	@Override
+	public void unsetLengths() {
+		this.payloadLength = null;
+	}
 }

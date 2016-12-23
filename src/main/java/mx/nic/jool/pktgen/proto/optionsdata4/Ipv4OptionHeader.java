@@ -23,4 +23,8 @@ public abstract class Ipv4OptionHeader extends Layer3Header {
 		throw new IllegalArgumentException("Not implemented yet; sorry.");
 	}
 
+	@Override
+	public void unsetChecksum() {
+		// No checksum.
+	}
 }

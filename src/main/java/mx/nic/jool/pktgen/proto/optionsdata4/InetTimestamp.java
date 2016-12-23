@@ -133,4 +133,9 @@ public class InetTimestamp extends Ipv4OptionHeader {
 	public void randomize() {
 		throw new IllegalArgumentException("Sorry; InetTimestamps are not supported in random mode yet.");
 	}
+
+	@Override
+	public void unsetLengths() {
+		this.length = null;
+	}
 }

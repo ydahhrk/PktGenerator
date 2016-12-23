@@ -10,5 +10,9 @@ public abstract class Extension6Header extends Layer3Header {
 	public byte[] getPseudoHeader(int payloadLength, int nexthdr) throws IOException {
 		return null;
 	}
-
+	
+	@Override
+	public void unsetChecksum() {
+		// No checksum.
+	}
 }

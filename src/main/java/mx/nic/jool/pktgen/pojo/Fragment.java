@@ -104,7 +104,6 @@ public class Fragment extends SliceableList<PacketContent> {
 				System.out.println(get(i).getClass().getSimpleName());
 			}
 		}
-		System.out.println();
 	}
 
 	/**
@@ -162,5 +161,15 @@ public class Fragment extends SliceableList<PacketContent> {
 	public void randomize() {
 		for (PacketContent content : this)
 			content.randomize();
+	}
+
+	public void unsetAllChecksums() {
+		for (PacketContent content : this)
+			content.unsetChecksum();
+	}
+
+	public void unsetAllLengths() {
+		for (PacketContent content : this)
+			content.unsetLengths();
 	}
 }

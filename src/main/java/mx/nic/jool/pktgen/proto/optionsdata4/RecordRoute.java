@@ -118,4 +118,9 @@ public class RecordRoute extends Ipv4OptionHeader {
 	public void randomize() {
 		throw new IllegalArgumentException("Sorry; RecordRoutes are not supported in random mode yet.");
 	}
+
+	@Override
+	public void unsetLengths() {
+		this.optionLength = null;
+	}
 }

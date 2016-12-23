@@ -37,6 +37,7 @@ public class FieldScanner implements AutoCloseable {
 	private String readLine() {
 		int indexOfTag;
 		String input = scanner.nextLine().trim();
+		System.out.println();
 
 		inputRecord.println(input);
 
