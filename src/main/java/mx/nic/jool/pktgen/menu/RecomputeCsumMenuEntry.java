@@ -4,7 +4,11 @@ import mx.nic.jool.pktgen.FieldScanner;
 import mx.nic.jool.pktgen.parser.Parser;
 import mx.nic.jool.pktgen.pojo.Fragment;
 
-public class RecomputeCsumMenuEntry extends MenuEntry {
+/**
+ * A menu option that unsets all checksums in a packet so they can be
+ * automatically recomputed later.
+ */
+public class RecomputeCsumMenuEntry extends MainMenuEntry {
 
 	public RecomputeCsumMenuEntry() {
 		super("csumfix", "Recompute all checksums");

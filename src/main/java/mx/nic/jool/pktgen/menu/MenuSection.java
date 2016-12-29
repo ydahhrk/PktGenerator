@@ -4,28 +4,32 @@ import java.util.LinkedList;
 import java.util.List;
 
 import mx.nic.jool.pktgen.FieldScanner;
+import mx.nic.jool.pktgen.auto.Util;
 import mx.nic.jool.pktgen.parser.Parser;
 import mx.nic.jool.pktgen.pojo.Fragment;
 
-public class MenuSection extends MenuEntry {
+/**
+ * A logical group of entries in a {@link MainMenu}.
+ * 
+ * Technically a {@link MainMenuEntry}, except it's not executable.
+ */
+public class MenuSection extends MainMenuEntry {
 
-	private List<MenuEntry> entries = new LinkedList<>();
+	private List<MainMenuEntry> entries = new LinkedList<>();
 
 	public MenuSection(String name) {
 		super(name, null);
 	}
 
-	public void add(MenuEntry entry) {
+	public void add(MainMenuEntry entry) {
 		entries.add(entry);
 	}
 
 	@Override
 	public void print(int tabs) {
-		for (int i = 0; i < tabs; i++)
-			System.out.print("\t");
-
+		Util.printTabs(tabs);
 		System.out.println(getShortName() + ":");
-		for (MenuEntry entry : entries)
+		for (MainMenuEntry entry : entries)
 			entry.print(tabs + 1);
 	}
 

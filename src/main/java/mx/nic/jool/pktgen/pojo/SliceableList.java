@@ -3,6 +3,9 @@ package mx.nic.jool.pktgen.pojo;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * A list from which getting useful sublists is fairly uncluttered.
+ */
 public abstract class SliceableList<T> extends ArrayList<T> {
 
 	/** Warning shutupper; I don't care about this. */
@@ -49,7 +52,7 @@ public abstract class SliceableList<T> extends ArrayList<T> {
 	}
 
 	/**
-	 * Returns the content (header) right before <code>content</code>.
+	 * Returns the content right before <code>content</code>.
 	 */
 	public T getPrevious(T content) {
 		int id = this.indexOf(content) - 1;

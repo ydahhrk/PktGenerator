@@ -42,4 +42,8 @@ public class Util {
 		return result;
 	}
 
+	public static void printTabs(int tabs) {
+		for (int i = 0; i < tabs; i++)
+			System.out.print("\t");
+	}
 }

@@ -3,7 +3,7 @@ package mx.nic.jool.pktgen;
 import java.io.IOException;
 import java.io.OutputStream;
 
-public class CsumBuilder extends OutputStream {
+public class ChecksumBuilder extends OutputStream {
 
 	public static ChecksumStatus checksumStatus = ChecksumStatus.CORRECT;
 	private long accumulated = 0;

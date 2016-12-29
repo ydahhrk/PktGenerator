@@ -114,6 +114,9 @@ public abstract class PacketContent {
 	/**
 	 * Loads this header from its {@link #toWire()} representation, being read
 	 * from <code>in</code>.
+	 * 
+	 * Returns an instance of the header that follows so the caller can continue
+	 * reading.
 	 */
 	public abstract PacketContent loadFromStream(InputStream in) throws IOException;
 
@@ -151,7 +154,7 @@ public abstract class PacketContent {
 	public abstract PacketContent createClone();
 
 	public abstract void unsetChecksum();
-	
+
 	public abstract void unsetLengths();
 
 }

@@ -1,38 +1,42 @@
 package mx.nic.jool.pktgen.menu;
 
-import java.lang.reflect.Modifier;
 import java.util.HashMap;
-import java.util.Set;
-
-import org.reflections.Reflections;
-import org.reflections.util.ClasspathHelper;
-import org.reflections.util.ConfigurationBuilder;
 
 import mx.nic.jool.pktgen.FieldScanner;
 import mx.nic.jool.pktgen.enums.Layer;
 import mx.nic.jool.pktgen.parser.Parser;
 import mx.nic.jool.pktgen.pojo.Fragment;
 import mx.nic.jool.pktgen.pojo.PacketContent;
+import mx.nic.jool.pktgen.proto.PacketContentFactory;
 
+/**
+ * The global menu. The one that offers to add and modify headers and has a few
+ * other utility options.
+ */
 public class MainMenu {
 
-	private HashMap<String, MenuEntry> map;
+	/**
+	 * Quick accesor to each menu entry.
+	 * 
+	 * Existing menu entries (numericals) are computed dynamically and as such
+	 * are not indexed here.
+	 */
+	private HashMap<String, MainMenuEntry> map;
 
+	/** Section of the menu that offers adding content to the new packet. */
 	private MenuSection newHeaders;
-	private MenuSection options;
+	// The section of the menu that offers modifying packet content is generated
+	// dynamically and is therefore implicit.
+	/** Section of the menu that offers several predefined packet actions. */
+	private MenuSection miscOptions;
 
 	public MainMenu() {
 		map = new HashMap<>();
-
 		initNewHeaders();
-		initOptions();
+		initMiscOptions();
 	}
 
 	private void initNewHeaders() {
-		ConfigurationBuilder configBuilder = new ConfigurationBuilder().setUrls(ClasspathHelper.forJavaClassPath());
-		Reflections reflections = new Reflections(configBuilder);
-		Set<Class<? extends PacketContent>> types = reflections.getSubTypesOf(PacketContent.class);
-
 		newHeaders = new MenuSection("Available headers");
 
 		Layer[] layers = Layer.values();
@@ -42,44 +46,52 @@ public class MainMenu {
 			newHeaders.add(layerSections[i]);
 		}
 
-		for (Class<? extends PacketContent> clazz : types) {
-			if (Modifier.isAbstract(clazz.getModifiers()))
-				continue;
-
-			PacketContent packetContent;
-			try {
-				packetContent = clazz.newInstance();
-			} catch (InstantiationException | IllegalAccessException e) {
-				throw new IllegalArgumentException("Could not instance class " + clazz, e);
-			}
-
-			addEntry(new NewPacketContentMenuEntry(packetContent), layerSections[packetContent.getLayer().ordinal()]);
-		}
+		for (PacketContent content : PacketContentFactory.getContents())
+			addEntry(new NewPacketContentMenuEntry(content), layerSections[content.getLayer().ordinal()]);
 	}
 
-	private void initOptions() {
-		options = new MenuSection("Other options");
-		addEntry(new RecomputeCsumMenuEntry(), options);
-		addEntry(new RecomputeLengthsMenuEntry(), options);
+	private void initMiscOptions() {
+		miscOptions = new MenuSection("Other options");
+		addEntry(new RecomputeCsumMenuEntry(), miscOptions);
+		addEntry(new RecomputeLengthsMenuEntry(), miscOptions);
 	}
 
-	private void addEntry(MenuEntry entry, MenuSection section) {
+	/**
+	 * Quick one-liner for adding a menu entry to both the map and the
+	 * corresponding section list.
+	 * 
+	 */
+	private void addEntry(MainMenuEntry entry, MenuSection section) {
 		String key = entry.getShortName();
-		MenuEntry collision = map.put(key, entry);
+		MainMenuEntry collision = map.put(key, entry);
 		if (collision != null)
-			throw new IllegalArgumentException("There is more than one class whose short name is " + key + ".");
+			throw new IllegalArgumentException("There is more than one PacketContent whose short name is " + key + ".");
 		section.add(entry);
 	}
 
+	/**
+	 * Standard output print.
+	 */
 	private void print(Fragment frag) {
 		newHeaders.print(0);
 		System.out.println();
-		frag.print();
+		frag.print(0);
 		System.out.println();
-		options.print(0);
+		miscOptions.print(0);
 		System.out.println();
 	}
 
+	/**
+	 * Edits <code>frag</code> according to user input. Returns when the user is
+	 * done editing.
+	 * 
+	 * @param parser
+	 *            Header editor.
+	 * @param scanner
+	 *            Standard input reader.
+	 * @param frag
+	 *            the packet the user wants to edit.
+	 */
 	public void handle(Parser parser, FieldScanner scanner, Fragment frag) {
 		do {
 			print(frag);
@@ -88,7 +100,7 @@ public class MainMenu {
 			if ("exit".equals(userChoice))
 				return;
 
-			MenuEntry chosenEntry = getMenuEntry(userChoice, frag);
+			MainMenuEntry chosenEntry = getMenuEntry(userChoice, frag);
 			if (chosenEntry != null)
 				chosenEntry.execute(parser, scanner, frag);
 			else
@@ -96,8 +108,11 @@ public class MainMenu {
 		} while (true);
 	}
 
-	private MenuEntry getMenuEntry(String userChoice, Fragment frag) {
-		MenuEntry chosenEntry = map.get(userChoice);
+	/**
+	 * Returns the menu entry whose identifier is <code>userChoice</code>.
+	 */
+	private MainMenuEntry getMenuEntry(String userChoice, Fragment frag) {
+		MainMenuEntry chosenEntry = map.get(userChoice);
 		if (chosenEntry != null)
 			return chosenEntry;
 

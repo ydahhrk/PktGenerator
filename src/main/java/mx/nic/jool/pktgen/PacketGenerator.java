@@ -13,7 +13,7 @@ import mx.nic.jool.pktgen.pojo.Fragment;
 import mx.nic.jool.pktgen.pojo.Packet;
 import mx.nic.jool.pktgen.pojo.Payload;
 import mx.nic.jool.pktgen.proto.l3.Ipv4Header;
-import mx.nic.jool.pktgen.proto.l4.Icmpv6ErrorHeader;
+import mx.nic.jool.pktgen.proto.l4.Icmpv4ErrorHeader;
 import mx.nic.jool.pktgen.proto.l4.TcpHeader;
 import mx.nic.jool.pktgen.proto.optionsdata4.EndOptionList;
 import mx.nic.jool.pktgen.proto.optionsdata4.Ipv4OptionHeader;
@@ -96,8 +96,8 @@ public class PacketGenerator {
 		payloadMaxLength -= Ipv4Header.LENGTH;
 		payloadMaxLength -= maybeAddIpv4Options(fragment);
 
-		fragment.add(new Icmpv6ErrorHeader());
-		payloadMaxLength -= Icmpv6ErrorHeader.LENGTH;
+		fragment.add(new Icmpv4ErrorHeader());
+		payloadMaxLength -= Icmpv4ErrorHeader.LENGTH;
 
 		Ipv4Header internal = new Ipv4Header();
 		internal.swapAddresses();

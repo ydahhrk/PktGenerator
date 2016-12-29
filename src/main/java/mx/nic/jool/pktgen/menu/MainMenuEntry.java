@@ -1,23 +1,28 @@
 package mx.nic.jool.pktgen.menu;
 
 import mx.nic.jool.pktgen.FieldScanner;
+import mx.nic.jool.pktgen.auto.Util;
 import mx.nic.jool.pktgen.parser.Parser;
 import mx.nic.jool.pktgen.pojo.Fragment;
 
-public abstract class MenuEntry {
+/**
+ * An entry in a {@link MainMenu}.
+ */
+public abstract class MainMenuEntry implements MainMenuPrintable {
 
+	/** Short label used to index this entry. */
 	private String shortName;
+	/** More descriptive and human-recognizable name of the entry. */
 	private String fullName;
 
-	protected MenuEntry(String shortName, String fullName) {
+	protected MainMenuEntry(String shortName, String fullName) {
 		this.shortName = shortName;
 		this.fullName = fullName;
 	}
 
+	@Override
 	public void print(int tabs) {
-		for (int i = 0; i < tabs; i++)
-			System.out.print("\t");
-		
+		Util.printTabs(tabs);
 		System.out.print("(");
 		System.out.printf("%7s", shortName);
 		System.out.print(") ");

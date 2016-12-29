@@ -5,8 +5,13 @@ import mx.nic.jool.pktgen.parser.Parser;
 import mx.nic.jool.pktgen.pojo.Fragment;
 import mx.nic.jool.pktgen.pojo.PacketContent;
 
-public class ExistingPacketContentMenuEntry extends MenuEntry {
+/**
+ * A menu option that updates a specific header already initialized and stored
+ * in a packet.
+ */
+public class ExistingPacketContentMenuEntry extends MainMenuEntry {
 
+	/** The header we're editing. */
 	private PacketContent content;
 
 	public ExistingPacketContentMenuEntry(PacketContent content) {

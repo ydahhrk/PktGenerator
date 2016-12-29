@@ -9,6 +9,9 @@ import java.util.concurrent.ThreadLocalRandom;
 import mx.nic.jool.pktgen.FieldScanner;
 import mx.nic.jool.pktgen.enums.Layer;
 
+/**
+ * A packet content consisting of an arbitrary sequence of bytes.
+ */
 public class Payload extends PacketContent {
 
 	private byte[] bytes;
@@ -21,74 +24,58 @@ public class Payload extends PacketContent {
 		this(size, 0);
 	}
 
+	/**
+	 * Will initialize {@link #bytes} using incrementing numbers.
+	 * 
+	 * ie. bytes = new byte[] { 0, 1, 2, 3, 4, 5, ... };
+	 */
 	public Payload(int size, int offset) {
 		bytes = new byte[size];
-		for (int x = 0; x < size; x++) {
+		for (int x = 0; x < size; x++)
 			bytes[x] = (byte) (x + offset);
-		}
 	}
 
 	@Override
 	public void readFromStdIn(FieldScanner scanner) {
-		boolean readFromFile = false;
-		byte[] tempFile = null;
+		bytes = readBytesFromFile(scanner);
+		if (bytes != null)
+			return;
 
-		readFromFile = scanner.readBoolean("Read from file?", false);
+		bytes = readBytesFromStdin(scanner);
+	}
 
-		do {
-			if (!readFromFile) {
-				break;
-			}
+	private byte[] readBytesFromFile(FieldScanner scanner) {
+		boolean readFromFile = scanner.readBoolean("Read from file?", false);
+		if (!readFromFile)
+			return null;
 
-			tempFile = scanner.readFile();
+		byte[] result = scanner.readFile();
+		if (result == null)
+			return null;
 
-			if (tempFile == null) {
-				System.err.println("No se pudo leer el archivo correctamente.");
-				readFromFile = scanner.readBoolean("Try again?", false);
-			}
-		} while (tempFile == null);
-
-		if (tempFile != null) {
-			boolean customLength = scanner.readBoolean("custom length", false);
-			if (customLength) {
-				System.out.println("Actual length: " + tempFile.length);
-				int length = scanner.readInt("Payload length", 4);
-				bytes = Arrays.copyOf(tempFile, length);
-			} else {
-
-				// bytes = new byte[tempFile2.length];
-				// for (int i = 0; i < tempFile2.length; i++) {
-				// bytes[i] = (byte) tempFile2[i];
-				// }
-				bytes = tempFile;
-			}
-		} else {
-			int length = scanner.readInt("Payload length", 4);
-			int payloadNumber = 0;
-			bytes = new byte[length];
-			boolean customPayload;
-			customPayload = scanner.readBoolean("Automatic Insert [0,1,2,3..255,0,1,2...]", true);
-			if (customPayload) {
-				for (int i = 0; i < length; i++) {
-					bytes[i] = (byte) payloadNumber;
-					payloadNumber++;
-					if (payloadNumber > 255)
-						payloadNumber = 0;
-				}
-			} else {
-				for (int x = 0; x < length; x++) {
-					bytes[x] = (byte) scanner.readInt("byte " + x, payloadNumber);
-					payloadNumber++;
-					if (payloadNumber > 255)
-						payloadNumber = 0;
-				}
-			}
+		System.out.println("Length: " + result.length);
+		boolean customLength = scanner.readBoolean("Truncate?", false);
+		if (customLength) {
+			int length = scanner.readInt("New lengh", 4);
+			result = Arrays.copyOf(result, length);
 		}
 
-		if (bytes.length % 2 == 1) {
+		return result;
+	}
+
+	private byte[] readBytesFromStdin(FieldScanner scanner) {
+		int length = scanner.readInt("Length", 4);
+		byte[] result = new byte[length];
+		boolean auto = scanner.readBoolean("Automatic insert (0,1,2,3..255,0,1,2,...)", true);
+		for (int i = 0; i < length; i++)
+			result[i] = (byte) (auto ? (i & 0xFF) : scanner.readInt("byte " + i, i % 0xFF));
+
+		if (result.length % 2 == 1) {
 			// See pkt.CsumBuilder#write(byte[]).
 			System.out.println("Warning: If you append stuff after this payload, your checksums will go bananas.");
 		}
+
+		return result;
 	}
 
 	@Override

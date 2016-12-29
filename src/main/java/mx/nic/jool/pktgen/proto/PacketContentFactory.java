@@ -1,7 +1,8 @@
 package mx.nic.jool.pktgen.proto;
 
 import java.lang.reflect.Modifier;
-import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 import org.reflections.Reflections;
@@ -15,14 +16,14 @@ import mx.nic.jool.pktgen.proto.l4.Layer4Header;
 
 public class PacketContentFactory {
 
-	private static HashMap<String, PacketContent> contents;
+	private static List<PacketContent> contents;
 
 	private static void initClasses() {
 		ConfigurationBuilder configBuilder = new ConfigurationBuilder().setUrls(ClasspathHelper.forJavaClassPath());
 		Reflections reflections = new Reflections(configBuilder);
 		Set<Class<? extends PacketContent>> types = reflections.getSubTypesOf(PacketContent.class);
 
-		contents = new HashMap<>();
+		contents = new ArrayList<>();
 		for (Class<? extends PacketContent> clazz : types) {
 			if (Modifier.isAbstract(clazz.getModifiers()))
 				continue;
@@ -34,40 +35,39 @@ public class PacketContentFactory {
 				throw new IllegalArgumentException("Could not instance class " + clazz, e);
 			}
 
-			PacketContent collision = contents.put(content.getShortName(), content);
-			if (collision != null) {
-				throw new IllegalArgumentException(
-						"There is more than one class whose short name is " + content.getShortName() + ".");
-			}
+			contents.add(content);
 		}
 	}
 
-	private static HashMap<String, PacketContent> getContents() {
+	public static List<PacketContent> getContents() {
 		if (contents == null)
 			initClasses();
 		return contents;
 	}
 
 	public static PacketContent forName(String proto) {
-		PacketContent content = getContents().get(proto);
-		return (content == null) ? null : content.createClone();
+		for (PacketContent content : contents) {
+			if (content.getShortName().equals(proto))
+				return content.createClone();
+		}
+		return null;
 	}
 
 	public static void printStringProtocols() {
 		System.out.println("Available headers:");
 
 		System.out.println("\tLayer 3 headers:");
-		for (PacketContent content : getContents().values())
+		for (PacketContent content : getContents())
 			if (content instanceof Layer3Header)
 				printStringProtocol(content);
 
 		System.out.println("\tLayer 4 headers:");
-		for (PacketContent content : getContents().values())
+		for (PacketContent content : getContents())
 			if (content instanceof Layer4Header)
 				printStringProtocol(content);
 
 		System.out.println("\tPayload:");
-		for (PacketContent content : getContents().values())
+		for (PacketContent content : getContents())
 			if (content instanceof Payload)
 				printStringProtocol(content);
 		System.out.println();
@@ -81,7 +81,7 @@ public class PacketContentFactory {
 	}
 
 	public static void printIntProtocols() {
-		for (PacketContent content : getContents().values()) {
+		for (PacketContent content : getContents()) {
 			if (content.getHdrIndex() >= 0) {
 				System.out.print(content.getClass());
 				System.out.print(": ");
@@ -91,7 +91,7 @@ public class PacketContentFactory {
 	}
 
 	public static PacketContent forNexthdr(Integer nexthdr) {
-		for (PacketContent content : getContents().values())
+		for (PacketContent content : getContents())
 			if (content.getHdrIndex() == nexthdr)
 				return content.createClone();
 		return null;

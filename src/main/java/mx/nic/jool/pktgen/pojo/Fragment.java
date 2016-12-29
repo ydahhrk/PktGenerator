@@ -8,13 +8,15 @@ import java.io.IOException;
 import java.util.Scanner;
 import java.util.Stack;
 
+import mx.nic.jool.pktgen.auto.Util;
 import mx.nic.jool.pktgen.enums.Layer;
+import mx.nic.jool.pktgen.menu.MainMenuPrintable;
 import mx.nic.jool.pktgen.proto.PacketContentFactory;
 import mx.nic.jool.pktgen.proto.l3.Ipv4Header;
 import mx.nic.jool.pktgen.proto.l3.Ipv6Header;
 import mx.nic.jool.pktgen.proto.l4.Layer4Header;
 
-public class Fragment extends SliceableList<PacketContent> {
+public class Fragment extends SliceableList<PacketContent> implements MainMenuPrintable {
 
 	/** Warning shutupper; I don't care about this. */
 	private static final long serialVersionUID = 1L;
@@ -92,13 +94,17 @@ public class Fragment extends SliceableList<PacketContent> {
 		return result;
 	}
 
-	public void print() {
+	@Override
+	public void print(int tabs) {
+		Util.printTabs(tabs);
 		System.out.println("Packet so far:");
 		if (isEmpty()) {
-			System.out.println("\t[Empty]");
+			Util.printTabs(tabs + 1);
+			System.out.println("[Empty]");
 		} else {
 			for (int i = 0; i < size(); i++) {
-				System.out.print("\t\t(");
+				Util.printTabs(tabs + 1);
+				System.out.print("(");
 				System.out.printf("%7d", i);
 				System.out.print(") ");
 				System.out.println(get(i).getClass().getSimpleName());

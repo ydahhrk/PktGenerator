@@ -5,8 +5,12 @@ import mx.nic.jool.pktgen.parser.Parser;
 import mx.nic.jool.pktgen.pojo.Fragment;
 import mx.nic.jool.pktgen.pojo.PacketContent;
 
-public class NewPacketContentMenuEntry extends MenuEntry {
+/**
+ * A menu option that appends a new header to the end of a packet.
+ */
+public class NewPacketContentMenuEntry extends MainMenuEntry {
 
+	/** The new header will look like this by default. */
 	private PacketContent template;
 
 	public NewPacketContentMenuEntry(PacketContent template) {

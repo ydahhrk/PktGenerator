@@ -10,10 +10,7 @@ import java.net.Inet4Address;
 import java.net.Inet6Address;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
-import java.nio.file.LinkOption;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Scanner;
 
@@ -198,46 +195,16 @@ public class FieldScanner implements AutoCloseable {
 	}
 
 	public byte[] readFile() {
-		Path dir = Paths.get("input");
-		String stringPath;
-		byte[] file;
-		int attempts = 4;
-
-		try (DirectoryStream<Path> stream = Files.newDirectoryStream(dir)) {
-			System.out.println("Archivos en la carpeta input:");
-			for (Path path : stream) {
-				System.out.println(path.getFileName());
-			}
-		} catch (IOException e) {
-			e.printStackTrace();
-			System.err.println("No se puede leer la carpeta input.");
-			return null;
-		}
-
 		do {
-			stringPath = this.readLine("Archivo", null);
-
-			dir = Paths.get("input/" + stringPath);
-			if (Files.exists(dir, LinkOption.NOFOLLOW_LINKS)) {
-				break;
+			String stringPath = readLine("File", "cancel");
+			if ("cancel".equals(stringPath))
+				return null;
+			try {
+				return Files.readAllBytes(Paths.get(stringPath));
+			} catch (IOException e) {
+				System.err.println(e.getMessage());
 			}
-			attempts--;
-			System.err.println("Archivo no existe. Intente nuevamente.");
-			System.err.println(attempts + " intentos restantes.");
-		} while (attempts > 0);
-
-		if (stringPath == null) {
-			return null;
-		}
-
-		try {
-			file = Files.readAllBytes(dir);
-		} catch (IOException e) {
-			e.printStackTrace();
-			return null;
-		}
-
-		return file;
+		} while (true);
 	}
 
 	public Object read(Object object, Field field)

@@ -11,7 +11,7 @@ import java.util.Properties;
 import java.util.concurrent.ThreadLocalRandom;
 
 import mx.nic.jool.pktgen.ChecksumStatus;
-import mx.nic.jool.pktgen.CsumBuilder;
+import mx.nic.jool.pktgen.ChecksumBuilder;
 import mx.nic.jool.pktgen.FieldScanner;
 import mx.nic.jool.pktgen.PacketUtils;
 import mx.nic.jool.pktgen.annotation.HeaderField;
@@ -98,7 +98,7 @@ public class Ipv4Header extends Layer3Header {
 	}
 
 	private int buildChecksum() throws IOException {
-		CsumBuilder csum = new CsumBuilder();
+		ChecksumBuilder csum = new ChecksumBuilder();
 		try {
 			csum.write(toWire());
 			return csum.finish(ChecksumStatus.CORRECT);
