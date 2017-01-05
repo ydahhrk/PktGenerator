@@ -37,7 +37,3 @@ Load a previously-generated packet, edit it as if `auto` mode had been chosen.
 ## `random`
 
 Generate a likely valid random packet. No user input is involved.
-
-The generator can currently only generate packets that consist of the following header sequence:
-
-	IPv4 header [ + options ] + ICMPv4 error header + IPv4 header [ + options ] + TCP header + payload

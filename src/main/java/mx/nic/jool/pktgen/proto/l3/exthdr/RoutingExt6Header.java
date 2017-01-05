@@ -1,47 +1,46 @@
 package mx.nic.jool.pktgen.proto.l3.exthdr;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.Inet6Address;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.concurrent.ThreadLocalRandom;
 
+import mx.nic.jool.pktgen.ByteArrayOutputStream;
 import mx.nic.jool.pktgen.FieldScanner;
 import mx.nic.jool.pktgen.PacketUtils;
+import mx.nic.jool.pktgen.annotation.HeaderField;
+import mx.nic.jool.pktgen.auto.Util;
 import mx.nic.jool.pktgen.pojo.Fragment;
 import mx.nic.jool.pktgen.pojo.Packet;
 import mx.nic.jool.pktgen.pojo.PacketContent;
+import mx.nic.jool.pktgen.proto.PacketContentFactory;
 
 public class RoutingExt6Header extends Extension6Header {
 
+	@HeaderField
 	private Integer nextHeader;
+	@HeaderField
 	private Integer hdrExtLength;
+	@HeaderField
 	private int routingType;
+	@HeaderField
 	private Integer segmentsLeft;
+	@HeaderField
 	private long reserved;
-	private List<Inet6Address> ipv6List;
+	/**
+	 * Must not be null! (see
+	 * {@link FieldScanner#read(Object, java.lang.reflect.Field)}.)
+	 */
+	@HeaderField
+	private Inet6AddressList addresses = new Inet6AddressList();
 
 	@Override
 	public void readFromStdIn(FieldScanner scanner) {
-		boolean newIn6Addr;
-
 		nextHeader = scanner.readProtocol("Next Header");
 		hdrExtLength = scanner.readInteger("Header Extension Length");
 		routingType = scanner.readInt("Routing Type", 0);
 		segmentsLeft = scanner.readInteger("Segments Left");
-
 		reserved = scanner.readLong("Reserved", 0);
-
-		ipv6List = new ArrayList<Inet6Address>();
-
-		do {
-			newIn6Addr = scanner.readBoolean("Add an IPv6 Address", false);
-			if (!newIn6Addr)
-				break;
-			ipv6List.add(scanner.readAddress6("IPv6 Address"));
-		} while (newIn6Addr);
-
+		addresses.readFromStdIn(scanner);
 	}
 
 	@Override
@@ -50,10 +49,10 @@ public class RoutingExt6Header extends Extension6Header {
 			nextHeader = fragment.getNextHdr(packet, this);
 		}
 		if (hdrExtLength == null) {
-			hdrExtLength = ipv6List.size() * 2;
+			hdrExtLength = addresses.getLength() * 2;
 		}
 		if (segmentsLeft == null) {
-			segmentsLeft = ipv6List.size();
+			segmentsLeft = addresses.getLength();
 		}
 	}
 
@@ -66,26 +65,21 @@ public class RoutingExt6Header extends Extension6Header {
 		result.routingType = routingType;
 		result.segmentsLeft = segmentsLeft;
 		result.reserved = reserved;
-		/* TODO deep copy? others do this as well. */
-		result.ipv6List = ipv6List;
+		result.addresses = addresses;
 
 		return result;
 	}
 
 	@Override
-	public byte[] toWire() throws IOException {
+	public byte[] toWire() {
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
 
 		PacketUtils.write8BitInt(out, nextHeader);
 		PacketUtils.write8BitInt(out, hdrExtLength);
 		PacketUtils.write8BitInt(out, routingType);
 		PacketUtils.write8BitInt(out, segmentsLeft);
-
 		PacketUtils.write32BitInt(out, reserved);
-
-		for (Inet6Address ipv6 : ipv6List) {
-			out.write(ipv6.getAddress());
-		}
+		out.write(addresses.toWire());
 
 		return out.toByteArray();
 	}
@@ -102,12 +96,27 @@ public class RoutingExt6Header extends Extension6Header {
 
 	@Override
 	public PacketContent loadFromStream(InputStream in) throws IOException {
-		throw new IllegalArgumentException("Sorry; Routing headers are not supported in load-from-file mode yet.");
+		int[] header = Util.streamToIntArray(in, 8);
+
+		nextHeader = header[0];
+		hdrExtLength = header[1];
+		routingType = header[2];
+		if (routingType != 0)
+			throw new IllegalArgumentException("Only type 0 routing headers are supported in load-from-file mode.");
+		segmentsLeft = header[3];
+		reserved = Util.joinBytes(header[4], header[5], header[6], header[7]);
+		addresses.loadFromStream(in, hdrExtLength);
+
+		return PacketContentFactory.forNexthdr(nextHeader);
 	}
 
 	@Override
 	public void randomize() {
-		throw new IllegalArgumentException("Sorry; Routing headers are not supported in random mode yet.");
+		ThreadLocalRandom random = ThreadLocalRandom.current();
+
+		routingType = 0;
+		addresses.randomize();
+		segmentsLeft = random.nextInt(addresses.getLength());
 	}
 
 	@Override

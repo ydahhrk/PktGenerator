@@ -3,7 +3,6 @@ package mx.nic.jool.pktgen.pojo;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Arrays;
 import java.util.concurrent.ThreadLocalRandom;
 
 import mx.nic.jool.pktgen.FieldScanner;
@@ -37,49 +36,15 @@ public class Payload extends PacketContent {
 
 	@Override
 	public void readFromStdIn(FieldScanner scanner) {
-		bytes = readBytesFromFile(scanner);
-		if (bytes != null)
-			return;
-
-		bytes = readBytesFromStdin(scanner);
-	}
-
-	private byte[] readBytesFromFile(FieldScanner scanner) {
-		boolean readFromFile = scanner.readBoolean("Read from file?", false);
-		if (!readFromFile)
-			return null;
-
-		byte[] result = scanner.readFile();
-		if (result == null)
-			return null;
-
-		System.out.println("Length: " + result.length);
-		boolean customLength = scanner.readBoolean("Truncate?", false);
-		if (customLength) {
-			int length = scanner.readInt("New lengh", 4);
-			result = Arrays.copyOf(result, length);
-		}
-
-		return result;
-	}
-
-	private byte[] readBytesFromStdin(FieldScanner scanner) {
-		int length = scanner.readInt("Length", 4);
-		byte[] result = new byte[length];
-		boolean auto = scanner.readBoolean("Automatic insert (0,1,2,3..255,0,1,2,...)", true);
-		for (int i = 0; i < length; i++)
-			result[i] = (byte) (auto ? (i & 0xFF) : scanner.readInt("byte " + i, i % 0xFF));
-
-		if (result.length % 2 == 1) {
+		bytes = scanner.readByteArray("Payload");
+		if (bytes.length % 2 == 1) {
 			// See pkt.CsumBuilder#write(byte[]).
 			System.out.println("Warning: If you append stuff after this payload, your checksums will go bananas.");
 		}
-
-		return result;
 	}
 
 	@Override
-	public byte[] toWire() throws IOException {
+	public byte[] toWire() {
 		return bytes;
 	}
 
@@ -107,10 +72,6 @@ public class Payload extends PacketContent {
 
 	public byte[] getBytes() {
 		return bytes;
-	}
-
-	public void setBytes(byte[] bytes) {
-		this.bytes = bytes;
 	}
 
 	@Override

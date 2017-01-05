@@ -13,11 +13,18 @@ import mx.nic.jool.pktgen.pojo.Fragment;
 import mx.nic.jool.pktgen.pojo.Packet;
 import mx.nic.jool.pktgen.pojo.Payload;
 import mx.nic.jool.pktgen.proto.l3.Ipv4Header;
+import mx.nic.jool.pktgen.proto.l3.Ipv6Header;
+import mx.nic.jool.pktgen.proto.l3.exthdr.DestinationOptionExt6Header;
+import mx.nic.jool.pktgen.proto.l3.exthdr.Extension6Header;
+import mx.nic.jool.pktgen.proto.l3.exthdr.FragmentExt6Header;
+import mx.nic.jool.pktgen.proto.l3.exthdr.HopByHopExt6Header;
+import mx.nic.jool.pktgen.proto.l3.exthdr.RoutingExt6Header;
 import mx.nic.jool.pktgen.proto.l4.Icmpv4ErrorHeader;
+import mx.nic.jool.pktgen.proto.l4.Icmpv4InfoHeader;
+import mx.nic.jool.pktgen.proto.l4.Icmpv6ErrorHeader;
+import mx.nic.jool.pktgen.proto.l4.Icmpv6InfoHeader;
 import mx.nic.jool.pktgen.proto.l4.TcpHeader;
-import mx.nic.jool.pktgen.proto.optionsdata4.EndOptionList;
-import mx.nic.jool.pktgen.proto.optionsdata4.Ipv4OptionHeader;
-import mx.nic.jool.pktgen.proto.optionsdata4.NoOperation;
+import mx.nic.jool.pktgen.proto.l4.UdpHeader;
 
 public class PacketGenerator {
 
@@ -86,56 +93,92 @@ public class PacketGenerator {
 	}
 
 	private static void handleRandomMode() throws IOException {
-		Packet packet = new Packet();
 		Fragment fragment = new Fragment();
-
+		Packet packet = new Packet();
 		packet.add(fragment);
-		int payloadMaxLength = 1500;
 
-		fragment.add(new Ipv4Header());
-		payloadMaxLength -= Ipv4Header.LENGTH;
-		payloadMaxLength -= maybeAddIpv4Options(fragment);
-
-		fragment.add(new Icmpv4ErrorHeader());
-		payloadMaxLength -= Icmpv4ErrorHeader.LENGTH;
-
-		Ipv4Header internal = new Ipv4Header();
-		internal.swapAddresses();
-		fragment.add(internal);
-		payloadMaxLength -= Ipv4Header.LENGTH;
-		payloadMaxLength -= maybeAddIpv4Options(fragment);
-
-		fragment.add(new TcpHeader());
-		payloadMaxLength -= TcpHeader.LENGTH;
-
-		Payload payload = new Payload();
 		ThreadLocalRandom random = ThreadLocalRandom.current();
-		payload.setBytes(new byte[random.nextInt(payloadMaxLength)]);
-		fragment.add(payload);
+		boolean ipv6 = random.nextBoolean();
+
+		if (ipv6) {
+			fragment.add(new Ipv6Header());
+			maybeAddIpv6ExtHeaders(fragment, random);
+		} else {
+			fragment.add(new Ipv4Header());
+		}
+
+		switch (random.nextInt(4)) {
+		case 0: // TCP
+			fragment.add(new TcpHeader());
+			break;
+		case 1: // UDP
+			fragment.add(new UdpHeader());
+			break;
+		case 2: // ICMP info
+			fragment.add(ipv6 ? new Icmpv6InfoHeader() : new Icmpv4InfoHeader());
+			break;
+		case 3: // ICMP error
+			if (ipv6) {
+				fragment.add(new Icmpv6ErrorHeader());
+
+				Ipv6Header internal = new Ipv6Header();
+				internal.swapAddresses();
+				fragment.add(internal);
+				maybeAddIpv6ExtHeaders(fragment, random);
+
+			} else {
+				fragment.add(new Icmpv4ErrorHeader());
+
+				Ipv4Header internal = new Ipv4Header();
+				internal.swapAddresses();
+				fragment.add(internal);
+			}
+
+			switch (random.nextInt(2)) {
+			case 0: // TCP
+				fragment.add(new TcpHeader());
+				break;
+			case 1: // UDP
+				fragment.add(new UdpHeader());
+				break;
+			}
+			break;
+		}
+
+		int payloadLength = random.nextInt(1500 - fragment.getLength());
+		fragment.add(new Payload(payloadLength));
 
 		packet.randomize();
 		packet.postProcess();
 		packet.export("random");
 	}
 
-	private static int maybeAddIpv4Options(Fragment fragment) {
-		ThreadLocalRandom random = ThreadLocalRandom.current();
+	private static void maybeAddIpv6ExtHeaders(Fragment fragment, ThreadLocalRandom random) {
+		if (random.nextInt(10) > 3)
+			return;
 
-		if (random.nextInt(10) > 4)
-			return 0;
+		// The IPv6 spec wants extension headers to always follow a particular
+		// order, but since Jool doesn't care for anything other than fragment
+		// headers, it shouldn't hurt to include a little extra random kitchen
+		// sink for good measure.
 
-		int length = random.nextInt(10);
-		for (int ihl = 0; ihl < length; ihl++) {
-			fragment.add(createRandomIpv4Option(fragment, random));
-			fragment.add(createRandomIpv4Option(fragment, random));
-			fragment.add(createRandomIpv4Option(fragment, random));
-			fragment.add(createRandomIpv4Option(fragment, random));
-		}
-
-		return 4 * length;
+		int headers = random.nextInt(6);
+		for (int i = 0; i < headers; i++)
+			fragment.add(createRandomExtHeader(fragment, random));
 	}
 
-	private static Ipv4OptionHeader createRandomIpv4Option(Fragment fragment, ThreadLocalRandom random) {
-		return (random.nextInt(2) == 0) ? new NoOperation() : new EndOptionList();
+	private static Extension6Header createRandomExtHeader(Fragment fragment, ThreadLocalRandom random) {
+		switch (random.nextInt(4)) {
+		case 0:
+			return new DestinationOptionExt6Header();
+		case 1:
+			return new FragmentExt6Header();
+		case 2:
+			return new HopByHopExt6Header();
+		case 3:
+			return new RoutingExt6Header();
+		}
+
+		throw new IllegalArgumentException("The random overflowed.");
 	}
 }

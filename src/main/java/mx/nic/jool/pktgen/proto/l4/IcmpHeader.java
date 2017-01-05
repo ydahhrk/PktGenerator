@@ -1,10 +1,10 @@
 package mx.nic.jool.pktgen.proto.l4;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.concurrent.ThreadLocalRandom;
 
+import mx.nic.jool.pktgen.ByteArrayOutputStream;
 import mx.nic.jool.pktgen.FieldScanner;
 import mx.nic.jool.pktgen.PacketUtils;
 import mx.nic.jool.pktgen.annotation.HeaderField;
@@ -39,7 +39,7 @@ public abstract class IcmpHeader extends Layer4Header {
 	}
 
 	@Override
-	public byte[] toWire() throws IOException {
+	public byte[] toWire() {
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
 
 		PacketUtils.write8BitInt(out, type);
@@ -60,54 +60,9 @@ public abstract class IcmpHeader extends Layer4Header {
 		return result;
 	}
 
-	private void printValues() {
-		System.out.println("type: " + type);
-		System.out.println("code: " + code);
-		System.out.println("checksum: " + (checksum != null ? checksum : "(auto)"));
-		System.out.println("restOfHeader1: " + restOfHeader1);
-		System.out.println("restOfHeader2: " + restOfHeader2);
-	}
-
-	@Override
-	public void modifyFromStdIn(FieldScanner scanner) {
-		String fieldToModify;
-		do {
-			printValues();
-
-			fieldToModify = scanner.readLine("Field to edit (case sensitive)", "exit");
-			if (fieldToModify.equalsIgnoreCase("exit"))
-				break;
-
-			if (fieldToModify == null || fieldToModify.isEmpty())
-				continue;
-
-			switch (fieldToModify) {
-			case "type":
-				type = scanner.readInt("Type", 8);
-				break;
-			case "code":
-				code = scanner.readInt("Code", 0);
-				break;
-			case "checksum":
-				checksum = scanner.readInteger("Checksum");
-				break;
-			case "restOfHeader1":
-				restOfHeader1 = scanner.readInt("Unused [higher 16 bits]", 0);
-				break;
-			case "restOfHeader2":
-				restOfHeader2 = scanner.readInt("Unused [lower 16 bits]", 0);
-				break;
-			default:
-				System.out.println(fieldToModify + " is not the name of a header field.");
-				break;
-			}
-
-		} while (true);
-	}
-
 	@Override
 	public PacketContent loadFromStream(InputStream in) throws IOException {
-		int[] header = Util.streamToArray(in, LENGTH);
+		int[] header = Util.streamToIntArray(in, LENGTH);
 
 		type = header[0];
 		code = header[1];

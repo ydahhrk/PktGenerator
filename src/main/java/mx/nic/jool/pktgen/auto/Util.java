@@ -17,18 +17,24 @@ public class Util {
 		packet.export(fileName);
 	}
 
-	public static int[] streamToArray(InputStream in, int arrayLength) throws IOException {
-		byte[] bytes = new byte[arrayLength];
-		int bytesRead = 0;
-		do {
-			bytesRead = in.read(bytes, bytesRead, arrayLength - bytesRead);
-		} while (bytesRead < arrayLength);
+	public static int[] streamToIntArray(InputStream in, int arrayLength) throws IOException {
+		byte[] bytes = streamToByteArray(in, arrayLength);
 
 		int[] ints = new int[bytes.length];
 		for (int i = 0; i < bytes.length; i++)
 			ints[i] = bytes[i] & 0xFF; // "& 0xFF" is a cumbersome means to
 										// ensure the result is positive.
 		return ints;
+	}
+
+	public static byte[] streamToByteArray(InputStream in, int arrayLength) throws IOException {
+		byte[] bytes = new byte[arrayLength];
+		int bytesRead = 0;
+		do {
+			bytesRead = in.read(bytes, bytesRead, arrayLength - bytesRead);
+		} while (bytesRead < arrayLength);
+
+		return bytes;
 	}
 
 	public static int joinBytes(int[] array, int int1, int int2) {

@@ -1,6 +1,5 @@
 package mx.nic.jool.pktgen.proto.l3;
 
-import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -10,6 +9,7 @@ import java.net.UnknownHostException;
 import java.util.Properties;
 import java.util.concurrent.ThreadLocalRandom;
 
+import mx.nic.jool.pktgen.ByteArrayOutputStream;
 import mx.nic.jool.pktgen.FieldScanner;
 import mx.nic.jool.pktgen.PacketUtils;
 import mx.nic.jool.pktgen.annotation.HeaderField;
@@ -27,11 +27,8 @@ public class Ipv6Header extends Layer3Header {
 	static {
 		try {
 			Properties properties = new Properties();
-			FileInputStream fis = new FileInputStream("address.properties");
-			try {
+			try (FileInputStream fis = new FileInputStream("address.properties")) {
 				properties.load(fis);
-			} finally {
-				fis.close();
 			}
 			DEFAULT_SRC = (Inet6Address) InetAddress.getByName(properties.getProperty("ipv6.source"));
 			DEFAULT_DST = (Inet6Address) InetAddress.getByName(properties.getProperty("ipv6.destination"));
@@ -91,7 +88,7 @@ public class Ipv6Header extends Layer3Header {
 	}
 
 	@Override
-	public byte[] toWire() throws IOException {
+	public byte[] toWire() {
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
 
 		PacketUtils.write8BitInt(out, (version << 4) | (trafficClass >> 4));
@@ -123,7 +120,7 @@ public class Ipv6Header extends Layer3Header {
 	}
 
 	@Override
-	public byte[] getPseudoHeader(int payloadLength, int nextHdr) throws IOException {
+	public byte[] getPseudoHeader(int payloadLength, int nextHdr) {
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
 
 		out.write(source.getAddress());
@@ -162,7 +159,7 @@ public class Ipv6Header extends Layer3Header {
 
 	@Override
 	public PacketContent loadFromStream(InputStream in) throws IOException {
-		int[] header = Util.streamToArray(in, LENGTH);
+		int[] header = Util.streamToIntArray(in, LENGTH);
 
 		version = header[0] >> 4;
 		trafficClass = ((header[0] & 0xF) << 4) | (header[1] >> 4);
@@ -207,7 +204,7 @@ public class Ipv6Header extends Layer3Header {
 		// payloadLength = null;
 		// nextHeader = null;
 		hopLimit = random.nextInt(0x100);
-		// source; TODO
+		// source;
 		// destination;
 	}
 	

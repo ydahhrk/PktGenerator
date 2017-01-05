@@ -3,8 +3,10 @@ package mx.nic.jool.pktgen.pojo;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
+import java.util.ArrayList;
 
 import mx.nic.jool.pktgen.FieldScanner;
+import mx.nic.jool.pktgen.ScannableHeaderField;
 import mx.nic.jool.pktgen.annotation.HeaderField;
 import mx.nic.jool.pktgen.enums.Layer;
 
@@ -25,24 +27,16 @@ public abstract class PacketContent {
 	 * "Auto" mode.
 	 */
 	public void modifyFromStdIn(FieldScanner scanner) {
-		String fieldToModify;
-		int annotationsLength = 0;
-		Field[] fields = this.getClass().getDeclaredFields();
-
+		Field[] fields = collectHeaderFields();
 		if (fields.length == 0) {
 			System.err.println("Nothing to change.");
 			return;
 		}
 
 		do {
-			annotationsLength = showFieldValues(fields, this);
+			showFieldValues(fields, this);
 
-			if (annotationsLength == 0) {
-				System.err.println("Nothing to change.");
-				return;
-			}
-
-			fieldToModify = scanner.readLine("Field", "exit");
+			String fieldToModify = scanner.readLine("Field", "exit");
 			if (fieldToModify.equalsIgnoreCase("exit"))
 				break;
 
@@ -53,10 +47,6 @@ public abstract class PacketContent {
 				if (!field.getName().equalsIgnoreCase(fieldToModify))
 					continue;
 
-				HeaderField annotation = field.getAnnotation(HeaderField.class);
-				if (annotation == null)
-					continue; /* We don't care about this field. */
-
 				try {
 					field.set(this, scanner.read(this, field));
 				} catch (IllegalAccessException | IllegalArgumentException | InstantiationException e) {
@@ -66,19 +56,30 @@ public abstract class PacketContent {
 		} while (true);
 	}
 
-	private int showFieldValues(Field[] fields, PacketContent obj) {
-		int annotationsLength = 0;
+	private Field[] collectHeaderFields() {
+		ArrayList<Field> resultList = new ArrayList<>();
+		
+		Class<?> clazz = this.getClass();
+		while (clazz != PacketContent.class) {
+			Field[] fields = clazz.getDeclaredFields();
+			for (Field field : fields) {
+				if (field.getAnnotation(HeaderField.class) != null) {
+					field.setAccessible(true);
+					resultList.add(field);
+				}
+			}
 
+			clazz = clazz.getSuperclass();
+		}
+
+		Field[] resultArray = new Field[resultList.size()];
+		return resultList.toArray(resultArray);
+	}
+
+	private void showFieldValues(Field[] fields, PacketContent obj) {
 		System.out.print(obj.getClass().getSimpleName());
 		System.out.println(" Fields:");
 		for (Field field : fields) {
-			field.setAccessible(true);
-			HeaderField annotation = field.getAnnotation(HeaderField.class);
-			if (annotation == null)
-				continue; /* No nos interesa este campo. */
-
-			annotationsLength++;
-
 			System.out.print("\t(");
 			System.out.printf("%15s", field.getName());
 			System.out.print(") ");
@@ -91,10 +92,13 @@ public abstract class PacketContent {
 			}
 
 			System.out.print(": ");
-			System.out.println((fieldValue != null ? fieldValue : "(auto)"));
+			if (fieldValue == null)
+				System.out.println("(auto)");
+			else if (fieldValue instanceof ScannableHeaderField)
+				((ScannableHeaderField) fieldValue).print();
+			else
+				System.out.println(fieldValue);
 		}
-
-		return annotationsLength;
 	}
 
 	/**
@@ -109,7 +113,7 @@ public abstract class PacketContent {
 	 * Serializes this header into its binary representation, exactly as it
 	 * would be represented in a network packet.
 	 */
-	public abstract byte[] toWire() throws IOException;
+	public abstract byte[] toWire();
 
 	/**
 	 * Loads this header from its {@link #toWire()} representation, being read

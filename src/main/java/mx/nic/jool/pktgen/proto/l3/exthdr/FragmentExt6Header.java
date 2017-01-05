@@ -1,10 +1,10 @@
 package mx.nic.jool.pktgen.proto.l3.exthdr;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.concurrent.ThreadLocalRandom;
 
+import mx.nic.jool.pktgen.ByteArrayOutputStream;
 import mx.nic.jool.pktgen.FieldScanner;
 import mx.nic.jool.pktgen.PacketUtils;
 import mx.nic.jool.pktgen.annotation.HeaderField;
@@ -60,7 +60,7 @@ public class FragmentExt6Header extends Extension6Header {
 	}
 
 	@Override
-	public byte[] toWire() throws IOException {
+	public byte[] toWire() {
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
 
 		PacketUtils.write8BitInt(out, nextHeader);
@@ -105,7 +105,7 @@ public class FragmentExt6Header extends Extension6Header {
 
 	@Override
 	public PacketContent loadFromStream(InputStream in) throws IOException {
-		int[] header = Util.streamToArray(in, LENGTH);
+		int[] header = Util.streamToIntArray(in, LENGTH);
 
 		nextHeader = header[0];
 		reserved = header[1];

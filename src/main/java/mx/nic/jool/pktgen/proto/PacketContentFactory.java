@@ -83,7 +83,7 @@ public class PacketContentFactory {
 	public static void printIntProtocols() {
 		for (PacketContent content : getContents()) {
 			if (content.getHdrIndex() >= 0) {
-				System.out.print(content.getClass());
+				System.out.print(content.getClass().getSimpleName());
 				System.out.print(": ");
 				System.out.println(content.getHdrIndex());
 			}

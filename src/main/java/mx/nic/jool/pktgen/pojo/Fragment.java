@@ -70,13 +70,10 @@ public class Fragment extends SliceableList<PacketContent> implements MainMenuPr
 		if (file.exists())
 			System.out.println("Warning: I'm rewriting file " + fileName);
 
-		FileOutputStream out = new FileOutputStream(file);
-		try {
+		try (FileOutputStream out = new FileOutputStream(file)) {
 			for (PacketContent content : this) {
 				out.write(content.toWire());
 			}
-		} finally {
-			out.close();
 		}
 	}
 
@@ -104,10 +101,7 @@ public class Fragment extends SliceableList<PacketContent> implements MainMenuPr
 		} else {
 			for (int i = 0; i < size(); i++) {
 				Util.printTabs(tabs + 1);
-				System.out.print("(");
-				System.out.printf("%7d", i);
-				System.out.print(") ");
-				System.out.println(get(i).getClass().getSimpleName());
+				System.out.printf("(%7d) %s\n", i, get(i).getClass().getSimpleName());
 			}
 		}
 	}
@@ -177,5 +171,12 @@ public class Fragment extends SliceableList<PacketContent> implements MainMenuPr
 	public void unsetAllLengths() {
 		for (PacketContent content : this)
 			content.unsetLengths();
+	}
+
+	public int getLength() throws IOException {
+		int length = 0;
+		for (PacketContent content : this)
+			length += content.toWire().length;
+		return length;
 	}
 }

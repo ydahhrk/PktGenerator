@@ -23,10 +23,7 @@ public abstract class MainMenuEntry implements MainMenuPrintable {
 	@Override
 	public void print(int tabs) {
 		Util.printTabs(tabs);
-		System.out.print("(");
-		System.out.printf("%7s", shortName);
-		System.out.print(") ");
-		System.out.println(fullName);
+		System.out.printf("(%7s) %s\n", shortName, fullName);
 	}
 	
 	public String getShortName() {

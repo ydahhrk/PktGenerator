@@ -47,9 +47,7 @@ public abstract class Layer4Header extends PacketContent {
 	}
 
 	protected int buildChecksum(Packet packet, Fragment fragment, boolean includePseudoheader) throws IOException {
-		ChecksumBuilder csum = new ChecksumBuilder();
-
-		try {
+		try (ChecksumBuilder csum = new ChecksumBuilder()) {
 			if (includePseudoheader)
 				includePseudoHeader(packet, fragment, csum);
 
@@ -63,9 +61,6 @@ public abstract class Layer4Header extends PacketContent {
 				result = ~result;
 			}
 			return result;
-
-		} finally {
-			csum.close();
 		}
 	}
 

@@ -1,6 +1,5 @@
 package mx.nic.jool.pktgen;
 
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -12,10 +11,10 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.Scanner;
 
 import mx.nic.jool.pktgen.proto.PacketContentFactory;
-import mx.nic.jool.pktgen.proto.optionsdata6.OptionDataTypes;
 
 public class FieldScanner implements AutoCloseable {
 
@@ -80,7 +79,11 @@ public class FieldScanner implements AutoCloseable {
 	}
 
 	public Integer readInteger(String prefix) {
-		System.out.print(prefix + " (auto): ");
+		return readInteger(prefix, "auto");
+	}
+
+	public Integer readInteger(String prefix, String defaultCaption) {
+		System.out.print(prefix + " (" + defaultCaption + "): ");
 
 		do {
 			try {
@@ -143,12 +146,6 @@ public class FieldScanner implements AutoCloseable {
 		return readInteger(prefix);
 	}
 
-	public Integer readOptionDataType(String prefix, String defaultCaption) {
-		for (OptionDataTypes optionType : OptionDataTypes.values())
-			System.out.println("\t" + optionType + " = " + optionType.toWire());
-		return readInteger(prefix);
-	}
-
 	private InetAddress readAddress(String prefix) {
 		System.out.print(prefix + ": ");
 
@@ -194,7 +191,36 @@ public class FieldScanner implements AutoCloseable {
 		return result.isEmpty() ? defaultValue : result;
 	}
 
-	public byte[] readFile() {
+	public byte[] readByteArray(String prefix) {
+		System.out.println(prefix + ":");
+
+		byte[] bytes = readBytesFromFile();
+		if (bytes != null)
+			return bytes;
+
+		return readBytesFromStdin();
+	}
+
+	private byte[] readBytesFromFile() {
+		boolean readFromFile = readBoolean("Read from file?", false);
+		if (!readFromFile)
+			return null;
+
+		byte[] result = readFile();
+		if (result == null)
+			return null;
+
+		System.out.println("Length: " + result.length);
+		boolean customLength = readBoolean("Truncate?", false);
+		if (customLength) {
+			int length = readInt("New lengh", 4);
+			result = Arrays.copyOf(result, length);
+		}
+
+		return result;
+	}
+
+	private byte[] readFile() {
 		do {
 			String stringPath = readLine("File", "cancel");
 			if ("cancel".equals(stringPath))
@@ -205,6 +231,16 @@ public class FieldScanner implements AutoCloseable {
 				System.err.println(e.getMessage());
 			}
 		} while (true);
+	}
+
+	private byte[] readBytesFromStdin() {
+		int length = readInt("Length", 4);
+		byte[] result = new byte[length];
+		boolean auto = readBoolean("Automatic insert (0,1,2,3..255,0,1,2,...)", true);
+		for (int i = 0; i < length; i++)
+			result[i] = (byte) (auto ? (i & 0xFF) : readInt("byte " + i, i % 0xFF));
+
+		return result;
 	}
 
 	public Object read(Object object, Field field)
@@ -225,14 +261,21 @@ public class FieldScanner implements AutoCloseable {
 		if (clazz == Boolean.class)
 			return readBoolean(prefix, (Boolean) field.get(object.getClass().newInstance()));
 		
+		if (clazz == byte[].class)
+			return readByteArray(prefix);
 		if (clazz == String.class)
 			return readLine(prefix, (String) field.get(object.getClass().newInstance()));
 		if (clazz == Inet4Address.class)
 			return readAddress4(prefix);
 		if (clazz == Inet6Address.class)
 			return readAddress6(prefix);
-		if (clazz == File.class)
-			return readFile();
+
+		if (ScannableHeaderField.class.isAssignableFrom(clazz)) {
+			ScannableHeaderField scannableField = (ScannableHeaderField) field.get(object);
+			/* Must not be null! */
+			scannableField.readFromStdIn(this);
+			return scannableField;
+		}
 
 		System.err.println("Warning: I don't know what '" + clazz + "' is.");
 		return null;

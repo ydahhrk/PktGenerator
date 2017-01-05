@@ -1,11 +1,8 @@
 package mx.nic.jool.pktgen;
 
-import java.io.IOException;
-import java.io.OutputStream;
-
 public class PacketUtils {
 
-	public static void write8BitInt(OutputStream out, Integer integer) throws IOException {
+	public static void write8BitInt(ByteArrayOutputStream out, Integer integer) {
 		if (integer == null)
 			integer = 0;
 
@@ -13,7 +10,7 @@ public class PacketUtils {
 		out.write(integer);
 	}
 
-	public static void write16BitInt(OutputStream out, Integer integer) throws IOException {
+	public static void write16BitInt(ByteArrayOutputStream out, Integer integer) {
 		if (integer == null)
 			integer = 0;
 
@@ -21,7 +18,7 @@ public class PacketUtils {
 		out.write((integer >> 0) & 0xFF);
 	}
 
-	public static void write32BitInt(OutputStream out, Long integer) throws IOException {
+	public static void write32BitInt(ByteArrayOutputStream out, Long integer) {
 		if (integer == null)
 			integer = 0L;
 
