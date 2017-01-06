@@ -46,7 +46,7 @@
 						<manifest>
 							<addClasspath>true</addClasspath>
 							<classpathPrefix>lib/</classpathPrefix>
-							<mainClass>mx.nic.jool.pktgen.PacketGen</mainClass>
+							<mainClass>mx.nic.jool.pktgen.PacketGenerator</mainClass>
 						</manifest>
 					</archive>
 				</configuration>

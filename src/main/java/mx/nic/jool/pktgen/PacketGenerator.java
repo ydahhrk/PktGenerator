@@ -49,29 +49,27 @@ public class PacketGenerator {
 	}
 
 	private static void handleMenuMode(Fragment frag) throws IOException {
-		Packet packet = new Packet();
-
 		MainMenu menu = new MainMenu();
-		try (FieldScanner scanner = new FieldScanner(new Scanner(System.in))) {
-			menu.handle(scanner, frag);
+		FieldScanner scanner = new FieldScanner(new Scanner(System.in));
+		menu.handle(scanner, frag);
 
-			/* Wrap up */
-			packet.add(frag);
-			packet.postProcess();
+		/* Wrap up */
+		Packet packet = new Packet();
+		packet.add(frag);
+		packet.postProcess();
 
-			/* Output */
-			boolean success = false;
-			do {
-				String outputFile = scanner.readLine("Output filename", "output");
-				try {
-					packet.export(outputFile);
-					success = true;
-				} catch (IOException e) {
-					e.printStackTrace();
-					System.err.println("Try again: ");
-				}
-			} while (!success);
-		}
+		/* Output */
+		boolean success = false;
+		do {
+			String outputFile = scanner.readLine("Output filename", "output");
+			try {
+				packet.export(outputFile);
+				success = true;
+			} catch (IOException e) {
+				e.printStackTrace();
+				System.err.println("Try again: ");
+			}
+		} while (!success);
 	}
 
 	private static void handleAutoMode() throws IOException {

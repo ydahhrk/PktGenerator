@@ -1,9 +1,7 @@
 package mx.nic.jool.pktgen;
 
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.PrintStream;
 import java.lang.reflect.Field;
 import java.net.Inet4Address;
 import java.net.Inet6Address;
@@ -18,26 +16,18 @@ import java.util.Scanner;
 import mx.nic.jool.pktgen.annotation.HeaderField;
 import mx.nic.jool.pktgen.proto.PacketContentFactory;
 
-public class FieldScanner implements AutoCloseable {
+public class FieldScanner {
 
 	private Scanner scanner;
-	/**
-	 * Transparently prints stdin to a file, so the user can pipe it to another
-	 * execution of this program.
-	 */
-	private PrintStream inputRecord;
 
 	public FieldScanner(Scanner scanner) throws FileNotFoundException {
 		this.scanner = scanner;
-		this.inputRecord = new PrintStream(new FileOutputStream("src.txt"));
 	}
 
 	private String readLine() {
 		int indexOfTag;
 		String input = scanner.nextLine().trim();
 		System.out.println();
-
-		inputRecord.println(input);
 
 		indexOfTag = input.indexOf("#");
 		if (indexOfTag > 0)
@@ -361,10 +351,5 @@ public class FieldScanner implements AutoCloseable {
 
 		System.err.println("Warning: I don't know what '" + clazz + "' is.");
 		return null;
-	}
-
-	@Override
-	public void close() {
-		inputRecord.close();
 	}
 }
