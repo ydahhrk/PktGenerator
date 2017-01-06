@@ -31,7 +31,7 @@ public class Inet6AddressList implements ScannableHeaderField {
 
 			System.out.println("Other options:");
 			System.out.printf("\t(%7s) %s\n", "add", "Add a new entry");
-			System.out.printf("\t(%7s) %s\n", "del", "Delete entry");
+			System.out.printf("\t(%7s) %s\n", "rm", "Remove entry");
 
 			String nextChoice = scanner.readLine("Next", "exit");
 			switch (nextChoice) {
@@ -40,12 +40,12 @@ public class Inet6AddressList implements ScannableHeaderField {
 			case "add":
 				addresses.add(scanner.readAddress6("New IPv6 address"));
 				break;
-			case "del":
+			case "rm":
 				int entry = scanner.readInt("Address index");
 				try {
 					addresses.remove(entry);
 				} catch (IndexOutOfBoundsException e) {
-					System.err.println("That's not a valid address index. Let's try again.");
+					System.err.println("That's not a valid address index. Try again maybe.");
 				}
 				break;
 			default:

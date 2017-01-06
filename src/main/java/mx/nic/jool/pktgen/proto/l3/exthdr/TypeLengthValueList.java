@@ -17,13 +17,45 @@ public class TypeLengthValueList implements ScannableHeaderField {
 	@Override
 	public void readFromStdIn(FieldScanner scanner) {
 		while (true) {
-			Integer optionType = scanner.readInteger("Option Type", "finish");
-			if (optionType == null)
-				return;
+			do {
+				System.out.println("List so far:");
+				if (list.isEmpty()) {
+					System.out.println("\t[Empty]");
+				} else {
+					for (int i = 0; i < list.size(); i++)
+						System.out.printf("\t(%7d) %s\n", i, list.get(i));
+				}
 
-			TypeLengthValue tlv = new TypeLengthValue(optionType);
-			tlv.readFromStdIn(scanner);
-			list.add(tlv);
+				System.out.println("Other options:");
+				System.out.printf("\t(%7s) %s\n", "add", "Add a new entry");
+				System.out.printf("\t(%7s) %s\n", "rm", "Remove entry");
+
+				String nextChoice = scanner.readLine("Next", "exit");
+				switch (nextChoice) {
+				case "exit":
+					return;
+				case "add":
+					list.add(new TypeLengthValue(scanner));
+					break;
+				case "rm":
+					int entry = scanner.readInt("TLV index");
+					try {
+						list.remove(entry);
+					} catch (IndexOutOfBoundsException e) {
+						System.err.println("That's not a valid TLV index. Try again maybe.");
+					}
+					break;
+				default:
+					try {
+						int number = Integer.parseInt(nextChoice);
+						TypeLengthValue tlv = list.get(number);
+						tlv.loadFromStdIn(scanner);
+					} catch (NumberFormatException | IndexOutOfBoundsException e) {
+						System.err.println("Sorry; I don't understand you. Please pick one of the options shown.");
+					}
+					break;
+				}
+			} while (true);
 		}
 	}
 

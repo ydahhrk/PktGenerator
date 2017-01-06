@@ -52,6 +52,7 @@ public class MainMenu {
 
 	private void initMiscOptions() {
 		miscOptions = new MenuSection("Other options");
+		addEntry(new DeleteHeaderMenuEntry(), miscOptions);
 		addEntry(new RecomputeCsumMenuEntry(), miscOptions);
 		addEntry(new RecomputeLengthsMenuEntry(), miscOptions);
 	}

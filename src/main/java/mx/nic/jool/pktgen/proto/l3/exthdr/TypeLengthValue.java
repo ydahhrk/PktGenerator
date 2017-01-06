@@ -21,29 +21,30 @@ public class TypeLengthValue {
 		if (length < 1)
 			throw new IllegalArgumentException("Only positive amounts of padding are allowed.");
 
-		if (length == 1)
-			return new TypeLengthValue(PAD1);
-
-		TypeLengthValue padn = new TypeLengthValue(1);
-		padn.optDataLen = length - 2;
-		padn.optionData = new byte[length - 2];
-		return padn;
+		return (length == 1) //
+				? new TypeLengthValue(PAD1, null, null) //
+				: new TypeLengthValue(1, length - 2, new byte[length - 2]);
 	}
 
 	public static TypeLengthValue createRandom() {
 		ThreadLocalRandom random = ThreadLocalRandom.current();
 
 		int type = random.nextInt(256);
-		TypeLengthValue result = new TypeLengthValue(type);
-		result.optDataLen = random.nextInt(14);
-		result.optionData = new byte[result.optDataLen];
-		random.nextBytes(result.optionData);
+		Integer optDataLen = random.nextInt(14);
+		byte[] optionData = new byte[optDataLen];
+		random.nextBytes(optionData);
 
-		return result;
+		return new TypeLengthValue(type, optDataLen, optionData);
 	}
 
-	public TypeLengthValue(int optionType) {
+	private TypeLengthValue(int optionType, Integer optDataLen, byte[] optionData) {
 		this.optionType = optionType;
+		this.optDataLen = optDataLen;
+		this.optionData = optionData;
+	}
+
+	public TypeLengthValue(FieldScanner scanner) {
+		loadFromStdIn(scanner);
 	}
 
 	public TypeLengthValue(InputStream in) throws IOException {
@@ -54,7 +55,8 @@ public class TypeLengthValue {
 		optionData = Util.streamToByteArray(in, optDataLen);
 	}
 
-	public void readFromStdIn(FieldScanner scanner) {
+	public void loadFromStdIn(FieldScanner scanner) {
+		this.optionType = scanner.readInt("Option Type");
 		if (optionType == PAD1)
 			return;
 
