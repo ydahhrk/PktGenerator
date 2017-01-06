@@ -6,9 +6,6 @@ import java.util.Scanner;
 import java.util.concurrent.ThreadLocalRandom;
 
 import mx.nic.jool.pktgen.menu.MainMenu;
-import mx.nic.jool.pktgen.parser.AutoParser;
-import mx.nic.jool.pktgen.parser.ManualParser;
-import mx.nic.jool.pktgen.parser.Parser;
 import mx.nic.jool.pktgen.pojo.Fragment;
 import mx.nic.jool.pktgen.pojo.Packet;
 import mx.nic.jool.pktgen.pojo.Payload;
@@ -35,9 +32,6 @@ public class PacketGenerator {
 		case "auto":
 			handleAutoMode();
 			break;
-		case "manual":
-			handleManualMode();
-			break;
 		case "edit":
 			if (args.length < 2) {
 				System.err.println("I need a packet file as second argument.");
@@ -54,12 +48,12 @@ public class PacketGenerator {
 		}
 	}
 
-	private static void handleMenuMode(Parser parser, Fragment frag) throws IOException {
+	private static void handleMenuMode(Fragment frag) throws IOException {
 		Packet packet = new Packet();
 
 		MainMenu menu = new MainMenu();
 		try (FieldScanner scanner = new FieldScanner(new Scanner(System.in))) {
-			menu.handle(parser, scanner, frag);
+			menu.handle(scanner, frag);
 
 			/* Wrap up */
 			packet.add(frag);
@@ -81,15 +75,11 @@ public class PacketGenerator {
 	}
 
 	private static void handleAutoMode() throws IOException {
-		handleMenuMode(new AutoParser(), new Fragment());
-	}
-
-	private static void handleManualMode() throws IOException {
-		handleMenuMode(new ManualParser(), new Fragment());
+		handleMenuMode(new Fragment());
 	}
 
 	private static void handleEditMode(String string) throws IOException {
-		handleMenuMode(new AutoParser(), Fragment.load(new File(string)));
+		handleMenuMode(Fragment.load(new File(string)));
 	}
 
 	private static void handleRandomMode() throws IOException {

@@ -35,7 +35,9 @@ public class TypeLengthValueList implements ScannableHeaderField {
 				case "exit":
 					return;
 				case "add":
-					list.add(new TypeLengthValue(scanner));
+					TypeLengthValue newTlv = new TypeLengthValue();
+					scanner.scan(newTlv);
+					list.add(newTlv);
 					break;
 				case "rm":
 					int entry = scanner.readInt("TLV index");
@@ -47,9 +49,9 @@ public class TypeLengthValueList implements ScannableHeaderField {
 					break;
 				default:
 					try {
-						int number = Integer.parseInt(nextChoice);
-						TypeLengthValue tlv = list.get(number);
-						tlv.loadFromStdIn(scanner);
+						int tlvIndex = Integer.parseInt(nextChoice);
+						TypeLengthValue tlv = list.get(tlvIndex);
+						scanner.scan(tlv);
 					} catch (NumberFormatException | IndexOutOfBoundsException e) {
 						System.err.println("Sorry; I don't understand you. Please pick one of the options shown.");
 					}
@@ -81,7 +83,7 @@ public class TypeLengthValueList implements ScannableHeaderField {
 
 		int bytesLeft = 8 * hdrExtLength + 6;
 		while (bytesLeft > 0) {
-			TypeLengthValue tlv = new TypeLengthValue(in);
+			TypeLengthValue tlv = TypeLengthValue.createFromInputStream(in);
 			list.add(tlv);
 			bytesLeft -= tlv.toWire().length;
 		}

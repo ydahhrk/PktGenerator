@@ -5,7 +5,6 @@ import java.io.InputStream;
 import java.util.concurrent.ThreadLocalRandom;
 
 import mx.nic.jool.pktgen.ByteArrayOutputStream;
-import mx.nic.jool.pktgen.FieldScanner;
 import mx.nic.jool.pktgen.PacketUtils;
 import mx.nic.jool.pktgen.annotation.HeaderField;
 import mx.nic.jool.pktgen.auto.Util;
@@ -54,28 +53,6 @@ public class TcpHeader extends Layer4Header {
 	private Integer checksum = null;
 	@HeaderField
 	private int urgentPointer = 0;
-
-	@Override
-	public void readFromStdIn(FieldScanner scanner) {
-		sourcePort = scanner.readInt("Source Port");
-		destinationPort = scanner.readInt("Destination Port");
-		sequenceNumber = scanner.readLong("Sequence Number", 0);
-		acknowledgmentNumber = scanner.readLong("Acknowledgment Number", 0);
-		dataOffset = scanner.readInt("Data Offset", LENGTH >> 2);
-		reserved = scanner.readInt("Reserved", 0);
-		ns = scanner.readBoolean("NS", false);
-		cwr = scanner.readBoolean("CWR", false);
-		ece = scanner.readBoolean("ECE", false);
-		urg = scanner.readBoolean("URG", false);
-		ack = scanner.readBoolean("ACK", false);
-		psh = scanner.readBoolean("PSH", false);
-		rst = scanner.readBoolean("RST", false);
-		syn = scanner.readBoolean("SYN", false);
-		fin = scanner.readBoolean("FIN", false);
-		windowSize = scanner.readInt("Window Size", 100);
-		checksum = scanner.readInteger("Checksum");
-		urgentPointer = scanner.readInt("Urgent Pointer", 0);
-	}
 
 	@Override
 	public void postProcess(Packet packet, Fragment fragment) throws IOException {

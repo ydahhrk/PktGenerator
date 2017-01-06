@@ -10,7 +10,7 @@ import mx.nic.jool.pktgen.pojo.Packet;
 import mx.nic.jool.pktgen.pojo.PacketContent;
 import mx.nic.jool.pktgen.proto.l3.Layer3Header;
 
-public abstract class Layer4Header extends PacketContent {
+public abstract class Layer4Header implements PacketContent {
 
 	private void includePseudoHeader(Packet packet, Fragment fragment, ChecksumBuilder csum) throws IOException {
 		Layer3Header lastL3Header = null;

@@ -11,9 +11,11 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Scanner;
 
+import mx.nic.jool.pktgen.annotation.HeaderField;
 import mx.nic.jool.pktgen.proto.PacketContentFactory;
 
 public class FieldScanner implements AutoCloseable {
@@ -243,7 +245,87 @@ public class FieldScanner implements AutoCloseable {
 		return result;
 	}
 
-	public Object read(Object object, Field field)
+	/**
+	 * Prints <code>object</code> in standard output and requests modifications
+	 * to the user.
+	 * 
+	 * This is the core of "auto" mode.
+	 */
+	public void scan(Object object) {
+		Field[] fields = collectHeaderFields(object);
+		if (fields.length == 0) {
+			System.err.println("Nothing to change.");
+			return;
+		}
+
+		do {
+			showFields(fields, object);
+
+			String fieldToModify = readLine("Field", "exit");
+			if (fieldToModify.equalsIgnoreCase("exit"))
+				break;
+
+			if (fieldToModify == null || fieldToModify.isEmpty())
+				continue;
+
+			for (Field field : fields) {
+				if (!field.getName().equalsIgnoreCase(fieldToModify))
+					continue;
+
+				try {
+					field.set(object, read(object, field));
+				} catch (IllegalAccessException | IllegalArgumentException | InstantiationException e) {
+					throw new IllegalArgumentException("Strange & unlikely error condition; see below.", e);
+				}
+			}
+		} while (true);
+	}
+
+	private Field[] collectHeaderFields(Object object) {
+		ArrayList<Field> resultList = new ArrayList<>();
+
+		Class<?> clazz = object.getClass();
+		do {
+			Field[] fields = clazz.getDeclaredFields();
+			for (Field field : fields) {
+				if (field.getAnnotation(HeaderField.class) != null) {
+					field.setAccessible(true);
+					resultList.add(field);
+				}
+			}
+
+			clazz = clazz.getSuperclass();
+		} while (clazz != null);
+
+		Field[] resultArray = new Field[resultList.size()];
+		return resultList.toArray(resultArray);
+	}
+
+	private void showFields(Field[] fields, Object obj) {
+		System.out.printf("%s Fields:\n", obj.getClass().getSimpleName());
+		for (Field field : fields) {
+			System.out.printf("\t(%15s) ", field.getName());
+
+			Object fieldValue;
+			try {
+				fieldValue = field.get(obj);
+			} catch (IllegalAccessException e) {
+				throw new IllegalArgumentException("Strange & unlikely error condition; see below.", e);
+			}
+
+			System.out.print(": ");
+			if (fieldValue == null)
+				System.out.println("(auto)");
+			else if (fieldValue instanceof ScannableHeaderField)
+				((ScannableHeaderField) fieldValue).print();
+			else if (fieldValue instanceof byte[])
+				System.out.println(Arrays.toString((byte[]) fieldValue));
+			else
+				System.out.println(fieldValue);
+		}
+	}
+
+	private Object read(Object object, Field field)
 			throws IllegalArgumentException, IllegalAccessException, InstantiationException {
 		Class<?> clazz = field.getType();
 		String prefix = field.getName();
@@ -252,15 +334,15 @@ public class FieldScanner implements AutoCloseable {
 			return readInt(prefix, field.getInt(object.getClass().newInstance()));
 		if (clazz == Integer.class)
 			return readInteger(prefix);
-		
+
 		if (clazz == long.class)
 			return readLong(prefix, field.getLong(object.getClass().newInstance()));
-		
+
 		if (clazz == boolean.class)
 			return readBoolean(prefix, field.getBoolean(object.getClass().newInstance()));
 		if (clazz == Boolean.class)
 			return readBoolean(prefix, (Boolean) field.get(object.getClass().newInstance()));
-		
+
 		if (clazz == byte[].class)
 			return readByteArray(prefix);
 		if (clazz == String.class)

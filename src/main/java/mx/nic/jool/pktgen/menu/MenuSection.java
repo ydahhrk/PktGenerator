@@ -5,7 +5,6 @@ import java.util.List;
 
 import mx.nic.jool.pktgen.FieldScanner;
 import mx.nic.jool.pktgen.auto.Util;
-import mx.nic.jool.pktgen.parser.Parser;
 import mx.nic.jool.pktgen.pojo.Fragment;
 
 /**
@@ -34,7 +33,7 @@ public class MenuSection extends MainMenuEntry {
 	}
 
 	@Override
-	public void execute(Parser parser, FieldScanner scanner, Fragment frag) {
+	public void execute(FieldScanner scanner, Fragment frag) {
 		throw new IllegalArgumentException("Menu sections cannot be executed.");
 	}
 

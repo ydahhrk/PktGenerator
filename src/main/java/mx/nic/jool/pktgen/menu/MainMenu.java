@@ -4,7 +4,6 @@ import java.util.HashMap;
 
 import mx.nic.jool.pktgen.FieldScanner;
 import mx.nic.jool.pktgen.enums.Layer;
-import mx.nic.jool.pktgen.parser.Parser;
 import mx.nic.jool.pktgen.pojo.Fragment;
 import mx.nic.jool.pktgen.pojo.PacketContent;
 import mx.nic.jool.pktgen.proto.PacketContentFactory;
@@ -93,7 +92,7 @@ public class MainMenu {
 	 * @param frag
 	 *            the packet the user wants to edit.
 	 */
-	public void handle(Parser parser, FieldScanner scanner, Fragment frag) {
+	public void handle(FieldScanner scanner, Fragment frag) {
 		do {
 			print(frag);
 
@@ -103,7 +102,7 @@ public class MainMenu {
 
 			MainMenuEntry chosenEntry = getMenuEntry(userChoice, frag);
 			if (chosenEntry != null)
-				chosenEntry.execute(parser, scanner, frag);
+				chosenEntry.execute(scanner, frag);
 			else
 				System.err.println("Sorry; I don't understand you. Please request one of the options shown.");
 		} while (true);

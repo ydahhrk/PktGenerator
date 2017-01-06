@@ -5,18 +5,19 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.concurrent.ThreadLocalRandom;
 
-import mx.nic.jool.pktgen.FieldScanner;
+import mx.nic.jool.pktgen.annotation.HeaderField;
 import mx.nic.jool.pktgen.enums.Layer;
 
 /**
  * A packet content consisting of an arbitrary sequence of bytes.
  */
-public class Payload extends PacketContent {
+public class Payload implements PacketContent {
 
+	@HeaderField
 	private byte[] bytes;
 
 	public Payload() {
-		this(56);
+		this(4);
 	}
 
 	public Payload(int size) {
@@ -32,15 +33,6 @@ public class Payload extends PacketContent {
 		bytes = new byte[size];
 		for (int x = 0; x < size; x++)
 			bytes[x] = (byte) (x + offset);
-	}
-
-	@Override
-	public void readFromStdIn(FieldScanner scanner) {
-		bytes = scanner.readByteArray("Payload");
-		if (bytes.length % 2 == 1) {
-			// See pkt.CsumBuilder#write(byte[]).
-			System.out.println("Warning: If you append stuff after this payload, your checksums will go bananas.");
-		}
 	}
 
 	@Override
@@ -72,11 +64,6 @@ public class Payload extends PacketContent {
 
 	public byte[] getBytes() {
 		return bytes;
-	}
-
-	@Override
-	public void modifyFromStdIn(FieldScanner scanner) {
-		readFromStdIn(scanner);
 	}
 
 	@Override

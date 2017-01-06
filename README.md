@@ -18,17 +18,9 @@ Arguments:
 
 ## `auto`
 
-Start with default headers, the user can override whatever needs to be changed.
-
-Intended for packets where few header fields need to be specified.
+Build a packet from scratch, creating headers from a list of templates and updating them.
 
 This is the default option.
-
-## `manual`
-
-Start with nothing. The user must define every field, one by one.
-
-Intended for the creation of very specific packets.
 
 ## `edit <packet file>`
 

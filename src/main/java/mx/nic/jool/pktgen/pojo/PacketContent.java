@@ -2,104 +2,10 @@ package mx.nic.jool.pktgen.pojo;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.reflect.Field;
-import java.util.ArrayList;
 
-import mx.nic.jool.pktgen.FieldScanner;
-import mx.nic.jool.pktgen.ScannableHeaderField;
-import mx.nic.jool.pktgen.annotation.HeaderField;
 import mx.nic.jool.pktgen.enums.Layer;
 
-public abstract class PacketContent {
-
-	/**
-	 * Reads this header from <code>scanner</code> by requesting each of its
-	 * fields to the user one by one.
-	 * 
-	 * "Manual" mode.
-	 */
-	public abstract void readFromStdIn(FieldScanner scanner);
-
-	/**
-	 * Reads this header from <code>scanner</code> by printing it in standard
-	 * output and asking the user which fields need to be modified.
-	 * 
-	 * "Auto" mode.
-	 */
-	public void modifyFromStdIn(FieldScanner scanner) {
-		Field[] fields = collectHeaderFields();
-		if (fields.length == 0) {
-			System.err.println("Nothing to change.");
-			return;
-		}
-
-		do {
-			showFieldValues(fields, this);
-
-			String fieldToModify = scanner.readLine("Field", "exit");
-			if (fieldToModify.equalsIgnoreCase("exit"))
-				break;
-
-			if (fieldToModify == null || fieldToModify.isEmpty())
-				continue;
-
-			for (Field field : fields) {
-				if (!field.getName().equalsIgnoreCase(fieldToModify))
-					continue;
-
-				try {
-					field.set(this, scanner.read(this, field));
-				} catch (IllegalAccessException | IllegalArgumentException | InstantiationException e) {
-					throw new IllegalArgumentException("Strange & unlikely error condition; see below.", e);
-				}
-			}
-		} while (true);
-	}
-
-	private Field[] collectHeaderFields() {
-		ArrayList<Field> resultList = new ArrayList<>();
-		
-		Class<?> clazz = this.getClass();
-		while (clazz != PacketContent.class) {
-			Field[] fields = clazz.getDeclaredFields();
-			for (Field field : fields) {
-				if (field.getAnnotation(HeaderField.class) != null) {
-					field.setAccessible(true);
-					resultList.add(field);
-				}
-			}
-
-			clazz = clazz.getSuperclass();
-		}
-
-		Field[] resultArray = new Field[resultList.size()];
-		return resultList.toArray(resultArray);
-	}
-
-	private void showFieldValues(Field[] fields, PacketContent obj) {
-		System.out.print(obj.getClass().getSimpleName());
-		System.out.println(" Fields:");
-		for (Field field : fields) {
-			System.out.print("\t(");
-			System.out.printf("%15s", field.getName());
-			System.out.print(") ");
-
-			Object fieldValue;
-			try {
-				fieldValue = field.get(obj);
-			} catch (IllegalAccessException e) {
-				throw new IllegalArgumentException("Strange & unlikely error condition; see below.", e);
-			}
-
-			System.out.print(": ");
-			if (fieldValue == null)
-				System.out.println("(auto)");
-			else if (fieldValue instanceof ScannableHeaderField)
-				((ScannableHeaderField) fieldValue).print();
-			else
-				System.out.println(fieldValue);
-		}
-	}
+public interface PacketContent {
 
 	/**
 	 * Assigns random values to this header's fields, but tries hard to make it
@@ -107,13 +13,13 @@ public abstract class PacketContent {
 	 * 
 	 * "Random" mode.
 	 */
-	public abstract void randomize();
+	public void randomize();
 
 	/**
 	 * Serializes this header into its binary representation, exactly as it
 	 * would be represented in a network packet.
 	 */
-	public abstract byte[] toWire();
+	public byte[] toWire();
 
 	/**
 	 * Loads this header from its {@link #toWire()} representation, being read
@@ -122,12 +28,12 @@ public abstract class PacketContent {
 	 * Returns an instance of the header that follows so the caller can continue
 	 * reading.
 	 */
-	public abstract PacketContent loadFromStream(InputStream in) throws IOException;
+	public PacketContent loadFromStream(InputStream in) throws IOException;
 
 	/**
 	 * Returns a short string uniquely identifing this header's protocol.
 	 */
-	public abstract String getShortName();
+	public String getShortName();
 
 	/**
 	 * Returns the identifier the IANA assigned to this header type.
@@ -138,27 +44,27 @@ public abstract class PacketContent {
 	 * If the header type is not supposed to be previously nexthdr'd, this will
 	 * return a negative number.
 	 */
-	public abstract int getHdrIndex();
+	public int getHdrIndex();
 
 	/**
 	 * Returns the layer in the IP/TCP protocol stack this header belongs to.
 	 */
-	public abstract Layer getLayer();
+	public Layer getLayer();
 
 	/**
 	 * Automatically assigns a value to any fields the user left unset ("auto").
 	 */
-	public abstract void postProcess(Packet packet, Fragment fragment) throws IOException;
+	public void postProcess(Packet packet, Fragment fragment) throws IOException;
 
 	/**
 	 * Builds and returns a deep copy of this header.
 	 * 
 	 * TODO Review the deepness of the copy implementations.
 	 */
-	public abstract PacketContent createClone();
+	public PacketContent createClone();
 
-	public abstract void unsetChecksum();
+	public void unsetChecksum();
 
-	public abstract void unsetLengths();
+	public void unsetLengths();
 
 }

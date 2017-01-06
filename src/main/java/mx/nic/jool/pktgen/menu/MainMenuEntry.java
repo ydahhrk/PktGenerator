@@ -2,7 +2,6 @@ package mx.nic.jool.pktgen.menu;
 
 import mx.nic.jool.pktgen.FieldScanner;
 import mx.nic.jool.pktgen.auto.Util;
-import mx.nic.jool.pktgen.parser.Parser;
 import mx.nic.jool.pktgen.pojo.Fragment;
 
 /**
@@ -30,6 +29,6 @@ public abstract class MainMenuEntry implements MainMenuPrintable {
 		return shortName;
 	}
 
-	public abstract void execute(Parser parser, FieldScanner scanner, Fragment frag);
+	public abstract void execute(FieldScanner scanner, Fragment frag);
 
 }

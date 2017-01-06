@@ -13,7 +13,6 @@ import java.util.concurrent.ThreadLocalRandom;
 import mx.nic.jool.pktgen.ByteArrayOutputStream;
 import mx.nic.jool.pktgen.ChecksumBuilder;
 import mx.nic.jool.pktgen.ChecksumStatus;
-import mx.nic.jool.pktgen.FieldScanner;
 import mx.nic.jool.pktgen.PacketUtils;
 import mx.nic.jool.pktgen.annotation.HeaderField;
 import mx.nic.jool.pktgen.auto.Util;
@@ -76,25 +75,6 @@ public class Ipv4Header extends Layer3Header {
 	public Ipv4Header() {
 		this.source = DEFAULT_SRC;
 		this.destination = DEFAULT_DST;
-	}
-
-	@Override
-	public void readFromStdIn(FieldScanner scanner) {
-		version = scanner.readInt("Version", 4);
-		ihl = scanner.readInteger("IHL");
-		tos = scanner.readInt("TOS", 0);
-		totalLength = scanner.readInteger("Total Length");
-		identification = scanner.readInt("Identification", 0);
-		reserved = scanner.readBoolean("Reserved", false);
-		df = scanner.readBoolean("DF", true);
-		mf = scanner.readBoolean("MF", null);
-		fragmentOffset = scanner.readInteger("Fragment Offset (bytes)");
-		ttl = scanner.readInt("TTL", 64);
-		protocol = scanner.readProtocol("Protocol");
-		headerChecksum = scanner.readInteger("Checksum");
-		source = scanner.readAddress4("Source Address");
-		destination = scanner.readAddress4("Destination Address");
-		options = scanner.readByteArray("Options");
 	}
 
 	private int buildChecksum() throws IOException {

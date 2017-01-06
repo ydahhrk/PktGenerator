@@ -5,7 +5,6 @@ import java.io.InputStream;
 import java.util.concurrent.ThreadLocalRandom;
 
 import mx.nic.jool.pktgen.ByteArrayOutputStream;
-import mx.nic.jool.pktgen.FieldScanner;
 import mx.nic.jool.pktgen.PacketUtils;
 import mx.nic.jool.pktgen.annotation.HeaderField;
 import mx.nic.jool.pktgen.auto.Util;
@@ -26,14 +25,6 @@ public class UdpHeader extends Layer4Header {
 	private Integer length = null;
 	@HeaderField
 	private Integer checksum = null;
-
-	@Override
-	public void readFromStdIn(FieldScanner scanner) {
-		sourcePort = scanner.readInt("Source Port");
-		destinationPort = scanner.readInt("Destination Port");
-		length = scanner.readInteger("Length");
-		checksum = scanner.readInteger("Checksum");
-	}
 
 	@Override
 	public void postProcess(Packet packet, Fragment fragment) throws IOException {

@@ -5,7 +5,6 @@ import java.io.InputStream;
 import java.util.concurrent.ThreadLocalRandom;
 
 import mx.nic.jool.pktgen.ByteArrayOutputStream;
-import mx.nic.jool.pktgen.FieldScanner;
 import mx.nic.jool.pktgen.PacketUtils;
 import mx.nic.jool.pktgen.annotation.HeaderField;
 import mx.nic.jool.pktgen.auto.Util;
@@ -28,15 +27,6 @@ public abstract class IcmpHeader extends Layer4Header {
 	protected int restOfHeader1 = 0;
 	@HeaderField
 	protected int restOfHeader2 = 0;
-
-	@Override
-	public void readFromStdIn(FieldScanner scanner) {
-		type = scanner.readInt("Type", 3);
-		code = scanner.readInt("Code", 0);
-		checksum = scanner.readInteger("Checksum");
-		restOfHeader1 = scanner.readInt("Unused [higher 16 bits]", 0);
-		restOfHeader2 = scanner.readInt("Unused [lower 16 bits]", 0);
-	}
 
 	@Override
 	public byte[] toWire() {

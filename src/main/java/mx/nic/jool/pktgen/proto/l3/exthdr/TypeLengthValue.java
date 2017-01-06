@@ -2,19 +2,23 @@ package mx.nic.jool.pktgen.proto.l3.exthdr;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Arrays;
 import java.util.concurrent.ThreadLocalRandom;
 
 import mx.nic.jool.pktgen.ByteArrayOutputStream;
-import mx.nic.jool.pktgen.FieldScanner;
 import mx.nic.jool.pktgen.PacketUtils;
+import mx.nic.jool.pktgen.annotation.HeaderField;
 import mx.nic.jool.pktgen.auto.Util;
 
 public class TypeLengthValue {
 
 	private static final int PAD1 = 0;
 
+	@HeaderField
 	private int optionType;
+	@HeaderField
 	private Integer optDataLen;
+	@HeaderField
 	private byte[] optionData;
 
 	public static TypeLengthValue createPadding(int length) {
@@ -36,32 +40,25 @@ public class TypeLengthValue {
 
 		return new TypeLengthValue(type, optDataLen, optionData);
 	}
+	
+	public static TypeLengthValue createFromInputStream(InputStream in) throws IOException {
+		int type = in.read();
+		if (type == PAD1)
+			return new TypeLengthValue(PAD1, null, null);
+		
+		Integer optDataLen = in.read();
+		byte[] optionData = Util.streamToByteArray(in, optDataLen);
+		return new TypeLengthValue(type, optDataLen, optionData);
+	}
+
+	public TypeLengthValue() {
+		this(PAD1, null, null);
+	}
 
 	private TypeLengthValue(int optionType, Integer optDataLen, byte[] optionData) {
 		this.optionType = optionType;
 		this.optDataLen = optDataLen;
 		this.optionData = optionData;
-	}
-
-	public TypeLengthValue(FieldScanner scanner) {
-		loadFromStdIn(scanner);
-	}
-
-	public TypeLengthValue(InputStream in) throws IOException {
-		optionType = in.read();
-		if (optionType == PAD1)
-			return;
-		optDataLen = in.read();
-		optionData = Util.streamToByteArray(in, optDataLen);
-	}
-
-	public void loadFromStdIn(FieldScanner scanner) {
-		this.optionType = scanner.readInt("Option Type");
-		if (optionType == PAD1)
-			return;
-
-		this.optDataLen = scanner.readInteger("Opt Data Len");
-		this.optionData = scanner.readByteArray("Option Data");
 	}
 
 	public byte[] toWire() {
@@ -81,13 +78,8 @@ public class TypeLengthValue {
 		StringBuilder sb = new StringBuilder();
 
 		sb.append(optionType).append(",");
-		sb.append((optDataLen != null) ? optDataLen : "auto").append(",");
-		if (optionData != null) {
-			sb.append("(");
-			for (byte data : optionData)
-				sb.append(data);
-			sb.append(")");
-		}
+		sb.append((optDataLen != null) ? optDataLen : "(auto)").append(",");
+		sb.append((optionData != null) ? Arrays.toString(optionData) : "(auto)");
 
 		return sb.toString();
 	}

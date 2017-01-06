@@ -5,7 +5,6 @@ import java.io.InputStream;
 import java.util.concurrent.ThreadLocalRandom;
 
 import mx.nic.jool.pktgen.ByteArrayOutputStream;
-import mx.nic.jool.pktgen.FieldScanner;
 import mx.nic.jool.pktgen.PacketUtils;
 import mx.nic.jool.pktgen.annotation.HeaderField;
 import mx.nic.jool.pktgen.auto.Util;
@@ -30,16 +29,6 @@ public class FragmentExt6Header extends Extension6Header {
 	private Boolean mFlag = null;
 	@HeaderField
 	private long identification = 0;
-
-	@Override
-	public void readFromStdIn(FieldScanner scanner) {
-		nextHeader = scanner.readInteger("Next Header");
-		reserved = scanner.readInt("Reserved", 0);
-		fragmentOffset = scanner.readInteger("Fragment Offset (bytes)");
-		res = scanner.readInt("Res", 0);
-		mFlag = scanner.readBoolean("M flag", null);
-		identification = scanner.readLong("identification", 0);
-	}
 
 	@Override
 	public void postProcess(Packet packet, Fragment fragment) throws IOException {

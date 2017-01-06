@@ -5,7 +5,7 @@ import java.io.IOException;
 import mx.nic.jool.pktgen.enums.Layer;
 import mx.nic.jool.pktgen.pojo.PacketContent;
 
-public abstract class Layer3Header extends PacketContent {
+public abstract class Layer3Header implements PacketContent {
 
 	@Override
 	public Layer getLayer() {

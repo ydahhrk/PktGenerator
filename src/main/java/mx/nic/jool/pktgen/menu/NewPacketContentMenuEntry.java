@@ -1,7 +1,6 @@
 package mx.nic.jool.pktgen.menu;
 
 import mx.nic.jool.pktgen.FieldScanner;
-import mx.nic.jool.pktgen.parser.Parser;
 import mx.nic.jool.pktgen.pojo.Fragment;
 import mx.nic.jool.pktgen.pojo.PacketContent;
 
@@ -19,9 +18,9 @@ public class NewPacketContentMenuEntry extends MainMenuEntry {
 	}
 
 	@Override
-	public void execute(Parser parser, FieldScanner scanner, Fragment frag) {
+	public void execute(FieldScanner scanner, Fragment frag) {
 		PacketContent newContent = template.createClone();
-		parser.buildPacketContentOutOfInput(newContent, scanner);
+		scanner.scan(newContent);
 		frag.add(newContent);
 	}
 

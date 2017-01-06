@@ -26,13 +26,6 @@ public abstract class TlvExt6Header extends Extension6Header {
 	@HeaderField
 	private TypeLengthValueList tlvs = new TypeLengthValueList();
 
-	@Override
-	public void readFromStdIn(FieldScanner scanner) {
-		nextHeader = scanner.readProtocol("Next Header");
-		hdrExtLength = scanner.readInteger("Header Extension Length");
-		tlvs.readFromStdIn(scanner);
-	}
-
 	private int computePadding(int length) {
 		return (length % 8 == 0) ? 0 : (8 - (length % 8));
 	}

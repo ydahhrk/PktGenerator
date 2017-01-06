@@ -34,16 +34,6 @@ public class RoutingExt6Header extends Extension6Header {
 	private Inet6AddressList addresses = new Inet6AddressList();
 
 	@Override
-	public void readFromStdIn(FieldScanner scanner) {
-		nextHeader = scanner.readProtocol("Next Header");
-		hdrExtLength = scanner.readInteger("Header Extension Length");
-		routingType = scanner.readInt("Routing Type", 0);
-		segmentsLeft = scanner.readInteger("Segments Left");
-		reserved = scanner.readLong("Reserved", 0);
-		addresses.readFromStdIn(scanner);
-	}
-
-	@Override
 	public void postProcess(Packet packet, Fragment fragment) throws IOException {
 		if (nextHeader == null) {
 			nextHeader = fragment.getNextHdr(packet, this);

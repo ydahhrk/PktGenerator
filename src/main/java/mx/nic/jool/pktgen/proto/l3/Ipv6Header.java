@@ -10,7 +10,6 @@ import java.util.Properties;
 import java.util.concurrent.ThreadLocalRandom;
 
 import mx.nic.jool.pktgen.ByteArrayOutputStream;
-import mx.nic.jool.pktgen.FieldScanner;
 import mx.nic.jool.pktgen.PacketUtils;
 import mx.nic.jool.pktgen.annotation.HeaderField;
 import mx.nic.jool.pktgen.auto.Util;
@@ -59,18 +58,6 @@ public class Ipv6Header extends Layer3Header {
 	public Ipv6Header() {
 		source = DEFAULT_SRC;
 		destination = DEFAULT_DST;
-	}
-
-	@Override
-	public void readFromStdIn(FieldScanner scanner) {
-		version = scanner.readInt("Version", 6);
-		trafficClass = scanner.readInt("Traffic Class", 0);
-		flowLabel = scanner.readInt("Flow Label", 0);
-		payloadLength = scanner.readInteger("Payload Length");
-		nextHeader = scanner.readProtocol("Next Header");
-		hopLimit = scanner.readInt("Hop Limit", 64);
-		source = scanner.readAddress6("Source Address");
-		destination = scanner.readAddress6("Destination Address");
 	}
 
 	@Override
