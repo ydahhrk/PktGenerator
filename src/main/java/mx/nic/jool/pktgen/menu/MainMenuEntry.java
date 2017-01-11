@@ -1,7 +1,7 @@
 package mx.nic.jool.pktgen.menu;
 
 import mx.nic.jool.pktgen.FieldScanner;
-import mx.nic.jool.pktgen.auto.Util;
+import mx.nic.jool.pktgen.Util;
 import mx.nic.jool.pktgen.pojo.Fragment;
 
 /**

@@ -48,6 +48,9 @@ public class PacketGenerator {
 		}
 	}
 
+	/**
+	 * Modifies <code>frag</code> according to user input.
+	 */
 	private static void handleMenuMode(Fragment frag) throws IOException {
 		MainMenu menu = new MainMenu();
 		FieldScanner scanner = new FieldScanner(new Scanner(System.in));
@@ -90,7 +93,7 @@ public class PacketGenerator {
 
 		if (ipv6) {
 			fragment.add(new Ipv6Header());
-			maybeAddIpv6ExtHeaders(fragment, random);
+			maybeAddIpv6ExtensionHeaders(fragment, random);
 		} else {
 			fragment.add(new Ipv4Header());
 		}
@@ -112,7 +115,7 @@ public class PacketGenerator {
 				Ipv6Header internal = new Ipv6Header();
 				internal.swapAddresses();
 				fragment.add(internal);
-				maybeAddIpv6ExtHeaders(fragment, random);
+				maybeAddIpv6ExtensionHeaders(fragment, random);
 
 			} else {
 				fragment.add(new Icmpv4ErrorHeader());
@@ -141,7 +144,7 @@ public class PacketGenerator {
 		packet.export("random");
 	}
 
-	private static void maybeAddIpv6ExtHeaders(Fragment fragment, ThreadLocalRandom random) {
+	private static void maybeAddIpv6ExtensionHeaders(Fragment fragment, ThreadLocalRandom random) {
 		if (random.nextInt(10) > 3)
 			return;
 
@@ -152,10 +155,10 @@ public class PacketGenerator {
 
 		int headers = random.nextInt(6);
 		for (int i = 0; i < headers; i++)
-			fragment.add(createRandomExtHeader(fragment, random));
+			fragment.add(createRandomExtensionHeader(fragment, random));
 	}
 
-	private static Extension6Header createRandomExtHeader(Fragment fragment, ThreadLocalRandom random) {
+	private static Extension6Header createRandomExtensionHeader(Fragment fragment, ThreadLocalRandom random) {
 		switch (random.nextInt(4)) {
 		case 0:
 			return new DestinationOptionExt6Header();

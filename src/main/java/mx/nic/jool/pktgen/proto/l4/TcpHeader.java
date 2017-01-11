@@ -7,12 +7,14 @@ import java.util.concurrent.ThreadLocalRandom;
 import mx.nic.jool.pktgen.ByteArrayOutputStream;
 import mx.nic.jool.pktgen.PacketUtils;
 import mx.nic.jool.pktgen.annotation.HeaderField;
-import mx.nic.jool.pktgen.auto.Util;
 import mx.nic.jool.pktgen.pojo.Fragment;
+import mx.nic.jool.pktgen.pojo.Header;
 import mx.nic.jool.pktgen.pojo.Packet;
-import mx.nic.jool.pktgen.pojo.PacketContent;
 import mx.nic.jool.pktgen.pojo.Payload;
 
+/**
+ * https://tools.ietf.org/html/rfc793#section-3.1
+ */
 public class TcpHeader extends Layer4Header {
 
 	public static final int LENGTH = 20;
@@ -87,7 +89,7 @@ public class TcpHeader extends Layer4Header {
 	}
 
 	@Override
-	public PacketContent createClone() {
+	public Header createClone() {
 		TcpHeader result = new TcpHeader();
 
 		result.sourcePort = sourcePort;
@@ -123,13 +125,13 @@ public class TcpHeader extends Layer4Header {
 	}
 
 	@Override
-	public PacketContent loadFromStream(InputStream in) throws IOException {
-		int[] header = Util.streamToIntArray(in, LENGTH);
+	public Header loadFromStream(InputStream in) throws IOException {
+		int[] header = PacketUtils.streamToIntArray(in, LENGTH);
 
-		sourcePort = Util.joinBytes(header, 0, 1);
-		destinationPort = Util.joinBytes(header, 2, 3);
-		sequenceNumber = Util.joinBytes(header[4], header[5], header[6], header[7]);
-		acknowledgmentNumber = Util.joinBytes(header[8], header[9], header[10], header[11]);
+		sourcePort = PacketUtils.joinBytes(header, 0, 1);
+		destinationPort = PacketUtils.joinBytes(header, 2, 3);
+		sequenceNumber = PacketUtils.joinBytes(header[4], header[5], header[6], header[7]);
+		acknowledgmentNumber = PacketUtils.joinBytes(header[8], header[9], header[10], header[11]);
 		dataOffset = header[12] >> 4;
 		reserved = (header[12] >> 1) & 0x7;
 		ns = (header[12] & 0x1) == 1;
@@ -141,9 +143,9 @@ public class TcpHeader extends Layer4Header {
 		rst = ((header[13] >> 2) & 0x1) == 1;
 		syn = ((header[13] >> 1) & 0x1) == 1;
 		fin = ((header[13] >> 0) & 0x1) == 1;
-		windowSize = Util.joinBytes(header, 14, 15);
-		checksum = Util.joinBytes(header, 16, 17);
-		urgentPointer = Util.joinBytes(header, 18, 19);
+		windowSize = PacketUtils.joinBytes(header, 14, 15);
+		checksum = PacketUtils.joinBytes(header, 16, 17);
+		urgentPointer = PacketUtils.joinBytes(header, 18, 19);
 
 		return new Payload();
 	}

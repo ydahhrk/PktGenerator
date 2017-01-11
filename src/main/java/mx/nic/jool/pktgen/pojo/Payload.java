@@ -9,9 +9,15 @@ import mx.nic.jool.pktgen.annotation.HeaderField;
 import mx.nic.jool.pktgen.enums.Layer;
 
 /**
- * A packet content consisting of an arbitrary sequence of bytes.
+ * A "Header" whose only field is an arbitrary sequence of bytes. Often placed
+ * at the end of a packet, and contains the actual information the user wants to
+ * transmit.
+ * <p>
+ * (It's kind of ironic that this one is kind of an outlier in that it's the
+ * only one that's not technically a "header", and yet it's the only one that
+ * matters at the end of the day.)
  */
-public class Payload implements PacketContent {
+public class Payload implements Header {
 
 	@HeaderField
 	private byte[] bytes;
@@ -26,7 +32,7 @@ public class Payload implements PacketContent {
 
 	/**
 	 * Will initialize {@link #bytes} using incrementing numbers.
-	 * 
+	 * <p>
 	 * ie. bytes = new byte[] { 0, 1, 2, 3, 4, 5, ... };
 	 */
 	public Payload(int size, int offset) {
@@ -41,7 +47,7 @@ public class Payload implements PacketContent {
 	}
 
 	@Override
-	public PacketContent createClone() {
+	public Header createClone() {
 		Payload result = new Payload();
 
 		result.bytes = new byte[bytes.length];
@@ -77,7 +83,7 @@ public class Payload implements PacketContent {
 	}
 
 	@Override
-	public PacketContent loadFromStream(InputStream in) throws IOException {
+	public Header loadFromStream(InputStream in) throws IOException {
 		ByteArrayOutputStream builder = new ByteArrayOutputStream();
 		byte[] buffer = new byte[256];
 

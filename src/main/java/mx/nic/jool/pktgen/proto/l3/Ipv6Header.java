@@ -12,12 +12,14 @@ import java.util.concurrent.ThreadLocalRandom;
 import mx.nic.jool.pktgen.ByteArrayOutputStream;
 import mx.nic.jool.pktgen.PacketUtils;
 import mx.nic.jool.pktgen.annotation.HeaderField;
-import mx.nic.jool.pktgen.auto.Util;
 import mx.nic.jool.pktgen.pojo.Fragment;
+import mx.nic.jool.pktgen.pojo.Header;
 import mx.nic.jool.pktgen.pojo.Packet;
-import mx.nic.jool.pktgen.pojo.PacketContent;
-import mx.nic.jool.pktgen.proto.PacketContentFactory;
+import mx.nic.jool.pktgen.proto.HeaderFactory;
 
+/**
+ * https://tools.ietf.org/html/rfc2460#section-3
+ */
 public class Ipv6Header extends Layer3Header {
 
 	private static final Inet6Address DEFAULT_SRC;
@@ -64,8 +66,8 @@ public class Ipv6Header extends Layer3Header {
 	public void postProcess(Packet packet, Fragment fragment) throws IOException {
 		if (payloadLength == null) {
 			payloadLength = 0;
-			for (PacketContent content : fragment.sliceExclusive(this)) {
-				payloadLength += content.toWire().length;
+			for (Header header : fragment.sliceExclusive(this)) {
+				payloadLength += header.toWire().length;
 			}
 		}
 
@@ -91,7 +93,7 @@ public class Ipv6Header extends Layer3Header {
 	}
 
 	@Override
-	public PacketContent createClone() {
+	public Header createClone() {
 		Ipv6Header result = new Ipv6Header();
 
 		result.version = version;
@@ -125,14 +127,6 @@ public class Ipv6Header extends Layer3Header {
 		return "v6";
 	}
 
-	public void setPayloadLength(Integer payloadLength) {
-		this.payloadLength = payloadLength;
-	}
-
-	public void setHopLimit(int hopLimit) {
-		this.hopLimit = hopLimit;
-	}
-
 	public void swapAddresses() {
 		Inet6Address tmp = source;
 		source = destination;
@@ -145,19 +139,19 @@ public class Ipv6Header extends Layer3Header {
 	}
 
 	@Override
-	public PacketContent loadFromStream(InputStream in) throws IOException {
-		int[] header = Util.streamToIntArray(in, LENGTH);
+	public Header loadFromStream(InputStream in) throws IOException {
+		int[] header = PacketUtils.streamToIntArray(in, LENGTH);
 
 		version = header[0] >> 4;
 		trafficClass = ((header[0] & 0xF) << 4) | (header[1] >> 4);
-		flowLabel = Util.joinBytes(header[1] & 0xF, header[2], header[3]);
-		payloadLength = Util.joinBytes(header, 4, 5);
+		flowLabel = PacketUtils.joinBytes(header[1] & 0xF, header[2], header[3]);
+		payloadLength = PacketUtils.joinBytes(header, 4, 5);
 		nextHeader = header[6];
 		hopLimit = header[7];
 		source = loadAddress(header, 8);
 		destination = loadAddress(header, 24);
 
-		return PacketContentFactory.forNexthdr(nextHeader);
+		return HeaderFactory.forNexthdr(nextHeader);
 	}
 
 	private Inet6Address loadAddress(int[] bytes, int offset) throws UnknownHostException {

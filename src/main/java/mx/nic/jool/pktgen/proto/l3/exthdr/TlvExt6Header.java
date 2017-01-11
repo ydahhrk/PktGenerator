@@ -7,11 +7,10 @@ import mx.nic.jool.pktgen.ByteArrayOutputStream;
 import mx.nic.jool.pktgen.FieldScanner;
 import mx.nic.jool.pktgen.PacketUtils;
 import mx.nic.jool.pktgen.annotation.HeaderField;
-import mx.nic.jool.pktgen.auto.Util;
 import mx.nic.jool.pktgen.pojo.Fragment;
+import mx.nic.jool.pktgen.pojo.Header;
 import mx.nic.jool.pktgen.pojo.Packet;
-import mx.nic.jool.pktgen.pojo.PacketContent;
-import mx.nic.jool.pktgen.proto.PacketContentFactory;
+import mx.nic.jool.pktgen.proto.HeaderFactory;
 
 public abstract class TlvExt6Header extends Extension6Header {
 
@@ -69,7 +68,7 @@ public abstract class TlvExt6Header extends Extension6Header {
 	}
 
 	@Override
-	public PacketContent createClone() {
+	public Header createClone() {
 		TlvExt6Header result = instanceSelf();
 
 		result.nextHeader = nextHeader;
@@ -82,14 +81,14 @@ public abstract class TlvExt6Header extends Extension6Header {
 	protected abstract TlvExt6Header instanceSelf();
 
 	@Override
-	public PacketContent loadFromStream(InputStream in) throws IOException {
-		int[] header = Util.streamToIntArray(in, 2);
+	public Header loadFromStream(InputStream in) throws IOException {
+		int[] header = PacketUtils.streamToIntArray(in, 2);
 
 		nextHeader = header[0];
 		hdrExtLength = header[1];
 		tlvs.loadFromStream(in, hdrExtLength);
 
-		return PacketContentFactory.forNexthdr(nextHeader);
+		return HeaderFactory.forNexthdr(nextHeader);
 	}
 
 	@Override

@@ -1,5 +1,8 @@
 package mx.nic.jool.pktgen.proto.l3.exthdr;
 
+/**
+ * https://tools.ietf.org/html/rfc2460#section-4.6
+ */
 public class DestinationOptionExt6Header extends TlvExt6Header {
 
 	@Override

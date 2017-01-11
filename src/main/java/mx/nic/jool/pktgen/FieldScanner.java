@@ -14,8 +14,11 @@ import java.util.Arrays;
 import java.util.Scanner;
 
 import mx.nic.jool.pktgen.annotation.HeaderField;
-import mx.nic.jool.pktgen.proto.PacketContentFactory;
+import mx.nic.jool.pktgen.proto.HeaderFactory;
 
+/**
+ * Something that requests values from the user and returns the results.
+ */
 public class FieldScanner {
 
 	private Scanner scanner;
@@ -24,11 +27,15 @@ public class FieldScanner {
 		this.scanner = scanner;
 	}
 
+	/**
+	 * Requests the user a String and returns it.
+	 */
 	private String readLine() {
 		int indexOfTag;
 		String input = scanner.nextLine().trim();
 		System.out.println();
 
+		// Handle comments. (In case the user is automating this or something.)
 		indexOfTag = input.indexOf("#");
 		if (indexOfTag > 0)
 			input = input.substring(0, indexOfTag);
@@ -38,6 +45,14 @@ public class FieldScanner {
 		return input.trim();
 	}
 
+	/**
+	 * Requests the user an int and returns it.
+	 * <p>
+	 * This method does not return until the user has entered a valid integer.
+	 * 
+	 * @param prefix
+	 *            name of the int you want the user to enter.
+	 */
 	public int readInt(String prefix) {
 		System.out.print(prefix + ": ");
 
@@ -54,6 +69,14 @@ public class FieldScanner {
 		} while (true);
 	}
 
+	/**
+	 * Requests the user an int and returns it.
+	 * <p>
+	 * If the user enters an empty string, returns <code>defaultValue</code>.
+	 * 
+	 * @param prefix
+	 *            name of the int you want the user to enter.
+	 */
 	public int readInt(String prefix, int defaultValue) {
 		System.out.print(prefix + " (" + defaultValue + "): ");
 
@@ -70,10 +93,29 @@ public class FieldScanner {
 		} while (true);
 	}
 
+	/**
+	 * Requests the user an Integer and returns it.
+	 * <p>
+	 * If the user returns an empty string, returns <code>null</code>.
+	 * 
+	 * @param prefix
+	 *            name of the Integer you want the user to enter.
+	 */
 	public Integer readInteger(String prefix) {
 		return readInteger(prefix, "auto");
 	}
 
+	/**
+	 * Requests the user an Integer and returns it.
+	 * <p>
+	 * If the user returns an empty string, returns <code>null</code>.
+	 * 
+	 * @param prefix
+	 *            name of the Integer you want the user to enter.
+	 * @param defaultCaption
+	 *            a string representing a hint to the user, which snappily
+	 *            indicates what will happen if they enter an empty string.
+	 */
 	public Integer readInteger(String prefix, String defaultCaption) {
 		System.out.print(prefix + " (" + defaultCaption + "): ");
 
@@ -91,6 +133,14 @@ public class FieldScanner {
 		} while (true);
 	}
 
+	/**
+	 * Requests the user an Integer and returns it.
+	 * <p>
+	 * If the user returns an empty string, returns <code>defaultValue</code>.
+	 * 
+	 * @param prefix
+	 *            name of the long you want the user to enter.
+	 */
 	public long readLong(String prefix, long defaultValue) {
 		System.out.print(prefix + " (" + defaultValue + "): ");
 
@@ -107,6 +157,14 @@ public class FieldScanner {
 		} while (true);
 	}
 
+	/**
+	 * Requests the user an boolean and returns it.
+	 * <p>
+	 * If the user returns an empty string, returns <code>defaultValue</code>.
+	 * 
+	 * @param prefix
+	 *            name of the boolean you want the user to enter.
+	 */
 	public boolean readBool(String prefix, boolean defaultValue) {
 		System.out.print(prefix + " (" + defaultValue + "): ");
 
@@ -116,6 +174,14 @@ public class FieldScanner {
 		return Boolean.parseBoolean(input);
 	}
 
+	/**
+	 * Requests the user an Boolean and returns it.
+	 * <p>
+	 * If the user returns an empty string, returns <code>defaultValue</code>.
+	 * 
+	 * @param prefix
+	 *            name of the Boolean you want the user to enter.
+	 */
 	public Boolean readBoolean(String prefix, Boolean defaultValue) {
 		String printableDefault = (defaultValue != null) ? defaultValue.toString() : "auto";
 		System.out.print(prefix + " (" + printableDefault + "): ");
@@ -133,11 +199,29 @@ public class FieldScanner {
 		} while (true);
 	}
 
+	/**
+	 * Requests the user a nexthdr value and returns it.
+	 * <p>
+	 * If the user returns an empty string, returns <code>null</code>.
+	 * <p>
+	 * TODO not used. Remove?
+	 * 
+	 * @param prefix
+	 *            name of the field you want the user to enter.
+	 */
 	public Integer readProtocol(String prefix) {
-		PacketContentFactory.printIntProtocols();
+		HeaderFactory.printIntProtocols();
 		return readInteger(prefix);
 	}
 
+	/**
+	 * Requests the user an IP address and returns it.
+	 * <p>
+	 * This method does not return until the user has entered a valid address.
+	 * 
+	 * @param prefix
+	 *            name of the field you want the user to enter.
+	 */
 	private InetAddress readAddress(String prefix) {
 		System.out.print(prefix + ": ");
 
@@ -155,6 +239,14 @@ public class FieldScanner {
 		} while (true);
 	}
 
+	/**
+	 * Requests the user an IPv4 address and returns it.
+	 * <p>
+	 * This method does not return until the user has entered a valid address.
+	 * 
+	 * @param prefix
+	 *            name of the field you want the user to enter.
+	 */
 	public Inet4Address readAddress4(String prefix) {
 		InetAddress result;
 		do {
@@ -166,6 +258,14 @@ public class FieldScanner {
 		} while (true);
 	}
 
+	/**
+	 * Requests the user an IPv6 address and returns it.
+	 * <p>
+	 * This method does not return until the user has entered a valid address.
+	 * 
+	 * @param prefix
+	 *            name of the field you want the user to enter.
+	 */
 	public Inet6Address readAddress6(String prefix) {
 		InetAddress result;
 		do {
@@ -177,12 +277,20 @@ public class FieldScanner {
 		} while (true);
 	}
 
+	/**
+	 * Requests the user a String and returns it.
+	 * <p>
+	 * If the user returns an empty string, returns <code>defaultValue</code>.
+	 */
 	public String readLine(String prefix, String defaultValue) {
 		System.out.print(prefix + " (" + defaultValue + "): ");
 		String result = readLine();
 		return result.isEmpty() ? defaultValue : result;
 	}
 
+	/**
+	 * Requests the user a byte array and returns it.
+	 */
 	public byte[] readByteArray(String prefix) {
 		System.out.println(prefix + ":");
 
@@ -237,7 +345,8 @@ public class FieldScanner {
 
 	/**
 	 * Prints <code>object</code> in standard output and requests modifications
-	 * to the user.
+	 * to the user. The fields that can be modified are the ones
+	 * {@link HeaderField}-annotated.
 	 * 
 	 * This is the core of "auto" mode.
 	 */
@@ -271,6 +380,10 @@ public class FieldScanner {
 		} while (true);
 	}
 
+	/**
+	 * Builds and returns a list containing all of <code>object</code>'s
+	 * {@link HeaderField}-annotated fields.
+	 */
 	private Field[] collectHeaderFields(Object object) {
 		ArrayList<Field> resultList = new ArrayList<>();
 
@@ -291,6 +404,10 @@ public class FieldScanner {
 		return resultList.toArray(resultArray);
 	}
 
+	/**
+	 * Prints <code>object</code>'s <code>fields</code> and their values in
+	 * standard output for user consumption.
+	 */
 	private void showFields(Field[] fields, Object obj) {
 		System.out.printf("%s Fields:\n", obj.getClass().getSimpleName());
 		for (Field field : fields) {
@@ -315,6 +432,11 @@ public class FieldScanner {
 		}
 	}
 
+	/**
+	 * Requests the value of <code>object</code>'s <code>field</code> to the
+	 * user, and uses reflection to attempt to figure out how to correctly parse
+	 * and return the result.
+	 */
 	private Object read(Object object, Field field)
 			throws IllegalArgumentException, IllegalAccessException, InstantiationException {
 		Class<?> clazz = field.getType();

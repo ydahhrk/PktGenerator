@@ -4,6 +4,9 @@ import java.io.IOException;
 
 import mx.nic.jool.pktgen.proto.l3.Layer3Header;
 
+/**
+ * https://tools.ietf.org/html/rfc2460#section-4
+ */
 public abstract class Extension6Header extends Layer3Header {
 
 	@Override

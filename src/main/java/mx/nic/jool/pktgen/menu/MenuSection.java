@@ -4,11 +4,11 @@ import java.util.LinkedList;
 import java.util.List;
 
 import mx.nic.jool.pktgen.FieldScanner;
-import mx.nic.jool.pktgen.auto.Util;
+import mx.nic.jool.pktgen.Util;
 import mx.nic.jool.pktgen.pojo.Fragment;
 
 /**
- * A logical group of entries in a {@link MainMenu}.
+ * A logical subgroup of entries in a {@link MainMenu}.
  * 
  * Technically a {@link MainMenuEntry}, except it's not executable.
  */

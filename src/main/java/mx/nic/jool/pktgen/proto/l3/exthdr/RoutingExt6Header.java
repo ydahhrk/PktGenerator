@@ -8,12 +8,14 @@ import mx.nic.jool.pktgen.ByteArrayOutputStream;
 import mx.nic.jool.pktgen.FieldScanner;
 import mx.nic.jool.pktgen.PacketUtils;
 import mx.nic.jool.pktgen.annotation.HeaderField;
-import mx.nic.jool.pktgen.auto.Util;
 import mx.nic.jool.pktgen.pojo.Fragment;
+import mx.nic.jool.pktgen.pojo.Header;
 import mx.nic.jool.pktgen.pojo.Packet;
-import mx.nic.jool.pktgen.pojo.PacketContent;
-import mx.nic.jool.pktgen.proto.PacketContentFactory;
+import mx.nic.jool.pktgen.proto.HeaderFactory;
 
+/**
+ * https://tools.ietf.org/html/rfc2460#section-4.4
+ */
 public class RoutingExt6Header extends Extension6Header {
 
 	@HeaderField
@@ -47,7 +49,7 @@ public class RoutingExt6Header extends Extension6Header {
 	}
 
 	@Override
-	public PacketContent createClone() {
+	public Header createClone() {
 		RoutingExt6Header result = new RoutingExt6Header();
 
 		result.nextHeader = nextHeader;
@@ -85,8 +87,8 @@ public class RoutingExt6Header extends Extension6Header {
 	}
 
 	@Override
-	public PacketContent loadFromStream(InputStream in) throws IOException {
-		int[] header = Util.streamToIntArray(in, 8);
+	public Header loadFromStream(InputStream in) throws IOException {
+		int[] header = PacketUtils.streamToIntArray(in, 8);
 
 		nextHeader = header[0];
 		hdrExtLength = header[1];
@@ -94,10 +96,10 @@ public class RoutingExt6Header extends Extension6Header {
 		if (routingType != 0)
 			throw new IllegalArgumentException("Only type 0 routing headers are supported in load-from-file mode.");
 		segmentsLeft = header[3];
-		reserved = Util.joinBytes(header[4], header[5], header[6], header[7]);
+		reserved = PacketUtils.joinBytes(header[4], header[5], header[6], header[7]);
 		addresses.loadFromStream(in, hdrExtLength);
 
-		return PacketContentFactory.forNexthdr(nextHeader);
+		return HeaderFactory.forNexthdr(nextHeader);
 	}
 
 	@Override

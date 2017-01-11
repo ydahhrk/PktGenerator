@@ -10,6 +10,9 @@ import mx.nic.jool.pktgen.ByteArrayOutputStream;
 import mx.nic.jool.pktgen.FieldScanner;
 import mx.nic.jool.pktgen.ScannableHeaderField;
 
+/**
+ * A bunch of {@link TypeLengthValue} options, listed in some header.
+ */
 public class TypeLengthValueList implements ScannableHeaderField {
 
 	private List<TypeLengthValue> list = new ArrayList<>();
@@ -61,6 +64,10 @@ public class TypeLengthValueList implements ScannableHeaderField {
 		}
 	}
 
+	/**
+	 * Returns the number of bytes this list lengths when you've
+	 * {@link #toWire()}'d it, not the number of TLVs in this list.
+	 */
 	public int getLength() {
 		int length = 0;
 		for (TypeLengthValue tlv : list)
@@ -68,6 +75,10 @@ public class TypeLengthValueList implements ScannableHeaderField {
 		return length;
 	}
 
+	/**
+	 * Serializes this TLV list into its binary representation, exactly as it
+	 * would be represented in a network packet.
+	 */
 	public byte[] toWire() {
 		@SuppressWarnings("resource")
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -78,6 +89,10 @@ public class TypeLengthValueList implements ScannableHeaderField {
 		return out.toByteArray();
 	}
 
+	/**
+	 * Loads this TLV list from its {@link #toWire()} representation, being read
+	 * from <code>in</code>.
+	 */
 	public void loadFromStream(InputStream in, int hdrExtLength) throws IOException {
 		list.clear();
 
@@ -92,6 +107,9 @@ public class TypeLengthValueList implements ScannableHeaderField {
 			throw new IOException("Options list does not match the 'header extension length' field.");
 	}
 
+	/**
+	 * Reshapes this list to a random size and assigns random TLVs to its slots.
+	 */
 	public void randomize() {
 		ThreadLocalRandom random = ThreadLocalRandom.current();
 

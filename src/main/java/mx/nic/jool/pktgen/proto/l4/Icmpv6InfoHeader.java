@@ -2,9 +2,12 @@ package mx.nic.jool.pktgen.proto.l4;
 
 import java.util.concurrent.ThreadLocalRandom;
 
-import mx.nic.jool.pktgen.pojo.PacketContent;
+import mx.nic.jool.pktgen.pojo.Header;
 import mx.nic.jool.pktgen.pojo.Payload;
 
+/**
+ * A header representing the meat of an IPv6 ping.
+ */
 public class Icmpv6InfoHeader extends Icmpv6Header {
 
 	public Icmpv6InfoHeader() {
@@ -13,7 +16,7 @@ public class Icmpv6InfoHeader extends Icmpv6Header {
 	}
 
 	@Override
-	public PacketContent createClone() {
+	public Header createClone() {
 		return createCloneIcmp(new Icmpv6InfoHeader());
 	}
 
@@ -23,7 +26,7 @@ public class Icmpv6InfoHeader extends Icmpv6Header {
 	}
 
 	@Override
-	protected PacketContent getNextContent() {
+	protected Header getNextHeader() {
 		return new Payload();
 	}
 

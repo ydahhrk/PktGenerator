@@ -8,8 +8,10 @@ import java.util.concurrent.ThreadLocalRandom;
 import mx.nic.jool.pktgen.ByteArrayOutputStream;
 import mx.nic.jool.pktgen.PacketUtils;
 import mx.nic.jool.pktgen.annotation.HeaderField;
-import mx.nic.jool.pktgen.auto.Util;
 
+/**
+ * https://tools.ietf.org/html/rfc2460#section-4.2
+ */
 public class TypeLengthValue {
 
 	private static final int PAD1 = 0;
@@ -47,7 +49,7 @@ public class TypeLengthValue {
 			return new TypeLengthValue(PAD1, null, null);
 		
 		Integer optDataLen = in.read();
-		byte[] optionData = Util.streamToByteArray(in, optDataLen);
+		byte[] optionData = PacketUtils.streamToByteArray(in, optDataLen);
 		return new TypeLengthValue(type, optDataLen, optionData);
 	}
 

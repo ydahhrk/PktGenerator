@@ -5,8 +5,8 @@ import java.util.HashMap;
 import mx.nic.jool.pktgen.FieldScanner;
 import mx.nic.jool.pktgen.enums.Layer;
 import mx.nic.jool.pktgen.pojo.Fragment;
-import mx.nic.jool.pktgen.pojo.PacketContent;
-import mx.nic.jool.pktgen.proto.PacketContentFactory;
+import mx.nic.jool.pktgen.pojo.Header;
+import mx.nic.jool.pktgen.proto.HeaderFactory;
 
 /**
  * The global menu. The one that offers to add and modify headers and has a few
@@ -22,9 +22,9 @@ public class MainMenu {
 	 */
 	private HashMap<String, MainMenuEntry> map;
 
-	/** Section of the menu that offers adding content to the new packet. */
+	/** Section of the menu that offers adding headers to the new packet. */
 	private MenuSection newHeaders;
-	// The section of the menu that offers modifying packet content is generated
+	// The section of the menu that offers modifying headers is generated
 	// dynamically and is therefore implicit.
 	/** Section of the menu that offers several predefined packet actions. */
 	private MenuSection miscOptions;
@@ -35,6 +35,9 @@ public class MainMenu {
 		initMiscOptions();
 	}
 
+	/**
+	 * Initializes {@link #newHeaders}.
+	 */
 	private void initNewHeaders() {
 		newHeaders = new MenuSection("Available headers");
 
@@ -45,10 +48,13 @@ public class MainMenu {
 			newHeaders.add(layerSections[i]);
 		}
 
-		for (PacketContent content : PacketContentFactory.getContents())
-			addEntry(new NewPacketContentMenuEntry(content), layerSections[content.getLayer().ordinal()]);
+		for (Header headers : HeaderFactory.getHeaders())
+			addEntry(new NewHeaderMenuEntry(headers), layerSections[headers.getLayer().ordinal()]);
 	}
 
+	/**
+	 * Initializes {@link #miscOptions}.
+	 */
 	private void initMiscOptions() {
 		miscOptions = new MenuSection("Other options");
 		addEntry(new DeleteHeaderMenuEntry(), miscOptions);
@@ -59,13 +65,12 @@ public class MainMenu {
 	/**
 	 * Quick one-liner for adding a menu entry to both the map and the
 	 * corresponding section list.
-	 * 
 	 */
 	private void addEntry(MainMenuEntry entry, MenuSection section) {
 		String key = entry.getShortName();
 		MainMenuEntry collision = map.put(key, entry);
 		if (collision != null)
-			throw new IllegalArgumentException("There is more than one PacketContent whose short name is " + key + ".");
+			throw new IllegalArgumentException("There is more than one Header whose short name is " + key + ".");
 		section.add(entry);
 	}
 
@@ -85,8 +90,6 @@ public class MainMenu {
 	 * Edits <code>frag</code> according to user input. Returns when the user is
 	 * done editing.
 	 * 
-	 * @param parser
-	 *            Header editor.
 	 * @param scanner
 	 *            Standard input reader.
 	 * @param frag
@@ -117,7 +120,7 @@ public class MainMenu {
 			return chosenEntry;
 
 		try {
-			return new ExistingPacketContentMenuEntry(frag.get(Integer.parseInt(userChoice)));
+			return new ExistingHeaderMenuEntry(frag.get(Integer.parseInt(userChoice)));
 		} catch (NumberFormatException | ArrayIndexOutOfBoundsException e) {
 			return null;
 		}

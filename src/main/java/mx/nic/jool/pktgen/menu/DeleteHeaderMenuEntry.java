@@ -2,8 +2,12 @@ package mx.nic.jool.pktgen.menu;
 
 import mx.nic.jool.pktgen.FieldScanner;
 import mx.nic.jool.pktgen.pojo.Fragment;
-import mx.nic.jool.pktgen.pojo.PacketContent;
+import mx.nic.jool.pktgen.pojo.Header;
 
+/**
+ * A menu option that discards a specific header already initialized and stored
+ * in a packet.
+ */
 public class DeleteHeaderMenuEntry extends MainMenuEntry {
 
 	protected DeleteHeaderMenuEntry() {
@@ -14,7 +18,7 @@ public class DeleteHeaderMenuEntry extends MainMenuEntry {
 	public void execute(FieldScanner scanner, Fragment frag) {
 		int headerIndex = scanner.readInt("Header index");
 		if (0 <= headerIndex && headerIndex < frag.size()) {
-			PacketContent removed = frag.remove(headerIndex);
+			Header removed = frag.remove(headerIndex);
 			System.out.println("Deleted a " + removed.getClass().getSimpleName() + ".\n");
 			return;
 		}

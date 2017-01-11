@@ -11,9 +11,12 @@ import java.util.concurrent.ThreadLocalRandom;
 
 import mx.nic.jool.pktgen.ByteArrayOutputStream;
 import mx.nic.jool.pktgen.FieldScanner;
+import mx.nic.jool.pktgen.PacketUtils;
 import mx.nic.jool.pktgen.ScannableHeaderField;
-import mx.nic.jool.pktgen.auto.Util;
 
+/**
+ * A bunch of IPv6 addresses, listed monotonically in some header.
+ */
 public class Inet6AddressList implements ScannableHeaderField {
 
 	private List<Inet6Address> addresses = new ArrayList<>();
@@ -63,10 +66,18 @@ public class Inet6AddressList implements ScannableHeaderField {
 		} while (true);
 	}
 
+	/**
+	 * Returns the number of addresses in this list, not the number of bytes
+	 * after you've {@link #toWire()}'d it.
+	 */
 	public int getLength() {
 		return addresses.size();
 	}
 
+	/**
+	 * Serializes this address list into its binary representation, exactly as
+	 * it would be represented in a network packet.
+	 */
 	public byte[] toWire() {
 		@SuppressWarnings("resource")
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -77,10 +88,14 @@ public class Inet6AddressList implements ScannableHeaderField {
 		return out.toByteArray();
 	}
 
+	/**
+	 * Loads this address list from its {@link #toWire()} representation, being
+	 * read from <code>in</code>.
+	 */
 	public void loadFromStream(InputStream in, int hdrExtLength) throws IOException {
 		addresses = new ArrayList<>(hdrExtLength / 2);
 		for (int i = 0; i < addresses.size(); i++) {
-			byte[] address = Util.streamToByteArray(in, 16);
+			byte[] address = PacketUtils.streamToByteArray(in, 16);
 			try {
 				addresses.add((Inet6Address) InetAddress.getByAddress(address));
 			} catch (UnknownHostException | ClassCastException e) {
@@ -89,6 +104,10 @@ public class Inet6AddressList implements ScannableHeaderField {
 		}
 	}
 
+	/**
+	 * Reshapes this list to a random size and assigns completely random
+	 * addresses to its slots.
+	 */
 	public void randomize() {
 		ThreadLocalRandom random = ThreadLocalRandom.current();
 		int addressCount = random.nextInt(10);

@@ -7,8 +7,7 @@ import java.util.concurrent.ThreadLocalRandom;
 import mx.nic.jool.pktgen.ByteArrayOutputStream;
 import mx.nic.jool.pktgen.PacketUtils;
 import mx.nic.jool.pktgen.annotation.HeaderField;
-import mx.nic.jool.pktgen.auto.Util;
-import mx.nic.jool.pktgen.pojo.PacketContent;
+import mx.nic.jool.pktgen.pojo.Header;
 
 /**
  * Yes, layer 4. It is layer 4 for most intents and purposes. Shut up.
@@ -51,19 +50,19 @@ public abstract class IcmpHeader extends Layer4Header {
 	}
 
 	@Override
-	public PacketContent loadFromStream(InputStream in) throws IOException {
-		int[] header = Util.streamToIntArray(in, LENGTH);
+	public Header loadFromStream(InputStream in) throws IOException {
+		int[] header = PacketUtils.streamToIntArray(in, LENGTH);
 
 		type = header[0];
 		code = header[1];
-		checksum = Util.joinBytes(header[2], header[3]);
-		restOfHeader1 = Util.joinBytes(header[4], header[5]);
-		restOfHeader2 = Util.joinBytes(header[6], header[7]);
+		checksum = PacketUtils.joinBytes(header[2], header[3]);
+		restOfHeader1 = PacketUtils.joinBytes(header[4], header[5]);
+		restOfHeader2 = PacketUtils.joinBytes(header[6], header[7]);
 
-		return getNextContent();
+		return getNextHeader();
 	}
 
-	protected abstract PacketContent getNextContent();
+	protected abstract Header getNextHeader();
 
 	@Override
 	public void randomize() {

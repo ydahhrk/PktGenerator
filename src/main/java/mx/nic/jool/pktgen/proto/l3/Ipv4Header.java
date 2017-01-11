@@ -15,12 +15,14 @@ import mx.nic.jool.pktgen.ChecksumBuilder;
 import mx.nic.jool.pktgen.ChecksumStatus;
 import mx.nic.jool.pktgen.PacketUtils;
 import mx.nic.jool.pktgen.annotation.HeaderField;
-import mx.nic.jool.pktgen.auto.Util;
 import mx.nic.jool.pktgen.pojo.Fragment;
+import mx.nic.jool.pktgen.pojo.Header;
 import mx.nic.jool.pktgen.pojo.Packet;
-import mx.nic.jool.pktgen.pojo.PacketContent;
-import mx.nic.jool.pktgen.proto.PacketContentFactory;
+import mx.nic.jool.pktgen.proto.HeaderFactory;
 
+/**
+ * https://tools.ietf.org/html/rfc791#section-3.1
+ */
 public class Ipv4Header extends Layer3Header {
 
 	private static final Inet4Address DEFAULT_SRC;
@@ -98,8 +100,8 @@ public class Ipv4Header extends Layer3Header {
 
 		if (totalLength == null) {
 			totalLength = ihl << 2;
-			for (PacketContent content : fragment.sliceExclusive(this)) {
-				totalLength += content.toWire().length;
+			for (Header header : fragment.sliceExclusive(this)) {
+				totalLength += header.toWire().length;
 			}
 		}
 
@@ -162,7 +164,7 @@ public class Ipv4Header extends Layer3Header {
 	}
 
 	@Override
-	public PacketContent createClone() {
+	public Header createClone() {
 		Ipv4Header result = new Ipv4Header();
 
 		result.version = version;
@@ -202,22 +204,6 @@ public class Ipv4Header extends Layer3Header {
 		return "v4";
 	}
 
-	public void setTotalLength(Integer totalLength) {
-		this.totalLength = totalLength;
-	}
-
-	public void setIdentification(int identification) {
-		this.identification = identification;
-	}
-
-	public void setDf(boolean df) {
-		this.df = df;
-	}
-
-	public void setTtl(int ttl) {
-		this.ttl = ttl;
-	}
-
 	public void swapAddresses() {
 		Inet4Address tmp = source;
 		source = destination;
@@ -230,28 +216,28 @@ public class Ipv4Header extends Layer3Header {
 	}
 
 	@Override
-	public PacketContent loadFromStream(InputStream in) throws IOException {
-		int[] header = Util.streamToIntArray(in, LENGTH);
+	public Header loadFromStream(InputStream in) throws IOException {
+		int[] header = PacketUtils.streamToIntArray(in, LENGTH);
 
 		version = header[0] >> 4;
 		ihl = header[0] & 0xF;
 		tos = header[1];
-		totalLength = Util.joinBytes(header, 2, 3);
-		identification = Util.joinBytes(header, 4, 5);
+		totalLength = PacketUtils.joinBytes(header, 2, 3);
+		identification = PacketUtils.joinBytes(header, 4, 5);
 		reserved = (header[6] >> 7) == 1;
 		df = (header[6] >> 6) == 1;
 		mf = (header[6] >> 5) == 1;
-		fragmentOffset = Util.joinBytes(header[6] & 0x1F, header[7]);
+		fragmentOffset = PacketUtils.joinBytes(header[6] & 0x1F, header[7]);
 		ttl = header[8];
 		protocol = header[9];
-		headerChecksum = Util.joinBytes(header, 10, 11);
+		headerChecksum = PacketUtils.joinBytes(header, 10, 11);
 		source = loadAddress(header, 12);
 		destination = loadAddress(header, 16);
 
 		if (ihl > 5)
-			options = Util.streamToByteArray(in, 4 * ihl - LENGTH);
+			options = PacketUtils.streamToByteArray(in, 4 * ihl - LENGTH);
 
-		return PacketContentFactory.forNexthdr(protocol);
+		return HeaderFactory.forNexthdr(protocol);
 	}
 
 	private Inet4Address loadAddress(int[] bytes, int offset) throws UnknownHostException {

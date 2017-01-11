@@ -2,8 +2,11 @@ package mx.nic.jool.pktgen;
 
 public enum ChecksumStatus {
 
-	CORRECT("csumok"), //
-	WRONG("csumfail"), //
+	/** A correct checksum. */
+	CORRECT("csumok"),
+	/** An incorrect checksum, except zero. */
+	WRONG("csumfail"),
+	/** Zero. */
 	ZERO("csum0");
 
 	private String shortName;

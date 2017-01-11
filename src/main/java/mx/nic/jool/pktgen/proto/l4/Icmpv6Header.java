@@ -5,6 +5,9 @@ import java.io.IOException;
 import mx.nic.jool.pktgen.pojo.Fragment;
 import mx.nic.jool.pktgen.pojo.Packet;
 
+/**
+ * https://tools.ietf.org/html/rfc4443#section-2.1
+ */
 public abstract class Icmpv6Header extends IcmpHeader {
 
 	@Override

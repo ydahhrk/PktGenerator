@@ -2,9 +2,12 @@ package mx.nic.jool.pktgen.proto.l4;
 
 import java.util.concurrent.ThreadLocalRandom;
 
-import mx.nic.jool.pktgen.pojo.PacketContent;
+import mx.nic.jool.pktgen.pojo.Header;
 import mx.nic.jool.pktgen.proto.l3.Ipv4Header;
 
+/**
+ * A header representing the meat of an IPv4 error report.
+ */
 public class Icmpv4ErrorHeader extends Icmpv4Header {
 
 	public Icmpv4ErrorHeader() {
@@ -13,7 +16,7 @@ public class Icmpv4ErrorHeader extends Icmpv4Header {
 	}
 
 	@Override
-	public PacketContent createClone() {
+	public Header createClone() {
 		return createCloneIcmp(new Icmpv4ErrorHeader());
 	}
 
@@ -23,7 +26,7 @@ public class Icmpv4ErrorHeader extends Icmpv4Header {
 	}
 
 	@Override
-	protected PacketContent getNextContent() {
+	protected Header getNextHeader() {
 		return new Ipv4Header();
 	}
 
