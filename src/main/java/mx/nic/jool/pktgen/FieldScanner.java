@@ -1,6 +1,5 @@
 package mx.nic.jool.pktgen;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.net.Inet4Address;
@@ -23,7 +22,7 @@ public class FieldScanner {
 
 	private Scanner scanner;
 
-	public FieldScanner(Scanner scanner) throws FileNotFoundException {
+	public FieldScanner(Scanner scanner) {
 		this.scanner = scanner;
 	}
 

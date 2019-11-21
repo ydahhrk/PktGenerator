@@ -36,7 +36,7 @@ public class RoutingExt6Header extends Extension6Header {
 	private Inet6AddressList addresses = new Inet6AddressList();
 
 	@Override
-	public void postProcess(Packet packet, Fragment fragment) throws IOException {
+	public void postProcess(Packet packet, Fragment fragment) {
 		if (nextHeader == null) {
 			nextHeader = fragment.getNextHdr(packet, this);
 		}
@@ -79,6 +79,11 @@ public class RoutingExt6Header extends Extension6Header {
 	@Override
 	public String getShortName() {
 		return "rext";
+	}
+
+	@Override
+	public String getName() {
+		return "Routing Header";
 	}
 
 	@Override

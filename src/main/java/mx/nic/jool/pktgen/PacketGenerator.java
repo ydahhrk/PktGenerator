@@ -17,43 +17,45 @@ import mx.nic.jool.pktgen.proto.l3.exthdr.FragmentExt6Header;
 import mx.nic.jool.pktgen.proto.l3.exthdr.HopByHopExt6Header;
 import mx.nic.jool.pktgen.proto.l3.exthdr.RoutingExt6Header;
 import mx.nic.jool.pktgen.proto.l4.Icmpv4ErrorHeader;
-import mx.nic.jool.pktgen.proto.l4.Icmpv4InfoHeader;
 import mx.nic.jool.pktgen.proto.l4.Icmpv6ErrorHeader;
-import mx.nic.jool.pktgen.proto.l4.Icmpv6InfoHeader;
 import mx.nic.jool.pktgen.proto.l4.TcpHeader;
 import mx.nic.jool.pktgen.proto.l4.UdpHeader;
 
 public class PacketGenerator {
 
 	public static void main(String[] args) throws IOException {
-		String mode = (args.length > 0) ? args[0] : "auto";
+		Scanner scanner = new Scanner(System.in);
 
-		switch (mode) {
-		case "auto":
-			handleAutoMode();
-			break;
-		case "edit":
-			if (args.length < 2) {
-				System.err.println("I need a packet file as second argument.");
+		do {
+			System.out.print("Mode (auto, edit or random) [auto]: ");
+			String mode = scanner.nextLine().trim();
+			if (mode.isEmpty())
+				mode = "auto";
+
+			switch (mode) {
+			case "auto":
+				handleAutoMode(scanner);
 				return;
+			case "edit":
+				System.out.print("File: ");
+				String file = scanner.nextLine().trim();
+				handleEditMode(scanner, file);
+				return;
+			case "random":
+				handleRandomMode();
+				return;
+			default:
+				System.err.println("I don't understand you; try again.");
 			}
-			handleEditMode(args[1]);
-			break;
-		case "random":
-			handleRandomMode();
-			break;
-		default:
-			System.err.println("Sorry; unknown operation mode. Try 'auto', 'manual', 'edit' or 'random'.");
-			break;
-		}
+		} while (true);
 	}
 
 	/**
 	 * Modifies <code>frag</code> according to user input.
 	 */
-	private static void handleMenuMode(Fragment frag) throws IOException {
+	private static void handleMenuMode(Scanner in, Fragment frag) throws IOException {
 		MainMenu menu = new MainMenu();
-		FieldScanner scanner = new FieldScanner(new Scanner(System.in));
+		FieldScanner scanner = new FieldScanner(in);
 		menu.handle(scanner, frag);
 
 		/* Wrap up */
@@ -75,12 +77,12 @@ public class PacketGenerator {
 		} while (!success);
 	}
 
-	private static void handleAutoMode() throws IOException {
-		handleMenuMode(new Fragment());
+	private static void handleAutoMode(Scanner scanner) throws IOException {
+		handleMenuMode(scanner, new Fragment());
 	}
 
-	private static void handleEditMode(String string) throws IOException {
-		handleMenuMode(Fragment.load(new File(string)));
+	private static void handleEditMode(Scanner scanner, String string) throws IOException {
+		handleMenuMode(scanner, Fragment.load(new File(string)));
 	}
 
 	private static void handleRandomMode() throws IOException {
@@ -105,9 +107,9 @@ public class PacketGenerator {
 		case 1: // UDP
 			fragment.add(new UdpHeader());
 			break;
-		case 2: // ICMP info
-			fragment.add(ipv6 ? new Icmpv6InfoHeader() : new Icmpv4InfoHeader());
-			break;
+		// case 2: // ICMP info
+		// fragment.add(ipv6 ? new Icmpv6ErHeader() : new Icmpv4InfoHeader());
+		// break;
 		case 3: // ICMP error
 			if (ipv6) {
 				fragment.add(new Icmpv6ErrorHeader());

@@ -14,6 +14,11 @@ public class HopByHopExt6Header extends TlvExt6Header {
 	public String getShortName() {
 		return "hhext";
 	}
+	
+	@Override
+	public String getName() {
+		return "Hop-by-Hop Header";
+	}
 
 	@Override
 	public int getHdrIndex() {

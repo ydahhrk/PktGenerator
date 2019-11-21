@@ -68,12 +68,18 @@ public abstract class IcmpHeader extends Layer4Header {
 	public void randomize() {
 		ThreadLocalRandom random = ThreadLocalRandom.current();
 
-		type = random.nextInt(0x100);
-		code = random.nextInt(0x100);
+		Integer[][] availableTypes = getAvailableTypes();
+		int chosen = random.nextInt(availableTypes.length);
+		this.type = availableTypes[chosen][0];
+		if (availableTypes[chosen][1] != null)
+			this.code = availableTypes[chosen][1];
+		
 		// checksum = null;
 		restOfHeader1 = random.nextInt(0x10000);
 		restOfHeader2 = random.nextInt(0x10000);
 	}
+	
+	protected abstract Integer[][] getAvailableTypes();
 
 	@Override
 	public void unsetChecksum() {

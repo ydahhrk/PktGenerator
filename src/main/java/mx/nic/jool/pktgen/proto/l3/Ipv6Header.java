@@ -63,7 +63,7 @@ public class Ipv6Header extends Layer3Header {
 	}
 
 	@Override
-	public void postProcess(Packet packet, Fragment fragment) throws IOException {
+	public void postProcess(Packet packet, Fragment fragment) {
 		if (payloadLength == null) {
 			payloadLength = 0;
 			for (Header header : fragment.sliceExclusive(this)) {
@@ -114,7 +114,7 @@ public class Ipv6Header extends Layer3Header {
 
 		out.write(source.getAddress());
 		out.write(destination.getAddress());
-		PacketUtils.write32BitInt(out, new Long(payloadLength));
+		PacketUtils.write32BitInt(out, Long.valueOf(payloadLength));
 		PacketUtils.write16BitInt(out, 0);
 		PacketUtils.write8BitInt(out, 0);
 		PacketUtils.write8BitInt(out, nextHdr);
@@ -125,6 +125,11 @@ public class Ipv6Header extends Layer3Header {
 	@Override
 	public String getShortName() {
 		return "v6";
+	}
+	
+	@Override
+	public String getName() {
+		return "IPv6 Header";
 	}
 
 	public void swapAddresses() {

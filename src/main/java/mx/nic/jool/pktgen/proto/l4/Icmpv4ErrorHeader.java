@@ -1,7 +1,5 @@
 package mx.nic.jool.pktgen.proto.l4;
 
-import java.util.concurrent.ThreadLocalRandom;
-
 import mx.nic.jool.pktgen.pojo.Header;
 import mx.nic.jool.pktgen.proto.l3.Ipv4Header;
 
@@ -24,6 +22,11 @@ public class Icmpv4ErrorHeader extends Icmpv4Header {
 	public String getShortName() {
 		return "i4err";
 	}
+	
+	@Override
+	public String getName() {
+		return "ICMPv4 Error Header";
+	}
 
 	@Override
 	protected Header getNextHeader() {
@@ -31,10 +34,8 @@ public class Icmpv4ErrorHeader extends Icmpv4Header {
 	}
 
 	@Override
-	public void randomize() {
-		super.randomize();
-
-		Integer[][] availableTypes = { //
+	protected Integer[][] getAvailableTypes() {
+		return new Integer[][] { //
 				/* Destination Unreachable */
 				{ 3, 0 }, //
 				{ 3, 1 }, //
@@ -59,11 +60,5 @@ public class Icmpv4ErrorHeader extends Icmpv4Header {
 				{ 12, 1 }, //
 				{ 12, 2 }, //
 		};
-
-		ThreadLocalRandom random = ThreadLocalRandom.current();
-		int chosen = random.nextInt(availableTypes.length);
-		this.type = availableTypes[chosen][0];
-		if (availableTypes[chosen][1] != null)
-			this.code = availableTypes[chosen][1];
 	}
 }

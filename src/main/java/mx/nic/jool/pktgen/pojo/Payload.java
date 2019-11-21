@@ -64,7 +64,12 @@ public class Payload implements Header {
 	}
 
 	@Override
-	public void postProcess(Packet packet, Fragment fragment) throws IOException {
+	public String getName() {
+		return "Payload";
+	}
+
+	@Override
+	public void postProcess(Packet packet, Fragment fragment) {
 		// No code
 	}
 

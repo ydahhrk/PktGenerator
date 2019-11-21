@@ -1,12 +1,10 @@
 package mx.nic.jool.pktgen.proto.l4;
 
-import java.util.concurrent.ThreadLocalRandom;
-
 import mx.nic.jool.pktgen.pojo.Header;
 import mx.nic.jool.pktgen.pojo.Payload;
 
 /**
- * A header representing the meat of an IPv6 ping.
+ * A header representing the meat of an IPv6 error report.
  */
 public class Icmpv6InfoHeader extends Icmpv6Header {
 
@@ -26,15 +24,20 @@ public class Icmpv6InfoHeader extends Icmpv6Header {
 	}
 
 	@Override
+	public String getName() {
+		return "ICMPv6 Info Header";
+	}
+
+	@Override
 	protected Header getNextHeader() {
 		return new Payload();
 	}
 
 	@Override
-	public void randomize() {
-		super.randomize();
-
-		ThreadLocalRandom random = ThreadLocalRandom.current();
-		this.type = random.nextBoolean() ? 128 : 129;
+	protected Integer[][] getAvailableTypes() {
+		return new Integer[][] { //
+				{ 128, 0 }, // Echo Request
+				{ 129, 0 }, // Echo Reply
+		};
 	}
 }

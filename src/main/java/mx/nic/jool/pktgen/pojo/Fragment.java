@@ -110,7 +110,7 @@ public class Fragment extends SliceableList<Header> implements MainMenuPrintable
 	 * to rely on field autocomputation if they intend to build an invalid
 	 * packet.)
 	 */
-	public int getL3PayloadLength() throws IOException {
+	public int getL3PayloadLength() {
 		int result = 0;
 		boolean foundL4 = false;
 
@@ -238,7 +238,7 @@ public class Fragment extends SliceableList<Header> implements MainMenuPrintable
 	 * Returns the aggregated length of this fragment's headers and payload, in
 	 * bytes.
 	 */
-	public int getLength() throws IOException {
+	public int getLength() {
 		int length = 0;
 		for (Header header : this)
 			length += header.toWire().length;

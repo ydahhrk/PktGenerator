@@ -1,7 +1,5 @@
 package mx.nic.jool.pktgen.proto.l4;
 
-import java.util.concurrent.ThreadLocalRandom;
-
 import mx.nic.jool.pktgen.pojo.Header;
 import mx.nic.jool.pktgen.proto.l3.Ipv6Header;
 
@@ -26,15 +24,17 @@ public class Icmpv6ErrorHeader extends Icmpv6Header {
 	}
 
 	@Override
+	public String getName() {
+		return "ICMPv6 Error Header";
+	}
+
+	@Override
 	protected Header getNextHeader() {
 		return new Ipv6Header();
 	}
 
-	@Override
-	public void randomize() {
-		super.randomize();
-
-		Integer[][] availableTypes = { //
+	protected Integer[][] getAvailableTypes() {
+		return new Integer[][] { //
 				/* Destination Unreachable */
 				{ 1, 0 }, //
 				{ 1, 1 }, //
@@ -50,11 +50,5 @@ public class Icmpv6ErrorHeader extends Icmpv6Header {
 				{ 4, 1 }, //
 				{ 4, 2 }, //
 		};
-
-		ThreadLocalRandom random = ThreadLocalRandom.current();
-		int chosen = random.nextInt(availableTypes.length);
-		this.type = availableTypes[chosen][0];
-		if (availableTypes[chosen][1] != null)
-			this.code = availableTypes[chosen][1];
 	}
 }

@@ -1,6 +1,5 @@
 package mx.nic.jool.pktgen;
 
-import java.io.IOException;
 import java.io.OutputStream;
 
 /**
@@ -52,7 +51,7 @@ public class ChecksumBuilder extends OutputStream {
 	 * Adds the 32-bit word <code>word</code> to this checksum.
 	 */
 	@Override
-	public void write(int word) throws IOException {
+	public void write(int word) {
 		sum((word >> 24) & 0xFF, (word >> 16) & 0xFF);
 		sum((word >> 8) & 0xFF, (word >> 0) & 0xFF);
 	}
@@ -73,7 +72,7 @@ public class ChecksumBuilder extends OutputStream {
 	 * this code will likely not generate the checksum you want.
 	 */
 	@Override
-	public void write(byte[] bytes) throws IOException {
+	public void write(byte[] bytes) {
 		for (int x = 0; x < bytes.length; x += 2) {
 			int byte1 = bytes[x];
 			if (byte1 < 0)

@@ -30,7 +30,7 @@ public abstract class TlvExt6Header extends Extension6Header {
 	}
 
 	@Override
-	public void postProcess(Packet packet, Fragment fragment) throws IOException {
+	public void postProcess(Packet packet, Fragment fragment) {
 		if (nextHeader == null) {
 			nextHeader = fragment.getNextHdr(packet, this);
 		}

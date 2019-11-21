@@ -118,6 +118,11 @@ public class TcpHeader extends Layer4Header {
 	public String getShortName() {
 		return "tcp";
 	}
+	
+	@Override
+	public String getName() {
+		return "TCP Header";
+	}
 
 	@Override
 	public int getHdrIndex() {

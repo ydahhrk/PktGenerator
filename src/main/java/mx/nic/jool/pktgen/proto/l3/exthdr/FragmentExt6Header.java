@@ -33,7 +33,7 @@ public class FragmentExt6Header extends Extension6Header {
 	private long identification = 0;
 
 	@Override
-	public void postProcess(Packet packet, Fragment fragment) throws IOException {
+	public void postProcess(Packet packet, Fragment fragment) {
 		if (nextHeader == null) {
 			nextHeader = fragment.getNextHdr(packet, this);
 		}
@@ -83,6 +83,11 @@ public class FragmentExt6Header extends Extension6Header {
 	@Override
 	public String getShortName() {
 		return "fext";
+	}
+
+	@Override
+	public String getName() {
+		return "Fragment Header";
 	}
 
 	@Override

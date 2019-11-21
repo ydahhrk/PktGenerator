@@ -145,11 +145,10 @@ public class Ipv4Header extends Layer3Header {
 
 		int fragOffset = (fragmentOffset != null) ? fragmentOffset : 0;
 		boolean mFrags = (mf != null) ? mf : false;
-		PacketUtils.write16BitInt(out,
-				((reserved ? 1 : 0) << 15) //
-						| ((df ? 1 : 0) << 14) //
-						| ((mFrags ? 1 : 0) << 13) //
-						| (fragOffset >> 3));
+		PacketUtils.write16BitInt(out, ((reserved ? 1 : 0) << 15) //
+				| ((df ? 1 : 0) << 14) //
+				| ((mFrags ? 1 : 0) << 13) //
+				| (fragOffset >> 3));
 
 		PacketUtils.write8BitInt(out, ttl);
 		PacketUtils.write8BitInt(out, protocol);
@@ -187,7 +186,7 @@ public class Ipv4Header extends Layer3Header {
 	}
 
 	@Override
-	public byte[] getPseudoHeader(int payloadLength, int nextHdr) throws IOException {
+	public byte[] getPseudoHeader(int payloadLength, int nextHdr) {
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
 
 		out.write(source.getAddress());
@@ -202,6 +201,11 @@ public class Ipv4Header extends Layer3Header {
 	@Override
 	public String getShortName() {
 		return "v4";
+	}
+
+	@Override
+	public String getName() {
+		return "IPv4 Header";
 	}
 
 	public void swapAddresses() {

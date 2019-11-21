@@ -14,6 +14,11 @@ public class DestinationOptionExt6Header extends TlvExt6Header {
 	public String getShortName() {
 		return "dext";
 	}
+	
+	@Override
+	public String getName() {
+		return "Destination Options Header";
+	}
 
 	@Override
 	public int getHdrIndex() {

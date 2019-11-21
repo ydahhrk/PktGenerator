@@ -46,6 +46,8 @@ public interface Header {
 	 * Returns a short string uniquely identifing this header's protocol.
 	 */
 	public String getShortName();
+	
+	public String getName();
 
 	/**
 	 * Returns the identifier the IANA assigned to this header type.

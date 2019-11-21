@@ -72,6 +72,11 @@ public class UdpHeader extends Layer4Header {
 	}
 
 	@Override
+	public String getName() {
+		return "UDP Header";
+	}
+
+	@Override
 	public int getHdrIndex() {
 		return 17;
 	}
