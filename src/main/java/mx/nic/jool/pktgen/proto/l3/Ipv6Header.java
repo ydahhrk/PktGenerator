@@ -15,6 +15,9 @@ import mx.nic.jool.pktgen.annotation.HeaderField;
 import mx.nic.jool.pktgen.pojo.Fragment;
 import mx.nic.jool.pktgen.pojo.Header;
 import mx.nic.jool.pktgen.pojo.Packet;
+import mx.nic.jool.pktgen.pojo.shortcut.Shortcut;
+import mx.nic.jool.pktgen.pojo.shortcut.SwapIdentifiersShortcut;
+import mx.nic.jool.pktgen.pojo.shortcut.TtlDecShortcut;
 import mx.nic.jool.pktgen.proto.HeaderFactory;
 
 /**
@@ -53,13 +56,13 @@ public class Ipv6Header extends Layer3Header {
 	@HeaderField
 	private int hopLimit = 64;
 	@HeaderField
-	private Inet6Address source;
+	private Inet6Address src;
 	@HeaderField
-	private Inet6Address destination;
+	private Inet6Address dst;
 
 	public Ipv6Header() {
-		source = DEFAULT_SRC;
-		destination = DEFAULT_DST;
+		src = DEFAULT_SRC;
+		dst = DEFAULT_DST;
 	}
 
 	@Override
@@ -86,8 +89,8 @@ public class Ipv6Header extends Layer3Header {
 		PacketUtils.write16BitInt(out, payloadLength);
 		PacketUtils.write8BitInt(out, nextHeader);
 		PacketUtils.write8BitInt(out, hopLimit);
-		out.write(source.getAddress());
-		out.write(destination.getAddress());
+		out.write(src.getAddress());
+		out.write(dst.getAddress());
 
 		return out.toByteArray();
 	}
@@ -102,8 +105,8 @@ public class Ipv6Header extends Layer3Header {
 		result.payloadLength = payloadLength;
 		result.nextHeader = nextHeader;
 		result.hopLimit = hopLimit;
-		result.source = source;
-		result.destination = destination;
+		result.src = src;
+		result.dst = dst;
 
 		return result;
 	}
@@ -112,8 +115,8 @@ public class Ipv6Header extends Layer3Header {
 	public byte[] getPseudoHeader(int payloadLength, int nextHdr) {
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
 
-		out.write(source.getAddress());
-		out.write(destination.getAddress());
+		out.write(src.getAddress());
+		out.write(dst.getAddress());
 		PacketUtils.write32BitInt(out, Long.valueOf(payloadLength));
 		PacketUtils.write16BitInt(out, 0);
 		PacketUtils.write8BitInt(out, 0);
@@ -126,16 +129,17 @@ public class Ipv6Header extends Layer3Header {
 	public String getShortName() {
 		return "v6";
 	}
-	
+
 	@Override
 	public String getName() {
 		return "IPv6 Header";
 	}
 
-	public void swapAddresses() {
-		Inet6Address tmp = source;
-		source = destination;
-		destination = tmp;
+	@Override
+	public void swapIdentifiers() {
+		Inet6Address tmp = src;
+		src = dst;
+		dst = tmp;
 	}
 
 	@Override
@@ -153,8 +157,8 @@ public class Ipv6Header extends Layer3Header {
 		payloadLength = PacketUtils.joinBytes(header, 4, 5);
 		nextHeader = header[6];
 		hopLimit = header[7];
-		source = loadAddress(header, 8);
-		destination = loadAddress(header, 24);
+		src = loadAddress(header, 8);
+		dst = loadAddress(header, 24);
 
 		return HeaderFactory.forNexthdr(nextHeader);
 	}
@@ -193,7 +197,7 @@ public class Ipv6Header extends Layer3Header {
 		// source;
 		// destination;
 	}
-	
+
 	@Override
 	public void unsetChecksum() {
 		// No checksum.
@@ -202,5 +206,33 @@ public class Ipv6Header extends Layer3Header {
 	@Override
 	public void unsetLengths() {
 		this.payloadLength = null;
+	}
+
+	public Inet6Address getSource() {
+		return src;
+	}
+
+	public void setSource(Inet6Address source) {
+		this.src = source;
+	}
+
+	public Inet6Address getDestination() {
+		return dst;
+	}
+
+	public void setDestination(Inet6Address destination) {
+		this.dst = destination;
+	}
+
+	@Override
+	public Shortcut[] getShortcuts() {
+		return new Shortcut[] { //
+				new TtlDecShortcut(), //
+				new SwapIdentifiersShortcut(), //
+		};
+	}
+
+	public void decTtl() {
+		this.hopLimit = this.hopLimit - 1;
 	}
 }

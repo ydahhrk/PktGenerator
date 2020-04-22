@@ -1,11 +1,8 @@
-package mx.nic.jool.pktgen;
+package mx.nic.jool.pktgen.main;
 
-import java.io.File;
 import java.io.IOException;
-import java.util.Scanner;
 import java.util.concurrent.ThreadLocalRandom;
 
-import mx.nic.jool.pktgen.menu.MainMenu;
 import mx.nic.jool.pktgen.pojo.Fragment;
 import mx.nic.jool.pktgen.pojo.Packet;
 import mx.nic.jool.pktgen.pojo.Payload;
@@ -21,71 +18,9 @@ import mx.nic.jool.pktgen.proto.l4.Icmpv6ErrorHeader;
 import mx.nic.jool.pktgen.proto.l4.TcpHeader;
 import mx.nic.jool.pktgen.proto.l4.UdpHeader;
 
-public class PacketGenerator {
+public class PacketGeneratorRandom {
 
 	public static void main(String[] args) throws IOException {
-		Scanner scanner = new Scanner(System.in);
-
-		do {
-			System.out.print("Mode (auto, edit or random) [auto]: ");
-			String mode = scanner.nextLine().trim();
-			if (mode.isEmpty())
-				mode = "auto";
-
-			switch (mode) {
-			case "auto":
-				handleAutoMode(scanner);
-				return;
-			case "edit":
-				System.out.print("File: ");
-				String file = scanner.nextLine().trim();
-				handleEditMode(scanner, file);
-				return;
-			case "random":
-				handleRandomMode();
-				return;
-			default:
-				System.err.println("I don't understand you; try again.");
-			}
-		} while (true);
-	}
-
-	/**
-	 * Modifies <code>frag</code> according to user input.
-	 */
-	private static void handleMenuMode(Scanner in, Fragment frag) throws IOException {
-		MainMenu menu = new MainMenu();
-		FieldScanner scanner = new FieldScanner(in);
-		menu.handle(scanner, frag);
-
-		/* Wrap up */
-		Packet packet = new Packet();
-		packet.add(frag);
-		packet.postProcess();
-
-		/* Output */
-		boolean success = false;
-		do {
-			String outputFile = scanner.readLine("Output filename", "output");
-			try {
-				packet.export(outputFile);
-				success = true;
-			} catch (IOException e) {
-				e.printStackTrace();
-				System.err.println("Try again: ");
-			}
-		} while (!success);
-	}
-
-	private static void handleAutoMode(Scanner scanner) throws IOException {
-		handleMenuMode(scanner, new Fragment());
-	}
-
-	private static void handleEditMode(Scanner scanner, String string) throws IOException {
-		handleMenuMode(scanner, Fragment.load(new File(string)));
-	}
-
-	private static void handleRandomMode() throws IOException {
 		Fragment fragment = new Fragment();
 		Packet packet = new Packet();
 		packet.add(fragment);
@@ -115,7 +50,7 @@ public class PacketGenerator {
 				fragment.add(new Icmpv6ErrorHeader());
 
 				Ipv6Header internal = new Ipv6Header();
-				internal.swapAddresses();
+				internal.swapIdentifiers();
 				fragment.add(internal);
 				maybeAddIpv6ExtensionHeaders(fragment, random);
 
@@ -123,7 +58,7 @@ public class PacketGenerator {
 				fragment.add(new Icmpv4ErrorHeader());
 
 				Ipv4Header internal = new Ipv4Header();
-				internal.swapAddresses();
+				internal.swapIdentifiers();
 				fragment.add(internal);
 			}
 

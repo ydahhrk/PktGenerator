@@ -7,6 +7,10 @@ import java.util.concurrent.ThreadLocalRandom;
 
 import mx.nic.jool.pktgen.annotation.HeaderField;
 import mx.nic.jool.pktgen.enums.Layer;
+import mx.nic.jool.pktgen.pojo.shortcut.FastPayloadShortcut;
+import mx.nic.jool.pktgen.pojo.shortcut.FilePayloadShortcut;
+import mx.nic.jool.pktgen.pojo.shortcut.PaddingPayloadShortcut;
+import mx.nic.jool.pktgen.pojo.shortcut.Shortcut;
 
 /**
  * A "Header" whose only field is an arbitrary sequence of bytes. Often placed
@@ -77,6 +81,10 @@ public class Payload implements Header {
 		return bytes;
 	}
 
+	public void setBytes(byte[] bytes) {
+		this.bytes = bytes;
+	}
+
 	@Override
 	public int getHdrIndex() {
 		return -1;
@@ -117,4 +125,19 @@ public class Payload implements Header {
 	public void unsetLengths() {
 		// No lengths.
 	}
+
+	@Override
+	public void swapIdentifiers() {
+		// No identifiers.
+	}
+
+	@Override
+	public Shortcut[] getShortcuts() {
+		return new Shortcut[] { //
+				new FastPayloadShortcut(), //
+				new FilePayloadShortcut(), //
+				new PaddingPayloadShortcut(), //
+		};
+	}
+
 }

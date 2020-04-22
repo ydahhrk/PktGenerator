@@ -76,7 +76,8 @@ public class Fragment extends SliceableList<Header> implements MainMenuPrintable
 						return currentHeader.getHdrIndex();
 					}
 				}
-				throw new IllegalArgumentException("The first fragment lacks L4 headers. I don't know what to do.");
+				throw new IllegalArgumentException(
+						"The first fragment lacks L4 headers. I don't know what to do. (Try assigning hdr4.protocol or frag.nextHeader manually.)");
 			}
 
 			header = next;
@@ -88,7 +89,8 @@ public class Fragment extends SliceableList<Header> implements MainMenuPrintable
 	 * actual wire, and writes it into file <code>fileName.pkt</code>.
 	 */
 	public void export(String fileName) throws IOException {
-		fileName += ".pkt";
+		if (!fileName.endsWith(".pkt"))
+			fileName += ".pkt";
 
 		File file = new File(fileName);
 		if (file.exists())

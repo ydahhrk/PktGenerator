@@ -6,7 +6,6 @@ import java.io.InputStream;
 import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.Arrays;
 import java.util.Properties;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -18,6 +17,11 @@ import mx.nic.jool.pktgen.annotation.HeaderField;
 import mx.nic.jool.pktgen.pojo.Fragment;
 import mx.nic.jool.pktgen.pojo.Header;
 import mx.nic.jool.pktgen.pojo.Packet;
+import mx.nic.jool.pktgen.pojo.Payload;
+import mx.nic.jool.pktgen.pojo.shortcut.Shortcut;
+import mx.nic.jool.pktgen.pojo.shortcut.SwapIdentifiersShortcut;
+import mx.nic.jool.pktgen.pojo.shortcut.TtlDecShortcut;
+import mx.nic.jool.pktgen.pojo.shortcut.notDfShortcut;
 import mx.nic.jool.pktgen.proto.HeaderFactory;
 
 /**
@@ -68,15 +72,15 @@ public class Ipv4Header extends Layer3Header {
 	@HeaderField
 	private Integer headerChecksum = null;
 	@HeaderField
-	private Inet4Address source;
+	private Inet4Address src;
 	@HeaderField
-	private Inet4Address destination;
+	private Inet4Address dst;
 	@HeaderField
 	private byte[] options;
 
 	public Ipv4Header() {
-		this.source = DEFAULT_SRC;
-		this.destination = DEFAULT_DST;
+		this.src = DEFAULT_SRC;
+		this.dst = DEFAULT_DST;
 	}
 
 	private int buildChecksum() throws IOException {
@@ -96,6 +100,9 @@ public class Ipv4Header extends Layer3Header {
 			ihl = headerLength >> 2;
 			if ((headerLength & 3) != 0)
 				ihl++;
+			
+			if (ihl > 15)
+				System.err.println("Warning: ihl (" + ihl + ") > 15");
 		}
 
 		if (totalLength == null) {
@@ -126,10 +133,10 @@ public class Ipv4Header extends Layer3Header {
 			headerChecksum = buildChecksum();
 		}
 
-		if (options != null && ((options.length & 3) != 0)) {
-			int fixedLength = options.length + (4 - options.length & 3);
-			options = Arrays.copyOf(options, fixedLength);
-		}
+//		if (options != null && ((options.length & 3) != 0)) {
+//			int fixedLength = options.length + (4 - options.length & 3);
+//			options = Arrays.copyOf(options, fixedLength);
+//		}
 	}
 
 	@Override
@@ -153,8 +160,8 @@ public class Ipv4Header extends Layer3Header {
 		PacketUtils.write8BitInt(out, ttl);
 		PacketUtils.write8BitInt(out, protocol);
 		PacketUtils.write16BitInt(out, headerChecksum);
-		out.write(source.getAddress());
-		out.write(destination.getAddress());
+		out.write(src.getAddress());
+		out.write(dst.getAddress());
 
 		if (options != null)
 			out.write(options);
@@ -178,8 +185,8 @@ public class Ipv4Header extends Layer3Header {
 		result.ttl = ttl;
 		result.protocol = protocol;
 		result.headerChecksum = headerChecksum;
-		result.source = source;
-		result.destination = destination;
+		result.src = src;
+		result.dst = dst;
 		result.options = options;
 
 		return result;
@@ -189,8 +196,8 @@ public class Ipv4Header extends Layer3Header {
 	public byte[] getPseudoHeader(int payloadLength, int nextHdr) {
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
 
-		out.write(source.getAddress());
-		out.write(destination.getAddress());
+		out.write(src.getAddress());
+		out.write(dst.getAddress());
 		PacketUtils.write8BitInt(out, 0);
 		PacketUtils.write8BitInt(out, nextHdr);
 		PacketUtils.write16BitInt(out, payloadLength);
@@ -208,10 +215,11 @@ public class Ipv4Header extends Layer3Header {
 		return "IPv4 Header";
 	}
 
-	public void swapAddresses() {
-		Inet4Address tmp = source;
-		source = destination;
-		destination = tmp;
+	@Override
+	public void swapIdentifiers() {
+		Inet4Address tmp = src;
+		src = dst;
+		dst = tmp;
 	}
 
 	@Override
@@ -235,13 +243,13 @@ public class Ipv4Header extends Layer3Header {
 		ttl = header[8];
 		protocol = header[9];
 		headerChecksum = PacketUtils.joinBytes(header, 10, 11);
-		source = loadAddress(header, 12);
-		destination = loadAddress(header, 16);
+		src = loadAddress(header, 12);
+		dst = loadAddress(header, 16);
 
 		if (ihl > 5)
 			options = PacketUtils.streamToByteArray(in, 4 * ihl - LENGTH);
 
-		return HeaderFactory.forNexthdr(protocol);
+		return (fragmentOffset == 0) ? HeaderFactory.forNexthdr(protocol) : new Payload();
 	}
 
 	private Inet4Address loadAddress(int[] bytes, int offset) throws UnknownHostException {
@@ -296,5 +304,38 @@ public class Ipv4Header extends Layer3Header {
 	public void unsetLengths() {
 		this.ihl = null;
 		this.totalLength = null;
+	}
+
+	public Inet4Address getSource() {
+		return src;
+	}
+
+	public void setSource(Inet4Address source) {
+		this.src = source;
+	}
+
+	public Inet4Address getDestination() {
+		return dst;
+	}
+
+	public void setDestination(Inet4Address destination) {
+		this.dst = destination;
+	}
+
+	@Override
+	public Shortcut[] getShortcuts() {
+		return new Shortcut[] { //
+				new notDfShortcut(), //
+				new TtlDecShortcut(), //
+				new SwapIdentifiersShortcut(), //
+		};
+	}
+
+	public void decTtl() {
+		this.ttl = this.ttl - 1;
+	}
+
+	public void notDf() {
+		this.df = !this.df;
 	}
 }

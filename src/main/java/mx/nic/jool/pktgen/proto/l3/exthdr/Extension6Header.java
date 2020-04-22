@@ -11,9 +11,14 @@ public abstract class Extension6Header extends Layer3Header {
 	public byte[] getPseudoHeader(int payloadLength, int nexthdr) {
 		return null;
 	}
-	
+
 	@Override
 	public void unsetChecksum() {
 		// No checksum.
+	}
+
+	@Override
+	public void swapIdentifiers() {
+		// No identifiers.
 	}
 }

@@ -8,6 +8,8 @@ import mx.nic.jool.pktgen.ByteArrayOutputStream;
 import mx.nic.jool.pktgen.PacketUtils;
 import mx.nic.jool.pktgen.annotation.HeaderField;
 import mx.nic.jool.pktgen.pojo.Header;
+import mx.nic.jool.pktgen.pojo.shortcut.IcmpLengthShortcut;
+import mx.nic.jool.pktgen.pojo.shortcut.Shortcut;
 
 /**
  * Yes, layer 4. It is layer 4 for most intents and purposes. Shut up.
@@ -23,9 +25,9 @@ public abstract class IcmpHeader extends Layer4Header {
 	@HeaderField
 	protected Integer checksum = null;
 	@HeaderField
-	protected int restOfHeader1 = 0;
+	protected int rest1 = 0;
 	@HeaderField
-	protected int restOfHeader2 = 0;
+	protected int rest2 = 0;
 
 	@Override
 	public byte[] toWire() {
@@ -34,8 +36,8 @@ public abstract class IcmpHeader extends Layer4Header {
 		PacketUtils.write8BitInt(out, type);
 		PacketUtils.write8BitInt(out, code);
 		PacketUtils.write16BitInt(out, checksum);
-		PacketUtils.write16BitInt(out, restOfHeader1);
-		PacketUtils.write16BitInt(out, restOfHeader2);
+		PacketUtils.write16BitInt(out, rest1);
+		PacketUtils.write16BitInt(out, rest2);
 
 		return out.toByteArray();
 	}
@@ -44,8 +46,8 @@ public abstract class IcmpHeader extends Layer4Header {
 		result.type = type;
 		result.code = code;
 		result.checksum = checksum;
-		result.restOfHeader1 = restOfHeader1;
-		result.restOfHeader2 = restOfHeader2;
+		result.rest1 = rest1;
+		result.rest2 = rest2;
 		return result;
 	}
 
@@ -56,8 +58,8 @@ public abstract class IcmpHeader extends Layer4Header {
 		type = header[0];
 		code = header[1];
 		checksum = PacketUtils.joinBytes(header[2], header[3]);
-		restOfHeader1 = PacketUtils.joinBytes(header[4], header[5]);
-		restOfHeader2 = PacketUtils.joinBytes(header[6], header[7]);
+		rest1 = PacketUtils.joinBytes(header[4], header[5]);
+		rest2 = PacketUtils.joinBytes(header[6], header[7]);
 
 		return getNextHeader();
 	}
@@ -73,12 +75,12 @@ public abstract class IcmpHeader extends Layer4Header {
 		this.type = availableTypes[chosen][0];
 		if (availableTypes[chosen][1] != null)
 			this.code = availableTypes[chosen][1];
-		
+
 		// checksum = null;
-		restOfHeader1 = random.nextInt(0x10000);
-		restOfHeader2 = random.nextInt(0x10000);
+		rest1 = random.nextInt(0x10000);
+		rest2 = random.nextInt(0x10000);
 	}
-	
+
 	protected abstract Integer[][] getAvailableTypes();
 
 	@Override
@@ -90,4 +92,10 @@ public abstract class IcmpHeader extends Layer4Header {
 	public void unsetLengths() {
 		// No lengths.
 	}
+
+	@Override
+	public void swapIdentifiers() {
+		// No IDs.
+	}
+
 }

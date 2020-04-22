@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import mx.nic.jool.pktgen.enums.Layer;
+import mx.nic.jool.pktgen.pojo.shortcut.Shortcut;
 
 /**
  * A group of continuous fields in a packet that share a protocol.
@@ -92,5 +93,9 @@ public interface Header {
 	 * later when the packet is committed into a file.)
 	 */
 	public void unsetLengths();
+
+	public void swapIdentifiers();
+
+	public Shortcut[] getShortcuts();
 
 }

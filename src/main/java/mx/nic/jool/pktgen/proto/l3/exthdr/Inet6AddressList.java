@@ -82,8 +82,8 @@ public class Inet6AddressList implements ScannableHeaderField {
 		@SuppressWarnings("resource")
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
 
-		for (Inet6Address ipv6 : addresses)
-			out.write(ipv6.getAddress());
+		for (Inet6Address address : addresses)
+			out.write(address.getAddress());
 
 		return out.toByteArray();
 	}
@@ -93,8 +93,9 @@ public class Inet6AddressList implements ScannableHeaderField {
 	 * read from <code>in</code>.
 	 */
 	public void loadFromStream(InputStream in, int hdrExtLength) throws IOException {
-		addresses = new ArrayList<>(hdrExtLength / 2);
-		for (int i = 0; i < addresses.size(); i++) {
+		int addressCount = hdrExtLength / 2;
+		addresses = new ArrayList<>(addressCount);
+		for (int i = 0; i < addressCount; i++) {
 			byte[] address = PacketUtils.streamToByteArray(in, 16);
 			try {
 				addresses.add((Inet6Address) InetAddress.getByAddress(address));

@@ -8,6 +8,7 @@ import mx.nic.jool.pktgen.enums.Layer;
 import mx.nic.jool.pktgen.pojo.Fragment;
 import mx.nic.jool.pktgen.pojo.Header;
 import mx.nic.jool.pktgen.pojo.Packet;
+import mx.nic.jool.pktgen.pojo.shortcut.Shortcut;
 import mx.nic.jool.pktgen.proto.l3.Layer3Header;
 
 /**
@@ -82,4 +83,8 @@ public abstract class Layer4Header implements Header {
 		return Layer.TRANSPORT;
 	}
 
+	@Override
+	public Shortcut[] getShortcuts() {
+		return null;
+	}
 }

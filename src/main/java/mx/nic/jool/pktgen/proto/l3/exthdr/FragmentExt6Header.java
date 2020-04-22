@@ -10,6 +10,7 @@ import mx.nic.jool.pktgen.annotation.HeaderField;
 import mx.nic.jool.pktgen.pojo.Fragment;
 import mx.nic.jool.pktgen.pojo.Header;
 import mx.nic.jool.pktgen.pojo.Packet;
+import mx.nic.jool.pktgen.pojo.Payload;
 import mx.nic.jool.pktgen.proto.HeaderFactory;
 
 /**
@@ -106,7 +107,7 @@ public class FragmentExt6Header extends Extension6Header {
 		mFlag = (header[3] & 0x1) == 1;
 		identification = PacketUtils.joinBytes(header[4], header[5], header[6], header[7]);
 
-		return HeaderFactory.forNexthdr(nextHeader);
+		return (fragmentOffset == 0) ? HeaderFactory.forNexthdr(nextHeader) : new Payload();
 	}
 
 	@Override

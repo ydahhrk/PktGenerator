@@ -1,6 +1,8 @@
 package mx.nic.jool.pktgen.proto.l4;
 
 import mx.nic.jool.pktgen.pojo.Header;
+import mx.nic.jool.pktgen.pojo.shortcut.IcmpLengthShortcut;
+import mx.nic.jool.pktgen.pojo.shortcut.Shortcut;
 import mx.nic.jool.pktgen.proto.l3.Ipv4Header;
 
 /**
@@ -61,4 +63,15 @@ public class Icmpv4ErrorHeader extends Icmpv4Header {
 				{ 12, 2 }, //
 		};
 	}
+
+	@Override
+	public Shortcut[] getShortcuts() {
+		return new Shortcut[] { new IcmpLengthShortcut() };
+	}
+
+	public void setLength(int length) {
+		this.rest1 &= 0xFF00;
+		this.rest1 |= length & 0xFF;
+	}
+
 }

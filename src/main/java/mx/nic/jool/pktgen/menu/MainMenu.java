@@ -121,7 +121,7 @@ public class MainMenu {
 
 		try {
 			return new ExistingHeaderMenuEntry(frag.get(Integer.parseInt(userChoice)));
-		} catch (NumberFormatException | ArrayIndexOutOfBoundsException e) {
+		} catch (NumberFormatException | IndexOutOfBoundsException e) {
 			return null;
 		}
 	}

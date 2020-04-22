@@ -11,6 +11,8 @@ import mx.nic.jool.pktgen.pojo.Fragment;
 import mx.nic.jool.pktgen.pojo.Header;
 import mx.nic.jool.pktgen.pojo.Packet;
 import mx.nic.jool.pktgen.pojo.Payload;
+import mx.nic.jool.pktgen.pojo.shortcut.Shortcut;
+import mx.nic.jool.pktgen.pojo.shortcut.SwapIdentifiersShortcut;
 
 /**
  * https://tools.ietf.org/html/rfc793#section-3.1
@@ -20,9 +22,9 @@ public class TcpHeader extends Layer4Header {
 	public static final int LENGTH = 20;
 
 	@HeaderField
-	private int sourcePort = 2000;
+	private int src = 2000;
 	@HeaderField
-	private int destinationPort = 4000;
+	private int dst = 4000;
 	@HeaderField
 	private long sequenceNumber = 0;
 	@HeaderField
@@ -67,8 +69,8 @@ public class TcpHeader extends Layer4Header {
 	public byte[] toWire() {
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
 
-		PacketUtils.write16BitInt(out, sourcePort);
-		PacketUtils.write16BitInt(out, destinationPort);
+		PacketUtils.write16BitInt(out, src);
+		PacketUtils.write16BitInt(out, dst);
 		PacketUtils.write32BitInt(out, sequenceNumber);
 		PacketUtils.write32BitInt(out, acknowledgmentNumber);
 		PacketUtils.write8BitInt(out, (dataOffset << 4) | (reserved << 1) | (ns ? 1 : 0));
@@ -92,8 +94,8 @@ public class TcpHeader extends Layer4Header {
 	public Header createClone() {
 		TcpHeader result = new TcpHeader();
 
-		result.sourcePort = sourcePort;
-		result.destinationPort = destinationPort;
+		result.src = src;
+		result.dst = dst;
 		result.sequenceNumber = sequenceNumber;
 		result.acknowledgmentNumber = acknowledgmentNumber;
 		result.dataOffset = dataOffset;
@@ -133,8 +135,8 @@ public class TcpHeader extends Layer4Header {
 	public Header loadFromStream(InputStream in) throws IOException {
 		int[] header = PacketUtils.streamToIntArray(in, LENGTH);
 
-		sourcePort = PacketUtils.joinBytes(header, 0, 1);
-		destinationPort = PacketUtils.joinBytes(header, 2, 3);
+		src = PacketUtils.joinBytes(header, 0, 1);
+		dst = PacketUtils.joinBytes(header, 2, 3);
 		sequenceNumber = PacketUtils.joinBytes(header[4], header[5], header[6], header[7]);
 		acknowledgmentNumber = PacketUtils.joinBytes(header[8], header[9], header[10], header[11]);
 		dataOffset = header[12] >> 4;
@@ -159,8 +161,8 @@ public class TcpHeader extends Layer4Header {
 	public void randomize() {
 		ThreadLocalRandom random = ThreadLocalRandom.current();
 
-		sourcePort = random.nextInt(0x10000);
-		destinationPort = random.nextInt(0x10000);
+		src = random.nextInt(0x10000);
+		dst = random.nextInt(0x10000);
 		sequenceNumber = random.nextLong(0x100000000L);
 		acknowledgmentNumber = random.nextLong(0x100000000L);
 		// dataOffset = LENGTH >> 2; // TODO
@@ -187,5 +189,17 @@ public class TcpHeader extends Layer4Header {
 	@Override
 	public void unsetLengths() {
 		// TODO not sure if dataOffset counts.
+	}
+
+	@Override
+	public Shortcut[] getShortcuts() {
+		return new Shortcut[] { new SwapIdentifiersShortcut() };
+	}
+
+	@Override
+	public void swapIdentifiers() {
+		int tmp = src;
+		src = dst;
+		dst = tmp;
 	}
 }

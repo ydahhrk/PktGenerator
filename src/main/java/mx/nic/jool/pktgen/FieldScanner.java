@@ -13,6 +13,8 @@ import java.util.Arrays;
 import java.util.Scanner;
 
 import mx.nic.jool.pktgen.annotation.HeaderField;
+import mx.nic.jool.pktgen.pojo.Header;
+import mx.nic.jool.pktgen.pojo.shortcut.Shortcut;
 import mx.nic.jool.pktgen.proto.HeaderFactory;
 
 /**
@@ -292,6 +294,9 @@ public class FieldScanner {
 	 */
 	public byte[] readByteArray(String prefix) {
 		System.out.println(prefix + ":");
+		boolean readFromFile = readBoolean("Read from file?", false);
+		if (!readFromFile)
+			return null;
 
 		byte[] bytes = readBytesFromFile();
 		if (bytes != null)
@@ -300,11 +305,7 @@ public class FieldScanner {
 		return readBytesFromStdin();
 	}
 
-	private byte[] readBytesFromFile() {
-		boolean readFromFile = readBoolean("Read from file?", false);
-		if (!readFromFile)
-			return null;
-
+	public byte[] readBytesFromFile() {
 		byte[] result = readFile();
 		if (result == null)
 			return null;
@@ -324,6 +325,8 @@ public class FieldScanner {
 			String stringPath = readLine("File", "cancel");
 			if ("cancel".equals(stringPath))
 				return null;
+			if (!stringPath.endsWith(".pkt"))
+				stringPath += ".pkt";
 			try {
 				return Files.readAllBytes(Paths.get(stringPath));
 			} catch (IOException e) {
@@ -336,8 +339,9 @@ public class FieldScanner {
 		int length = readInt("Length", 4);
 		byte[] result = new byte[length];
 		boolean auto = readBoolean("Automatic insert (0,1,2,3..255,0,1,2,...)", true);
+		int offset = auto ? readInt("Numbering offset", 0) : 0;
 		for (int i = 0; i < length; i++)
-			result[i] = (byte) (auto ? (i & 0xFF) : readInt("byte " + i, i % 0xFF));
+			result[i] = (byte) (auto ? ((i + offset) & 0xFF) : readInt("byte " + i, i % 0xFF));
 
 		return result;
 	}
@@ -356,8 +360,14 @@ public class FieldScanner {
 			return;
 		}
 
+		Shortcut[] shortcuts = null;
+		if (object instanceof Header) {
+			Header header = (Header) object;
+			shortcuts = header.getShortcuts();
+		}
+
 		do {
-			showFields(fields, object);
+			showFields(object, fields, shortcuts);
 
 			String fieldToModify = readLine("Field", "exit");
 			if (fieldToModify.equalsIgnoreCase("exit"))
@@ -366,16 +376,31 @@ public class FieldScanner {
 			if (fieldToModify == null || fieldToModify.isEmpty())
 				continue;
 
+			boolean found = false;
+
 			for (Field field : fields) {
 				if (!field.getName().equalsIgnoreCase(fieldToModify))
 					continue;
 
 				try {
 					field.set(object, read(object, field));
+					found = true;
 				} catch (IllegalAccessException | IllegalArgumentException | InstantiationException e) {
 					throw new IllegalArgumentException("Strange & unlikely error condition; see below.", e);
 				}
 			}
+
+			if (shortcuts != null) {
+				for (Shortcut shortcut : shortcuts) {
+					if (!shortcut.getName().equalsIgnoreCase(fieldToModify))
+						continue;
+					shortcut.apply((Header) object, this);
+					found = true;
+				}
+			}
+
+			if (!found)
+				System.err.println("Not found.");
 		} while (true);
 	}
 
@@ -407,8 +432,9 @@ public class FieldScanner {
 	 * Prints <code>object</code>'s <code>fields</code> and their values in
 	 * standard output for user consumption.
 	 */
-	private void showFields(Field[] fields, Object obj) {
+	private void showFields(Object obj, Field[] fields, Shortcut[] shortcuts) {
 		System.out.printf("%s Fields:\n", obj.getClass().getSimpleName());
+
 		for (Field field : fields) {
 			System.out.printf("\t(%15s) ", field.getName());
 
@@ -428,6 +454,12 @@ public class FieldScanner {
 				System.out.println(Arrays.toString((byte[]) fieldValue));
 			else
 				System.out.println(fieldValue);
+		}
+
+		if (shortcuts != null) {
+			System.out.printf("%s Shortcuts:\n", obj.getClass().getSimpleName());
+			for (Shortcut shortcut : shortcuts)
+				System.out.printf("\t(%15s)\n", shortcut.getName());
 		}
 	}
 

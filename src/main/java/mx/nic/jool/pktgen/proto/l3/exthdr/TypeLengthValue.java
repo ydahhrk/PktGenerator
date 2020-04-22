@@ -66,9 +66,20 @@ public class TypeLengthValue {
 	public byte[] toWire() {
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
 
+		// If optionData == null, auto optionData yields zeroes, to simulate PadN.
+		
 		PacketUtils.write8BitInt(out, optionType);
 		if (optionType != PAD1) {
-			PacketUtils.write8BitInt(out, (optDataLen != null) ? optDataLen : (2 + optionData.length));
+			if (optDataLen == null) {
+				if (optionData == null)
+					throw new RuntimeException("You need to set either optDataLen or optionData.");
+				optDataLen = optionData.length;
+				
+			} else if (optionData == null) {
+				optionData = new byte[optDataLen];
+			}
+
+			PacketUtils.write8BitInt(out, optDataLen);
 			out.write(optionData);
 		}
 
