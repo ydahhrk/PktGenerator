@@ -111,7 +111,7 @@ public class ChecksumBuilder extends OutputStream {
 			break;
 		}
 
-		return ~result;
+		return (~result) & 0xFFFF;
 	}
 
 }

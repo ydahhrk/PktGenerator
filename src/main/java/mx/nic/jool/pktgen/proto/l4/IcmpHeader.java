@@ -1,96 +1,42 @@
 package mx.nic.jool.pktgen.proto.l4;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.util.concurrent.ThreadLocalRandom;
 
-import mx.nic.jool.pktgen.ByteArrayOutputStream;
-import mx.nic.jool.pktgen.PacketUtils;
-import mx.nic.jool.pktgen.annotation.HeaderField;
-import mx.nic.jool.pktgen.pojo.Header;
-import mx.nic.jool.pktgen.pojo.shortcut.IcmpLengthShortcut;
-import mx.nic.jool.pktgen.pojo.shortcut.Shortcut;
+import mx.nic.jool.pktgen.type.Field;
+import mx.nic.jool.pktgen.type.IntField;
 
 /**
  * Yes, layer 4. It is layer 4 for most intents and purposes. Shut up.
  */
 public abstract class IcmpHeader extends Layer4Header {
 
-	public static final int LENGTH = 8;
+	private IntField type;
+	private IntField code;
+	private IntField checksum = new IntField("checksum", 16, null, IntField.FLAG_HEX);
+	protected IntField rest1 = new IntField("rest1", 16, 0);
+	private IntField rest2 = new IntField("rest2", 16, 0);
 
-	@HeaderField
-	protected int type;
-	@HeaderField
-	protected int code;
-	@HeaderField
-	protected Integer checksum = null;
-	@HeaderField
-	protected int rest1 = 0;
-	@HeaderField
-	protected int rest2 = 0;
+	private Field[] fields;
 
-	@Override
-	public byte[] toWire() {
-		ByteArrayOutputStream out = new ByteArrayOutputStream();
-
-		PacketUtils.write8BitInt(out, type);
-		PacketUtils.write8BitInt(out, code);
-		PacketUtils.write16BitInt(out, checksum);
-		PacketUtils.write16BitInt(out, rest1);
-		PacketUtils.write16BitInt(out, rest2);
-
-		return out.toByteArray();
-	}
-
-	protected IcmpHeader createCloneIcmp(IcmpHeader result) {
-		result.type = type;
-		result.code = code;
-		result.checksum = checksum;
-		result.rest1 = rest1;
-		result.rest2 = rest2;
-		return result;
+	public IcmpHeader(int defaultType, int defaultCode) {
+		this.type = new IntField("type", 8, defaultType);
+		this.code = new IntField("code", 8, defaultCode);
+		this.fields = new Field[] { type, code, checksum, rest1, rest2 };
 	}
 
 	@Override
-	public Header loadFromStream(InputStream in) throws IOException {
-		int[] header = PacketUtils.streamToIntArray(in, LENGTH);
-
-		type = header[0];
-		code = header[1];
-		checksum = PacketUtils.joinBytes(header[2], header[3]);
-		rest1 = PacketUtils.joinBytes(header[4], header[5]);
-		rest2 = PacketUtils.joinBytes(header[6], header[7]);
-
-		return getNextHeader();
+	public Field[] getFields() {
+		return fields;
 	}
 
-	protected abstract Header getNextHeader();
+	public abstract boolean csumIncludesPseudoheader();
 
 	@Override
-	public void randomize() {
-		ThreadLocalRandom random = ThreadLocalRandom.current();
-
-		Integer[][] availableTypes = getAvailableTypes();
-		int chosen = random.nextInt(availableTypes.length);
-		this.type = availableTypes[chosen][0];
-		if (availableTypes[chosen][1] != null)
-			this.code = availableTypes[chosen][1];
-
-		// checksum = null;
-		rest1 = random.nextInt(0x10000);
-		rest2 = random.nextInt(0x10000);
-	}
-
-	protected abstract Integer[][] getAvailableTypes();
-
-	@Override
-	public void unsetChecksum() {
-		this.checksum = null;
-	}
-
-	@Override
-	public void unsetLengths() {
-		// No lengths.
+	public void postProcess() throws IOException {
+		if (checksum.getValue() == null) {
+			checksum.setValue(0);
+			checksum.setValue(buildChecksum(csumIncludesPseudoheader()));
+		}
 	}
 
 	@Override

@@ -1,16 +1,12 @@
 package mx.nic.jool.pktgen.pojo;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.concurrent.ThreadLocalRandom;
-
-import mx.nic.jool.pktgen.annotation.HeaderField;
-import mx.nic.jool.pktgen.enums.Layer;
 import mx.nic.jool.pktgen.pojo.shortcut.FastPayloadShortcut;
 import mx.nic.jool.pktgen.pojo.shortcut.FilePayloadShortcut;
 import mx.nic.jool.pktgen.pojo.shortcut.PaddingPayloadShortcut;
 import mx.nic.jool.pktgen.pojo.shortcut.Shortcut;
+import mx.nic.jool.pktgen.pojo.shortcut.TruncatePayloadShortcut;
+import mx.nic.jool.pktgen.type.ByteArrayField;
+import mx.nic.jool.pktgen.type.Field;
 
 /**
  * A "Header" whose only field is an arbitrary sequence of bytes. Often placed
@@ -21,50 +17,36 @@ import mx.nic.jool.pktgen.pojo.shortcut.Shortcut;
  * only one that's not technically a "header", and yet it's the only one that
  * matters at the end of the day.)
  */
-public class Payload implements Header {
+public class Payload extends Header {
 
-	@HeaderField
-	private byte[] bytes;
+	private ByteArrayField bytes;
+	private Field[] fields;
 
-	public Payload() {
-		this(4);
+	public static Payload zeroes(int length) {
+		byte[] bytes = new byte[length];
+		return new Payload(bytes);
 	}
-
-	public Payload(int size) {
-		this(size, 0);
-	}
-
+	
 	/**
 	 * Will initialize {@link #bytes} using incrementing numbers.
 	 * <p>
 	 * ie. bytes = new byte[] { 0, 1, 2, 3, 4, 5, ... };
 	 */
-	public Payload(int size, int offset) {
-		bytes = new byte[size];
+	public static Payload monotonic(int size, int offset) {
+		byte[] bytes = new byte[size];
 		for (int x = 0; x < size; x++)
 			bytes[x] = (byte) (x + offset);
+		return new Payload(bytes);
+	}
+
+	public Payload(byte[] bytes) {
+		this.bytes = new ByteArrayField("bytes", bytes);
+		this.fields = new Field[] { this.bytes };
 	}
 
 	@Override
-	public byte[] toWire() {
-		return bytes;
-	}
-
-	@Override
-	public Header createClone() {
-		Payload result = new Payload();
-
-		result.bytes = new byte[bytes.length];
-		for (int i = 0; i < bytes.length; i++) {
-			result.bytes[i] = bytes[i];
-		}
-
-		return result;
-	}
-
-	@Override
-	public String getShortName() {
-		return "payload";
+	public Field[] getFields() {
+		return fields;
 	}
 
 	@Override
@@ -73,57 +55,21 @@ public class Payload implements Header {
 	}
 
 	@Override
-	public void postProcess(Packet packet, Fragment fragment) {
+	public void postProcess() {
 		// No code
 	}
 
 	public byte[] getBytes() {
-		return bytes;
+		return this.bytes.getValue();
 	}
 
 	public void setBytes(byte[] bytes) {
-		this.bytes = bytes;
+		this.bytes.setValue(bytes);
 	}
 
 	@Override
 	public int getHdrIndex() {
 		return -1;
-	}
-
-	@Override
-	public Layer getLayer() {
-		return Layer.APPLICATION;
-	}
-
-	@Override
-	public Header loadFromStream(InputStream in) throws IOException {
-		ByteArrayOutputStream builder = new ByteArrayOutputStream();
-		byte[] buffer = new byte[256];
-
-		do {
-			int bytesRead = in.read(buffer);
-			if (bytesRead == -1) {
-				bytes = builder.toByteArray();
-				return null;
-			}
-			builder.write(buffer, 0, bytesRead);
-		} while (true);
-	}
-
-	@Override
-	public void randomize() {
-		ThreadLocalRandom random = ThreadLocalRandom.current();
-		random.nextBytes(bytes);
-	}
-
-	@Override
-	public void unsetChecksum() {
-		// No checksums.
-	}
-
-	@Override
-	public void unsetLengths() {
-		// No lengths.
 	}
 
 	@Override
@@ -137,6 +83,7 @@ public class Payload implements Header {
 				new FastPayloadShortcut(), //
 				new FilePayloadShortcut(), //
 				new PaddingPayloadShortcut(), //
+				new TruncatePayloadShortcut(), //
 		};
 	}
 

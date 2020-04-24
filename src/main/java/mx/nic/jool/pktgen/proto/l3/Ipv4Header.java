@@ -2,27 +2,23 @@ package mx.nic.jool.pktgen.proto.l3;
 
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.Inet4Address;
 import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.util.Properties;
-import java.util.concurrent.ThreadLocalRandom;
 
-import mx.nic.jool.pktgen.ByteArrayOutputStream;
+import mx.nic.jool.pktgen.BitArrayOutputStream;
 import mx.nic.jool.pktgen.ChecksumBuilder;
 import mx.nic.jool.pktgen.ChecksumStatus;
-import mx.nic.jool.pktgen.PacketUtils;
-import mx.nic.jool.pktgen.annotation.HeaderField;
-import mx.nic.jool.pktgen.pojo.Fragment;
 import mx.nic.jool.pktgen.pojo.Header;
-import mx.nic.jool.pktgen.pojo.Packet;
-import mx.nic.jool.pktgen.pojo.Payload;
 import mx.nic.jool.pktgen.pojo.shortcut.Shortcut;
 import mx.nic.jool.pktgen.pojo.shortcut.SwapIdentifiersShortcut;
 import mx.nic.jool.pktgen.pojo.shortcut.TtlDecShortcut;
-import mx.nic.jool.pktgen.pojo.shortcut.notDfShortcut;
-import mx.nic.jool.pktgen.proto.HeaderFactory;
+import mx.nic.jool.pktgen.pojo.shortcut.NotDfShortcut;
+import mx.nic.jool.pktgen.type.BoolField;
+import mx.nic.jool.pktgen.type.ByteArrayField;
+import mx.nic.jool.pktgen.type.Field;
+import mx.nic.jool.pktgen.type.IntField;
+import mx.nic.jool.pktgen.type.IpAddrField;
 
 /**
  * https://tools.ietf.org/html/rfc791#section-3.1
@@ -45,92 +41,69 @@ public class Ipv4Header extends Layer3Header {
 		}
 	}
 
-	public static final int LENGTH = 20;
+	private IntField version = new IntField("version", 4, 4);
+	private IntField ihl = new IntField("ihl", 4, null);
+	private IntField tos = new IntField("tos", 8, 0);
+	private IntField totalLength = new IntField("total length", 16, null);
+	private IntField identification = new IntField("identification", 16, 0);
+	private BoolField reserved = new BoolField("reserved", false);
+	private BoolField df = new BoolField("df", true);
+	private BoolField mf = new BoolField("mf", false);
+	private IntField fragmentOffset = new IntField("fragment offset", 13, 0);
+	private IntField ttl = new IntField("ttl", 8, 64);
+	private IntField protocol = new IntField("protocol", 8, null);
+	private IntField headerChecksum = new IntField("header checksum", 16, null, IntField.FLAG_HEX);
+	private IpAddrField src = new IpAddrField("src", DEFAULT_SRC);
+	private IpAddrField dst = new IpAddrField("dst", DEFAULT_DST);
+	private ByteArrayField options = new ByteArrayField("options", null);
 
-	@HeaderField
-	private int version = 4;
-	@HeaderField
-	private Integer ihl = null;
-	@HeaderField
-	private int tos = 0;
-	@HeaderField
-	private Integer totalLength = null;
-	@HeaderField
-	private int identification = 0;
-	@HeaderField
-	private boolean reserved = false;
-	@HeaderField
-	private boolean df = true;
-	@HeaderField
-	private Boolean mf = null;
-	@HeaderField
-	private Integer fragmentOffset = null;
-	@HeaderField
-	private int ttl = 64;
-	@HeaderField
-	private Integer protocol = null;
-	@HeaderField
-	private Integer headerChecksum = null;
-	@HeaderField
-	private Inet4Address src;
-	@HeaderField
-	private Inet4Address dst;
-	@HeaderField
-	private byte[] options;
+	private Field[] fields = new Field[] { //
+			version, ihl, tos, totalLength, //
+			identification, reserved, df, mf, fragmentOffset, //
+			ttl, protocol, headerChecksum, //
+			src, //
+			dst, //
+			options //
+	};
 
-	public Ipv4Header() {
-		this.src = DEFAULT_SRC;
-		this.dst = DEFAULT_DST;
-	}
-
-	private int buildChecksum() throws IOException {
-		try (ChecksumBuilder csum = new ChecksumBuilder()) {
-			csum.write(toWire());
-			return csum.finish(ChecksumStatus.CORRECT);
-		}
+	@Override
+	public Field[] getFields() {
+		return fields;
 	}
 
 	@Override
-	public void postProcess(Packet packet, Fragment fragment) throws IOException {
-		if (ihl == null) {
-			int headerLength = LENGTH;
-			if (options != null)
-				headerLength += options.length;
-
-			ihl = headerLength >> 2;
+	public void postProcess() throws IOException {
+		if (ihl.getValue() == null) {
+			int headerLength = Field.getLength(fields);
+			int ihl = headerLength >> 2;
 			if ((headerLength & 3) != 0)
 				ihl++;
-			
 			if (ihl > 15)
 				System.err.println("Warning: ihl (" + ihl + ") > 15");
+			this.ihl.setValue(ihl);
 		}
 
-		if (totalLength == null) {
-			totalLength = ihl << 2;
-			for (Header header : fragment.sliceExclusive(this)) {
-				totalLength += header.toWire().length;
+		if (totalLength.getValue() == null) {
+			int totalLength = 0;
+			for (Header header = this; header != null; header = header.getNext())
+				totalLength += header.getLength();
+			this.totalLength.setValue(totalLength);
+		}
+
+		if (protocol.getValue() == null) {
+			protocol.setValue(getNextHdr());
+		}
+
+		if (headerChecksum.getValue() == null) {
+			headerChecksum.setValue(0);
+			try (ChecksumBuilder csum = new ChecksumBuilder()) {
+				csum.write(toWire());
+				headerChecksum.setValue(csum.finish(ChecksumStatus.CORRECT));
 			}
 		}
 
-		if (mf == null) {
-			mf = fragment != packet.get(packet.size() - 1);
-		}
-
-		if (fragmentOffset == null) {
-			fragmentOffset = 0;
-			for (Fragment currentFragment : packet) {
-				if (fragment == currentFragment)
-					break;
-				fragmentOffset += currentFragment.getL3PayloadLength();
-			}
-		}
-
-		if (protocol == null) {
-			protocol = fragment.getNextHdr(packet, this);
-		}
-
-		if (headerChecksum == null) {
-			headerChecksum = buildChecksum();
+		if (options.getValue() == null) {
+			options.setValue(new byte[0]);
 		}
 
 //		if (options != null && ((options.length & 3) != 0)) {
@@ -140,74 +113,16 @@ public class Ipv4Header extends Layer3Header {
 	}
 
 	@Override
-	public byte[] toWire() {
-		ByteArrayOutputStream out = new ByteArrayOutputStream();
-
-		int ihl = (this.ihl != null) ? this.ihl : 0;
-		PacketUtils.write8BitInt(out, (version << 4) | ihl);
-
-		PacketUtils.write8BitInt(out, tos);
-		PacketUtils.write16BitInt(out, totalLength);
-		PacketUtils.write16BitInt(out, identification);
-
-		int fragOffset = (fragmentOffset != null) ? fragmentOffset : 0;
-		boolean mFrags = (mf != null) ? mf : false;
-		PacketUtils.write16BitInt(out, ((reserved ? 1 : 0) << 15) //
-				| ((df ? 1 : 0) << 14) //
-				| ((mFrags ? 1 : 0) << 13) //
-				| (fragOffset >> 3));
-
-		PacketUtils.write8BitInt(out, ttl);
-		PacketUtils.write8BitInt(out, protocol);
-		PacketUtils.write16BitInt(out, headerChecksum);
-		out.write(src.getAddress());
-		out.write(dst.getAddress());
-
-		if (options != null)
-			out.write(options);
-
-		return out.toByteArray();
-	}
-
-	@Override
-	public Header createClone() {
-		Ipv4Header result = new Ipv4Header();
-
-		result.version = version;
-		result.ihl = ihl;
-		result.tos = tos;
-		result.totalLength = totalLength;
-		result.identification = identification;
-		result.reserved = reserved;
-		result.df = df;
-		result.mf = mf;
-		result.fragmentOffset = fragmentOffset;
-		result.ttl = ttl;
-		result.protocol = protocol;
-		result.headerChecksum = headerChecksum;
-		result.src = src;
-		result.dst = dst;
-		result.options = options;
-
-		return result;
-	}
-
-	@Override
 	public byte[] getPseudoHeader(int payloadLength, int nextHdr) {
-		ByteArrayOutputStream out = new ByteArrayOutputStream();
+		BitArrayOutputStream out = new BitArrayOutputStream(12);
 
-		out.write(src.getAddress());
-		out.write(dst.getAddress());
-		PacketUtils.write8BitInt(out, 0);
-		PacketUtils.write8BitInt(out, nextHdr);
-		PacketUtils.write16BitInt(out, payloadLength);
+		src.write(out);
+		dst.write(out);
+		new IntField("padding", 8, 0).write(out);
+		new IntField("nextHdr", 8, nextHdr).write(out);
+		new IntField("payloadLength", 16, payloadLength).write(out);
 
 		return out.toByteArray();
-	}
-
-	@Override
-	public String getShortName() {
-		return "v4";
 	}
 
 	@Override
@@ -217,9 +132,9 @@ public class Ipv4Header extends Layer3Header {
 
 	@Override
 	public void swapIdentifiers() {
-		Inet4Address tmp = src;
-		src = dst;
-		dst = tmp;
+		InetAddress tmp = src.getValue();
+		src.setValue(dst.getValue());
+		dst.setValue(tmp);
 	}
 
 	@Override
@@ -228,114 +143,24 @@ public class Ipv4Header extends Layer3Header {
 	}
 
 	@Override
-	public Header loadFromStream(InputStream in) throws IOException {
-		int[] header = PacketUtils.streamToIntArray(in, LENGTH);
-
-		version = header[0] >> 4;
-		ihl = header[0] & 0xF;
-		tos = header[1];
-		totalLength = PacketUtils.joinBytes(header, 2, 3);
-		identification = PacketUtils.joinBytes(header, 4, 5);
-		reserved = (header[6] >> 7) == 1;
-		df = (header[6] >> 6) == 1;
-		mf = (header[6] >> 5) == 1;
-		fragmentOffset = PacketUtils.joinBytes(header[6] & 0x1F, header[7]);
-		ttl = header[8];
-		protocol = header[9];
-		headerChecksum = PacketUtils.joinBytes(header, 10, 11);
-		src = loadAddress(header, 12);
-		dst = loadAddress(header, 16);
-
-		if (ihl > 5)
-			options = PacketUtils.streamToByteArray(in, 4 * ihl - LENGTH);
-
-		return (fragmentOffset == 0) ? HeaderFactory.forNexthdr(protocol) : new Payload();
-	}
-
-	private Inet4Address loadAddress(int[] bytes, int offset) throws UnknownHostException {
-		return (Inet4Address) Inet4Address.getByAddress(new byte[] { //
-				(byte) bytes[offset], //
-				(byte) bytes[offset + 1], //
-				(byte) bytes[offset + 2], //
-				(byte) bytes[offset + 3], //
-		});
-	}
-
-	@Override
-	public void randomize() {
-		ThreadLocalRandom random = ThreadLocalRandom.current();
-
-		// version = 4;
-		// ihl = null;
-		tos = random.nextInt(0x100);
-		// totalLength = null;
-		identification = random.nextInt(0x10000);
-		// reserved = false;
-		df = random.nextBoolean();
-		mf = random.nextBoolean();
-		// fragmentOffset = null;
-		ttl = random.nextInt(0x100);
-		// protocol = null;
-		// headerChecksum = null;
-		// source;
-		// destination;
-		options = maybeCreateIpv4Options(random);
-	}
-
-	private byte[] maybeCreateIpv4Options(ThreadLocalRandom random) {
-		if (random.nextInt(10) > 3)
-			return null;
-
-		// IHL is a 4-bit value, which means header + options can span up to 15
-		// words (60 bytes).
-		// 5 of those are already taken by the IPv4 header.
-		int words = random.nextInt(1, 10);
-		byte[] result = new byte[4 * words];
-		random.nextBytes(result);
-		return result;
-	}
-
-	@Override
-	public void unsetChecksum() {
-		this.headerChecksum = null;
-	}
-
-	@Override
-	public void unsetLengths() {
-		this.ihl = null;
-		this.totalLength = null;
-	}
-
-	public Inet4Address getSource() {
-		return src;
-	}
-
-	public void setSource(Inet4Address source) {
-		this.src = source;
-	}
-
-	public Inet4Address getDestination() {
-		return dst;
-	}
-
-	public void setDestination(Inet4Address destination) {
-		this.dst = destination;
-	}
-
-	@Override
 	public Shortcut[] getShortcuts() {
 		return new Shortcut[] { //
-				new notDfShortcut(), //
+				new NotDfShortcut(), //
 				new TtlDecShortcut(), //
 				new SwapIdentifiersShortcut(), //
 		};
 	}
 
-	public void decTtl() {
-		this.ttl = this.ttl - 1;
+	public void notDf() {
+		this.df.setValue(!this.df.getValue());
 	}
 
-	public void notDf() {
-		this.df = !this.df;
+	public void decTtl() {
+		this.ttl.setValue(this.ttl.getValue() - 1);
 	}
+
+	public Integer getIhl() {
+		return ihl.getValue();
+	}
+
 }

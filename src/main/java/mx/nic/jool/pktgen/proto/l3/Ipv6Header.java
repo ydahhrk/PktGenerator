@@ -2,23 +2,18 @@ package mx.nic.jool.pktgen.proto.l3;
 
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.Inet6Address;
 import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.util.Properties;
-import java.util.concurrent.ThreadLocalRandom;
 
-import mx.nic.jool.pktgen.ByteArrayOutputStream;
-import mx.nic.jool.pktgen.PacketUtils;
-import mx.nic.jool.pktgen.annotation.HeaderField;
-import mx.nic.jool.pktgen.pojo.Fragment;
+import mx.nic.jool.pktgen.BitArrayOutputStream;
 import mx.nic.jool.pktgen.pojo.Header;
-import mx.nic.jool.pktgen.pojo.Packet;
 import mx.nic.jool.pktgen.pojo.shortcut.Shortcut;
 import mx.nic.jool.pktgen.pojo.shortcut.SwapIdentifiersShortcut;
 import mx.nic.jool.pktgen.pojo.shortcut.TtlDecShortcut;
-import mx.nic.jool.pktgen.proto.HeaderFactory;
+import mx.nic.jool.pktgen.type.Field;
+import mx.nic.jool.pktgen.type.IntField;
+import mx.nic.jool.pktgen.type.IpAddrField;
 
 /**
  * https://tools.ietf.org/html/rfc2460#section-3
@@ -41,93 +36,52 @@ public class Ipv6Header extends Layer3Header {
 		}
 	}
 
-	public static final int LENGTH = 40;
+	private IntField version = new IntField("version", 4, 6);
+	private IntField trafficClass = new IntField("trafficClass", 8, 0);
+	private IntField flowLabel = new IntField("flowLabel", 20, 0);
+	private IntField payloadLength = new IntField("payloadLength", 16, null);
+	private IntField nextHeader = new IntField("nextHeader", 8, null);
+	private IntField hopLimit = new IntField("hopLimit", 8, 64);
+	private IpAddrField src = new IpAddrField("src", DEFAULT_SRC);
+	private IpAddrField dst = new IpAddrField("dst", DEFAULT_DST);
 
-	@HeaderField
-	private int version = 6;
-	@HeaderField
-	private int trafficClass = 0;
-	@HeaderField
-	private int flowLabel = 0;
-	@HeaderField
-	private Integer payloadLength = null;
-	@HeaderField
-	private Integer nextHeader = null;
-	@HeaderField
-	private int hopLimit = 64;
-	@HeaderField
-	private Inet6Address src;
-	@HeaderField
-	private Inet6Address dst;
+	private Field[] fields = new Field[] { //
+			version, trafficClass, flowLabel, //
+			payloadLength, nextHeader, hopLimit, //
+			src, //
+			dst //
+	};
 
-	public Ipv6Header() {
-		src = DEFAULT_SRC;
-		dst = DEFAULT_DST;
+	@Override
+	public Field[] getFields() {
+		return fields;
 	}
 
 	@Override
-	public void postProcess(Packet packet, Fragment fragment) {
-		if (payloadLength == null) {
-			payloadLength = 0;
-			for (Header header : fragment.sliceExclusive(this)) {
-				payloadLength += header.toWire().length;
-			}
+	public void postProcess() {
+		if (payloadLength.getValue() == null) {
+			int payloadLength = 0;
+			for (Header header = getNext(); header != null; header = header.getNext())
+				payloadLength += header.getLength();
+			this.payloadLength.setValue(payloadLength);
 		}
 
-		if (nextHeader == null) {
-			nextHeader = fragment.getNextHdr(packet, this);
+		if (nextHeader.getValue() == null) {
+			nextHeader.setValue(getNextHdr());
 		}
-	}
-
-	@Override
-	public byte[] toWire() {
-		ByteArrayOutputStream out = new ByteArrayOutputStream();
-
-		PacketUtils.write8BitInt(out, (version << 4) | (trafficClass >> 4));
-		PacketUtils.write8BitInt(out, ((trafficClass & 0xFF) << 4) | (flowLabel >> 16));
-		PacketUtils.write16BitInt(out, flowLabel & 0xFFFF);
-		PacketUtils.write16BitInt(out, payloadLength);
-		PacketUtils.write8BitInt(out, nextHeader);
-		PacketUtils.write8BitInt(out, hopLimit);
-		out.write(src.getAddress());
-		out.write(dst.getAddress());
-
-		return out.toByteArray();
-	}
-
-	@Override
-	public Header createClone() {
-		Ipv6Header result = new Ipv6Header();
-
-		result.version = version;
-		result.trafficClass = trafficClass;
-		result.flowLabel = flowLabel;
-		result.payloadLength = payloadLength;
-		result.nextHeader = nextHeader;
-		result.hopLimit = hopLimit;
-		result.src = src;
-		result.dst = dst;
-
-		return result;
 	}
 
 	@Override
 	public byte[] getPseudoHeader(int payloadLength, int nextHdr) {
-		ByteArrayOutputStream out = new ByteArrayOutputStream();
+		BitArrayOutputStream out = new BitArrayOutputStream(40);
 
-		out.write(src.getAddress());
-		out.write(dst.getAddress());
-		PacketUtils.write32BitInt(out, Long.valueOf(payloadLength));
-		PacketUtils.write16BitInt(out, 0);
-		PacketUtils.write8BitInt(out, 0);
-		PacketUtils.write8BitInt(out, nextHdr);
+		src.write(out);
+		dst.write(out);
+		new IntField("payloadLength", 32, payloadLength).write(out);
+		new IntField("padding", 24, 0).write(out);
+		new IntField("nextHdr", 8, nextHdr).write(out);
 
 		return out.toByteArray();
-	}
-
-	@Override
-	public String getShortName() {
-		return "v6";
 	}
 
 	@Override
@@ -137,91 +91,14 @@ public class Ipv6Header extends Layer3Header {
 
 	@Override
 	public void swapIdentifiers() {
-		Inet6Address tmp = src;
-		src = dst;
-		dst = tmp;
+		InetAddress tmp = src.getValue();
+		src.setValue(dst.getValue());
+		dst.setValue(tmp);
 	}
 
 	@Override
 	public int getHdrIndex() {
 		return -6;
-	}
-
-	@Override
-	public Header loadFromStream(InputStream in) throws IOException {
-		int[] header = PacketUtils.streamToIntArray(in, LENGTH);
-
-		version = header[0] >> 4;
-		trafficClass = ((header[0] & 0xF) << 4) | (header[1] >> 4);
-		flowLabel = PacketUtils.joinBytes(header[1] & 0xF, header[2], header[3]);
-		payloadLength = PacketUtils.joinBytes(header, 4, 5);
-		nextHeader = header[6];
-		hopLimit = header[7];
-		src = loadAddress(header, 8);
-		dst = loadAddress(header, 24);
-
-		return HeaderFactory.forNexthdr(nextHeader);
-	}
-
-	private Inet6Address loadAddress(int[] bytes, int offset) throws UnknownHostException {
-		return (Inet6Address) Inet6Address.getByAddress(new byte[] { //
-				(byte) bytes[offset], //
-				(byte) bytes[offset + 1], //
-				(byte) bytes[offset + 2], //
-				(byte) bytes[offset + 3], //
-				(byte) bytes[offset + 4], //
-				(byte) bytes[offset + 5], //
-				(byte) bytes[offset + 6], //
-				(byte) bytes[offset + 7], //
-				(byte) bytes[offset + 8], //
-				(byte) bytes[offset + 9], //
-				(byte) bytes[offset + 10], //
-				(byte) bytes[offset + 11], //
-				(byte) bytes[offset + 12], //
-				(byte) bytes[offset + 13], //
-				(byte) bytes[offset + 14], //
-				(byte) bytes[offset + 15], //
-		});
-	}
-
-	@Override
-	public void randomize() {
-		ThreadLocalRandom random = ThreadLocalRandom.current();
-
-		// version = 6;
-		trafficClass = random.nextInt(0x100);
-		flowLabel = random.nextInt(0x100000);
-		// payloadLength = null;
-		// nextHeader = null;
-		hopLimit = random.nextInt(0x100);
-		// source;
-		// destination;
-	}
-
-	@Override
-	public void unsetChecksum() {
-		// No checksum.
-	}
-
-	@Override
-	public void unsetLengths() {
-		this.payloadLength = null;
-	}
-
-	public Inet6Address getSource() {
-		return src;
-	}
-
-	public void setSource(Inet6Address source) {
-		this.src = source;
-	}
-
-	public Inet6Address getDestination() {
-		return dst;
-	}
-
-	public void setDestination(Inet6Address destination) {
-		this.dst = destination;
 	}
 
 	@Override
@@ -233,6 +110,6 @@ public class Ipv6Header extends Layer3Header {
 	}
 
 	public void decTtl() {
-		this.hopLimit = this.hopLimit - 1;
+		this.hopLimit.setValue(this.hopLimit.getValue() - 1);
 	}
 }
