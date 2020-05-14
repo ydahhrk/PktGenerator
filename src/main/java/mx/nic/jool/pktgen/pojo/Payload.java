@@ -1,10 +1,8 @@
 package mx.nic.jool.pktgen.pojo;
 
-import mx.nic.jool.pktgen.pojo.shortcut.FastPayloadShortcut;
 import mx.nic.jool.pktgen.pojo.shortcut.FilePayloadShortcut;
-import mx.nic.jool.pktgen.pojo.shortcut.PaddingPayloadShortcut;
+import mx.nic.jool.pktgen.pojo.shortcut.OffsetPayloadShortcut;
 import mx.nic.jool.pktgen.pojo.shortcut.Shortcut;
-import mx.nic.jool.pktgen.pojo.shortcut.TruncatePayloadShortcut;
 import mx.nic.jool.pktgen.type.ByteArrayField;
 import mx.nic.jool.pktgen.type.Field;
 
@@ -32,10 +30,10 @@ public class Payload extends Header {
 	 * <p>
 	 * ie. bytes = new byte[] { 0, 1, 2, 3, 4, 5, ... };
 	 */
-	public static Payload monotonic(int size, int offset) {
+	public static Payload monotonic(int size) {
 		byte[] bytes = new byte[size];
 		for (int x = 0; x < size; x++)
-			bytes[x] = (byte) (x + offset);
+			bytes[x] = (byte) (x & 0xFF);
 		return new Payload(bytes);
 	}
 
@@ -80,10 +78,8 @@ public class Payload extends Header {
 	@Override
 	public Shortcut[] getShortcuts() {
 		return new Shortcut[] { //
-				new FastPayloadShortcut(), //
 				new FilePayloadShortcut(), //
-				new PaddingPayloadShortcut(), //
-				new TruncatePayloadShortcut(), //
+				new OffsetPayloadShortcut(), //
 		};
 	}
 

@@ -28,7 +28,7 @@ public class IntField implements Field {
 			return null;
 
 		if ((flags & FLAG_HEX) != 0)
-			return String.format("0x%X", value);
+			return String.format("%d (0x%X)", value, value);
 
 		return value.toString();
 	}

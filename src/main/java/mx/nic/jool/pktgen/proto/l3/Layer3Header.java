@@ -15,15 +15,4 @@ public abstract class Layer3Header extends Header {
 
 	public abstract byte[] getPseudoHeader(int payloadLength, int nextHdr);
 
-	public int getNextHdr() {
-		Header next = this.getNext();
-		if (next == null)
-			throw new IllegalArgumentException("There are no valid nexthdrs after this. I don't know what to do.");
-
-		if (next.getHdrIndex() >= 0)
-			return next.getHdrIndex();
-
-		throw new IllegalArgumentException("Next header lacks nexthdr value. Try assigning nexthdr manually.");
-	}
-
 }

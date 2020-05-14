@@ -3,11 +3,11 @@ package mx.nic.jool.pktgen.pojo.shortcut;
 import mx.nic.jool.pktgen.pojo.Header;
 import mx.nic.jool.pktgen.pojo.Payload;
 
-public class PaddingPayloadShortcut implements Shortcut {
+public class OffsetPayloadShortcut implements Shortcut {
 
 	@Override
 	public String getName() {
-		return "padding";
+		return "offset";
 	}
 
 	@Override
@@ -15,9 +15,11 @@ public class PaddingPayloadShortcut implements Shortcut {
 		if (!(header instanceof Payload))
 			throw new IllegalArgumentException("Header is not Payload. Don't know what to do.");
 		Payload payload = (Payload) header;
+		int offset = Integer.valueOf(value);
 
-		int length = Integer.valueOf(value);
-		payload.setBytes(new byte[length]);
+		byte[] bytes = payload.getBytes();
+		for (int x = 0; x < bytes.length; x++)
+			bytes[x] = (byte) ((x + offset) & 0xFF);
 	}
 
 }

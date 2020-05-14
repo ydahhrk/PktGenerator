@@ -46,6 +46,10 @@ public class Packet {
 
 		postProcess();
 
+		System.out.println("Writing packet:");
+		for (Header header = firstHeader; header != null; header = header.getNext())
+			System.out.println(header);
+
 		File file = new File(fileName);
 		if (file.exists())
 			System.err.println("Warning: I'm rewriting file " + fileName);

@@ -13,6 +13,7 @@ import mx.nic.jool.pktgen.pojo.Header;
 import mx.nic.jool.pktgen.pojo.Packet;
 import mx.nic.jool.pktgen.pojo.Payload;
 import mx.nic.jool.pktgen.pojo.shortcut.Shortcut;
+import mx.nic.jool.pktgen.proto.l3.FragmentHeader;
 import mx.nic.jool.pktgen.proto.l3.Ipv4Header;
 import mx.nic.jool.pktgen.proto.l3.Ipv6Header;
 import mx.nic.jool.pktgen.proto.l4.Icmpv4ErrorHeader;
@@ -27,7 +28,7 @@ public class Main {
 
 	private static final Pattern NAME_PATTERN = Pattern.compile("packet ([^:]+)(: .*)?");
 	private static final Pattern BASIC_PATTERN = Pattern.compile( //
-			"([0-9]+)\\s+(IPv6|IPv4|TCP|UDP|ICMPv6|Ping6|ICMPv4|Ping4|Payload|Padding)([^#]*)(# .*)?" //
+			"([0-9]+)\\s+(IPv6|IPv4|TCP|UDP|ICMPv6|Ping6|ICMPv4|Ping4|Payload|Padding|Fragment)([^#]*)(# .*)?" //
 	);
 
 	public static void main(String[] args) throws IOException, HeadlessException, UnsupportedFlavorException {
@@ -88,8 +89,7 @@ public class Main {
 			case "IPv4":
 				Ipv4Header hdr = handleHeader(new Ipv4Header(), arguments);
 				Integer ihl = hdr.getIhl();
-				if (ihl != null)
-					validateLength(4 * ihl, length, headerType);
+				validateLength((ihl != null) ? (4 * ihl) : 20, length, headerType);
 				packet.add(hdr);
 				break;
 			case "TCP":
@@ -117,10 +117,14 @@ public class Main {
 				packet.add(handleHeader(new Icmpv4InfoHeader(), arguments));
 				break;
 			case "Payload":
-				packet.add(handleHeader(Payload.monotonic(length, 0), arguments));
+				packet.add(handleHeader(Payload.monotonic(length), arguments));
 				break;
 			case "Padding":
 				packet.add(Payload.zeroes(length));
+				break;
+			case "Fragment":
+				validateLength(8, length, headerType);
+				packet.add(handleHeader(new FragmentHeader(), arguments));
 				break;
 			}
 		}

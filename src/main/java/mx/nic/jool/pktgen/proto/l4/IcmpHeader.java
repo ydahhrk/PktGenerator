@@ -24,6 +24,10 @@ public abstract class IcmpHeader extends Layer4Header {
 		this.fields = new Field[] { type, code, checksum, rest1, rest2 };
 	}
 
+	public void setRest2(int rest2) {
+		this.rest2.setValue(rest2);
+	}
+	
 	@Override
 	public Field[] getFields() {
 		return fields;

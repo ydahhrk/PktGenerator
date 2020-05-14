@@ -46,6 +46,17 @@ public abstract class Header {
 	 */
 	public abstract int getHdrIndex();
 
+	public int getNextHdr() {
+		Header next = this.getNext();
+		if (next == null)
+			throw new IllegalArgumentException("There are no valid nexthdrs after this. I don't know what to do.");
+
+		if (next.getHdrIndex() >= 0)
+			return next.getHdrIndex();
+
+		throw new IllegalArgumentException("Next header lacks nexthdr value. Try assigning nexthdr manually.");
+	}
+
 	public abstract Field[] getFields();
 
 	public abstract Shortcut[] getShortcuts();
@@ -71,11 +82,11 @@ public abstract class Header {
 	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder().append("[");
-		
+
 		sb.append(getName()).append("\n");
 		for (Field field : getFields())
 			sb.append("\t").append(field.getName()).append(": ").append(field).append("\n");
-		
+
 		return sb.append("]").toString();
 	}
 
